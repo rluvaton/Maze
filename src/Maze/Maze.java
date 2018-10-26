@@ -14,9 +14,9 @@ import static Helpers.Utils.Instance;
 public class Maze
 {
     /**
-     * The MazeData
+     * The mazeData
      */
-    private Cell[][] MazeData;
+    private Cell[][] mazeData;
 
     /**
      * Width of the maze
@@ -30,13 +30,13 @@ public class Maze
 
     public Maze(Cell[][] mazeData)
     {
-        this.MazeData = mazeData;
+        this.mazeData = mazeData;
     }
 
     /**
-     * Create Rectangle MazeData
+     * Create Rectangle mazeData
      *
-     * @param width  Width Of The MazeData
+     * @param width  Width Of The mazeData
      * @param height Height Of The Maz
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
@@ -47,9 +47,9 @@ public class Maze
     }
 
     /**
-     * Create Rectangle MazeData
+     * Create Rectangle mazeData
      *
-     * @param width       Width Of The MazeData
+     * @param width       Width Of The mazeData
      * @param height      Height Of The Maz
      * @param minDistance Minimum Distance (number of cubes) between the start and the end
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
@@ -61,9 +61,9 @@ public class Maze
     }
 
     /**
-     * Create Rectangle MazeData
+     * Create Rectangle mazeData
      *
-     * @param width            Width Of The MazeData
+     * @param width            Width Of The mazeData
      * @param height           Height Of The Maz
      * @param minDistance      Minimum Distance (number of cubes) between the start and the end
      * @param numberOfEntrance Number Of Starting Points
@@ -77,9 +77,9 @@ public class Maze
 
 
     /**
-     * Create Rectangle MazeData
+     * Create Rectangle mazeData
      *
-     * @param width            Width Of The MazeData
+     * @param width            Width Of The mazeData
      * @param height           Height Of The Maz
      * @param minDistance      Minimum Distance (number of cubes) between the start and the end
      * @param numberOfEntrance Number Of Starting Points
@@ -96,9 +96,9 @@ public class Maze
     }
 
     /**
-     * Generate Rectangle MazeData
+     * Generate Rectangle mazeData
      *
-     * @param width            Width Of The MazeData
+     * @param width            Width Of The mazeData
      * @param height           Height Of The Maz
      * @param minDistance      Minimum Distance (number of cubes) between the start and the end
      * @param numberOfEntrance Number Of Starting Points
@@ -112,9 +112,9 @@ public class Maze
     }
 
     /**
-     * Generate Rectangle MazeData
+     * Generate Rectangle mazeData
      *
-     * @param width       Width Of The MazeData
+     * @param width       Width Of The mazeData
      * @param height      Height Of The Maz
      * @param minDistance Minimum Distance (number of cubes) between the start and the end
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
@@ -126,9 +126,9 @@ public class Maze
     }
 
     /**
-     * Generate Rectangle MazeData
+     * Generate Rectangle mazeData
      *
-     * @param width  Width Of The MazeData
+     * @param width  Width Of The mazeData
      * @param height Height Of The Maz
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
@@ -139,9 +139,9 @@ public class Maze
     }
 
     /**
-     * Generate Rectangle MazeData
+     * Generate Rectangle mazeData
      *
-     * @param width            Width Of The MazeData
+     * @param width            Width Of The mazeData
      * @param height           Height Of The Maz
      * @param minDistance      Minimum Distance (number of cubes) between the start and the end
      * @param numberOfEntrance Number Of Starting Points
@@ -156,11 +156,11 @@ public class Maze
             throw new IllegalArgumentException("minDistance");
         }
 
-        // Init the MazeData with empty cubes
+        // Init the mazeData with empty cubes
         InitMaze(height, width);
 
         int currRow = Instance.getRandomNumber(height), currCol = Instance.getRandomNumber(width);
-        int maxCubes = width * height;
+        int maxCubes = width * height - 1;
         int i = 0;
 
         // Queue for the steps made for knowing where to go
@@ -172,6 +172,7 @@ public class Maze
         // Get all direction values
         Direction[] directions = Direction.values();
 
+        // SET -1 cause it crashed at the end
         while (i < maxCubes) {
             nextDirection = setCellAtRandomPlace(currRow, currCol, directions, false, true);
 
@@ -197,16 +198,16 @@ public class Maze
     }
 
     /**
-     * Init MazeData with empty cubes
+     * Init mazeData with empty cubes
      *
-     * @param height height of the MazeData
-     * @param width  Width of the MazeData
+     * @param height height of the mazeData
+     * @param width  Width of the mazeData
      */
     private void InitMaze(int height, int width)
     {
         setMazeData(new Cell[height][width]);
 
-        // Init the MazeData with empty cubes
+        // Init the mazeData with empty cubes
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 getMazeData()[i][j] = new Cell();
@@ -263,12 +264,18 @@ public class Maze
             tempRow = currRow + Instance.getHorizontalDirection((Direction) selected);
             tempCol = currCol + Instance.getVerticalDirection((Direction) selected);
 
-            if (Instance.inBounds(tempCol, tempRow, getMazeData()) && getMazeData()[currRow][currCol].setCellAtDirection(getMazeData()[tempRow][tempCol], selected, force, update)) {
+            if(Instance.inBounds(tempRow, tempCol, height, width)) {
+                System.out.println("row: " + tempRow + ", col: " +  tempCol + ", Direction: " + selected + ", res: " + this.mazeData[tempRow][tempCol].haveAllWalls());
+            }
+
+            if (Instance.inBounds(tempRow, tempCol, height, width) &&
+                    this.mazeData[tempRow][tempCol].haveAllWalls() &&
+                    this.mazeData[currRow][currCol].setCellAtDirection(this.mazeData[tempRow][tempCol], selected, force, update))
+            {
                 return selected;
             }
 
             directionAvailable.remove(selected);
-            selected = null;
         }
 
         return null;
@@ -277,11 +284,11 @@ public class Maze
     // region Getter & Setter
 
     public Cell[][] getMazeData() {
-        return MazeData;
+        return mazeData;
     }
 
     public void setMazeData(Cell[][] mazeData) {
-        MazeData = mazeData;
+        this.mazeData = mazeData;
     }
 
     public int getHeight() {
@@ -294,12 +301,13 @@ public class Maze
 
     /**
      * Get Maze cell at row & height
+     *
      * @param i height
      * @param j row
      * @return Returns the cell
      */
     public Cell getCellAt(int i, int j) {
-        return this.MazeData[i][j];
+        return this.mazeData[i][j];
     }
 
     // endregion

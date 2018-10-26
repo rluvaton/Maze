@@ -41,8 +41,8 @@ public class MazePreviewPanel extends JPanel
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
-        int horSpace = fullH / this.maze.getHeight();
-        int verSpace = fullW / this.maze.getWidth();
+        int horSpace = fullW / this.maze.getWidth();
+        int verSpace = fullH / this.maze.getHeight();
 
         int x = startX;
         int y = startY;

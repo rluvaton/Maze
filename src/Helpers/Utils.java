@@ -49,7 +49,7 @@ public class Utils
      */
     public final int getHorizontalDirection(Direction dir)
     {
-        return dir.getValue() / 2;
+        return dir == Direction.LEFT ? -1 : dir == Direction.RIGHT ? 1 : 0;
     }
 
     /**
@@ -60,7 +60,7 @@ public class Utils
      */
     public final int getVerticalDirection(Direction dir)
     {
-        return dir.getValue();
+        return dir == Direction.TOP ? -1 : dir == Direction.BOTTOM ? 1 : 0;
     }
 
     /**
@@ -82,16 +82,49 @@ public class Utils
      * @param row Row to check
      * @param col Col to check
      * @param arr Array to check
-     *            <typeparam name="T">Array Type</typeparam>
      * @return Returns if the row and column are in the matrix boundaries
      */
     public final <T> boolean inBounds(int row, int col, T[][] arr)
     {
-        return row >= 0 && row < arr.length && col >= 0 && col < arr[0].length;
+        return col >= 0 && col < arr.length && row >= 0 && row < arr[0].length;
     }
 
     /**
+     * Check if row and column are in the boundaries of the matrix
+     *
+     * @param row    Row to check
+     * @param col    Col to check
+     * @param height Height of Matrix
+     * @param width  Width of Matrix
+     * @return Returns if the row and column are in the matrix boundaries
+     */
+    public final <T> boolean inBounds(int row, int col, int height, int width)
+    {
+        return col >= 0 && col < height && row >= 0 && row < width;
+    }
+
+    /**
+     * Check if row and column in limit
+     *
+     * @param row       row to check
+     * @param col       column to check
+     * @param direction direction to check
+     * @param width     width of mat
+     * @param height    height of mat
+     * @return Returns if in limit
+     */
+    public final boolean inLimits(int row, int col, Direction direction, int width, int height)
+    {
+        return (row == 0 && direction == Direction.TOP) ||
+                (row == height - 1 && direction == Direction.BOTTOM) ||
+                (col == 0 && direction == Direction.LEFT) ||
+                (col == width - 1 && direction == Direction.RIGHT);
+    }
+
+
+    /**
      * Convert Array to stream
+     *
      * @param arr Array to convert
      * @param <T> Type of the array
      * @return Returns the stream of the array
@@ -103,6 +136,7 @@ public class Utils
 
     /**
      * Convert Matrix to stream of stream
+     *
      * @param mat Matrix to convert
      * @param <T> type of the matrix
      * @return Returns the stream of stream of the matrix
