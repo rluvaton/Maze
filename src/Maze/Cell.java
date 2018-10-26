@@ -6,25 +6,25 @@ public class Cell
      * If have wall at the top or not
      * If can't move top then it will be true
      */
-    private boolean topWall;
+    private boolean topWall = true;
 
     /**
      * If have wall at the right or not
      * If can't move right then it will be true
      */
-    private boolean rightWall;
+    private boolean rightWall = true;
 
     /**
      * If have wall at the bottom or not
      * If can't move bottom then it will be true
      */
-    private boolean bottomWall;
+    private boolean bottomWall = true;
 
     /**
      * If have wall at the left or not
      * If can't move left then it will be true
      */
-    private boolean leftWall;
+    private boolean leftWall = true;
 
     public Cell()
     {

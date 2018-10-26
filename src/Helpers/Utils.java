@@ -1,7 +1,10 @@
 package Helpers;
 
 import Maze.Direction;
+
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Stream;
 
 public class Utils
 {
@@ -87,4 +90,27 @@ public class Utils
         return row >= 0 && row < arr.length && col >= 0 && col < arr[0].length;
     }
 
+    /**
+     * Convert Array to stream
+     * @param arr Array to convert
+     * @param <T> Type of the array
+     * @return Returns the stream of the array
+     */
+    public <T> Stream<T> convertArrayToStream(T[] arr)
+    {
+        return Arrays.stream(arr);
+    }
+
+    /**
+     * Convert Matrix to stream of stream
+     * @param mat Matrix to convert
+     * @param <T> type of the matrix
+     * @return Returns the stream of stream of the matrix
+     */
+    public <T> Stream<Stream<T>> convertMatrixToStream(T[][] mat)
+    {
+        return Arrays.stream(mat).map(Arrays::stream);
+    }
+
 }
+

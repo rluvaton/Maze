@@ -1,9 +1,11 @@
 package Maze;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Stack;
 
 import Helpers.Tuple;
+
 import static Helpers.Utils.Instance;
 
 /**
@@ -16,14 +18,19 @@ public class Maze
      */
     private Cell[][] MazeData;
 
-    public final Cell[][] getMazeData()
-    {
-        return MazeData;
-    }
+    /**
+     * Width of the maze
+     */
+    private int height;
 
-    public final void setMazeData(Cell[][] value)
+    /**
+     * Height of the maze
+     */
+    private int width;
+
+    public Maze(Cell[][] mazeData)
     {
-        MazeData = value;
+        this.MazeData = mazeData;
     }
 
     /**
@@ -82,6 +89,9 @@ public class Maze
      */
     public Maze(int width, int height, int minDistance, int numberOfEntrance, int numberOfExists)
     {
+        this.width = width;
+        this.height = height;
+
         GenerateRectangleMaze(width, height, minDistance, numberOfEntrance, numberOfExists);
     }
 
@@ -243,7 +253,7 @@ public class Maze
      */
     private Direction setCellAtRandomPlace(int currRow, int currCol, Direction[] directions, boolean force, boolean update)
     {
-        ArrayList<Direction> directionAvailable = new ArrayList<Direction>();
+        ArrayList<Direction> directionAvailable = new ArrayList<>(Arrays.asList(directions));
         Direction selected = null;
         int tempRow, tempCol;
 
@@ -264,33 +274,33 @@ public class Maze
         return null;
     }
 
-    /**
-     * Print Maze
-     */
-    public final void PrintMaze()
-    {
-        int rows = getMazeData().length;
-        int columns = getMazeData()[0].length;
+    // region Getter & Setter
 
-        String text = "";
-
-        for (int y = 0; y < rows; y++) {
-            String rowStr = "";
-            for (int x = 0; x < columns; x++) {
-                Cell cell = getMazeData()[y][x];
-
-                rowStr += "{" +
-                        "top: " + (cell.Top != null ? "true" : "false") +
-                        ", bottom: " + (cell.Bottom != null ? "true" : "false") +
-                        ", left: " + (cell.Left != null ? "true" : "false") +
-                        ", right: " + (cell.Right != null ? "true" : "false") +
-                        "},";
-            }
-
-            text += "[" + rowStr + "],";
-        }
-
-        System.out.println(text);
+    public Cell[][] getMazeData() {
+        return MazeData;
     }
 
+    public void setMazeData(Cell[][] mazeData) {
+        MazeData = mazeData;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Get Maze cell at row & height
+     * @param i height
+     * @param j row
+     * @return Returns the cell
+     */
+    public Cell getCellAt(int i, int j) {
+        return this.MazeData[i][j];
+    }
+
+    // endregion
 }
