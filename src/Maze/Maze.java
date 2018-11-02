@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Stack;
 
 import Helpers.Tuple;
+import Maze.MazeSolver.DFS.DFSCell;
+import Maze.MazeSolver.DFS.DFSSolver;
 
 import static Helpers.Utils.Instance;
 
@@ -15,7 +17,7 @@ public class Maze {
     /**
      * The mazeData
      */
-    private Cell[][] mazeData;
+    private DFSCell[][] mazeData;
 
     /**
      * Width of the maze
@@ -27,7 +29,7 @@ public class Maze {
      */
     private int width;
 
-    public Maze(Cell[][] mazeData) {
+    public Maze(DFSCell[][] mazeData) {
         this.mazeData = mazeData;
     }
 
@@ -185,7 +187,12 @@ public class Maze {
             }
         }
 
-        // Random the start and end point
+        // TODO - Random the start and end point
+
+        // Uncomment this to calculate min distance between each entrance and exit,
+        // (change the tuples to be the start and end location)
+        // DFSSolver.getSolvePathDist(this.mazeData, new Tuple<>(0, 0), new Tuple<>(5, 1))
+
 
     }
 
@@ -196,12 +203,12 @@ public class Maze {
      * @param width  Width of the mazeData
      */
     private void InitMaze(int height, int width) {
-        setMazeData(new Cell[height][width]);
+        setMazeData(new DFSCell[height][width]);
 
         // Init the mazeData with empty cubes
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                getMazeData()[i][j] = new Cell();
+                getMazeData()[i][j] = new DFSCell();
             }
         }
     }
@@ -245,11 +252,11 @@ public class Maze {
 
     // region Getter & Setter
 
-    public Cell[][] getMazeData() {
+    public DFSCell[][] getMazeData() {
         return mazeData;
     }
 
-    public void setMazeData(Cell[][] mazeData) {
+    public void setMazeData(DFSCell[][] mazeData) {
         this.mazeData = mazeData;
     }
 

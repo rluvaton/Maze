@@ -3,6 +3,7 @@ package UI;
 import Helpers.Utils;
 import Maze.Cell;
 import Maze.Maze;
+import Maze.MazeSolver.DFS.DFSCell;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +21,7 @@ public class MazePreviewPanel extends JPanel
         this.maze = maze;
     }
 
-    public MazePreviewPanel(Cell[][] cells) {
+    public MazePreviewPanel(DFSCell [][] cells) {
         this.maze = new Maze(cells);
     }
 
