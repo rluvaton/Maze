@@ -9,10 +9,16 @@ public class Main {
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
+                int height = 50;
+                int width = 10;
+
+                // Wanted frame width
+                int screenW = 300;
+
                 PreviewFrame preview = new PreviewFrame();
                 preview.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                preview.add(new MazePreviewPanel(new Maze.Maze(10, 10)));
-                preview.setSize(300,300);
+                preview.add(new MazePreviewPanel(new Maze.Maze(height, width)));
+                preview.setSize(screenW,screenW * (height / width));
                 preview.setVisible(true);
             }
         });

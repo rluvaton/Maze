@@ -149,7 +149,7 @@ public class Utils {
      * @return Returns if the row and column are in the matrix boundaries
      */
     public final <T> boolean inBounds(Tuple<Integer, Integer> loc, int height, int width) {
-        return loc.item2 >= 0 && loc.item2 < height && loc.item1 >= 0 && loc.item1 < width;
+        return loc.item1 >= 0 && loc.item1 < height && loc.item2 >= 0 && loc.item2 < width;
     }
 
     /**
