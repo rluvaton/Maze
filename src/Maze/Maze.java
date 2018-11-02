@@ -160,8 +160,6 @@ public class Maze
         InitMaze(height, width);
 
         int currRow = Instance.getRandomNumber(height), currCol = Instance.getRandomNumber(width);
-        int maxCubes = width * height - 1;
-        int i = 0;
 
         // Queue for the steps made for knowing where to go
         // First value of the tuple is row and the second is column
@@ -172,27 +170,17 @@ public class Maze
         // Get all direction values
         Direction[] directions = Direction.values();
 
-        // SET -1 cause it crashed at the end
-        while (i < maxCubes) {
-            nextDirection = setCellAtRandomPlace(currRow, currCol, directions, false, true);
+        Tuple<Integer, Integer> currLoc = new Tuple<>(currRow, currCol);
+
+        steps.push(currLoc);
+        while (!steps.empty()) {
+            nextDirection = setCellAtRandomPlace(currLoc, directions, false, true);
 
             if (nextDirection == null) {
-                if (steps.empty()) {
-                    System.out.println("No Direction Founded and there are no prev steps are");
-                    throw new RuntimeException("No Direction Founded and there are no prev steps are");
-                }
-
-                Tuple<Integer, Integer> prevLoc = steps.pop();
-
-                currRow = prevLoc.item1;
-                currCol = prevLoc.item2;
+                currLoc = steps.pop();
             } else {
-                steps.push(new Tuple<>(currRow, currCol));
-                currRow += Instance.getHorizontalDirection(nextDirection);
-                currCol += Instance.getVerticalDirection(nextDirection);
-
-                // Another Cube Added
-                i++;
+                steps.push(currLoc);
+                currLoc = Instance.getNextCell(currLoc, nextDirection);
             }
         }
     }
@@ -218,59 +206,30 @@ public class Maze
     /**
      * Set Cube At Random Place
      *
-     * @param currRow    Current cube row
-     * @param currCol    Current cube column
-     * @param directions Available directions
-     * @return Returns the direction that selected
-     */
-    private Direction setCellAtRandomPlace(int currRow, int currCol, Direction[] directions)
-    {
-        return setCellAtRandomPlace(currRow, currCol, directions, false, false);
-    }
-
-    /**
-     * Set Cube At Random Place
-     *
-     * @param currRow    Current cube row
-     * @param currCol    Current cube column
-     * @param directions Available directions
-     * @param force      Force Changes
-     * @return Returns the direction that selected
-     */
-    private Direction setCellAtRandomPlace(int currRow, int currCol, Direction[] directions, boolean force)
-    {
-        return setCellAtRandomPlace(currRow, currCol, directions, force, false);
-    }
-
-    /**
-     * Set Cube At Random Place
-     *
-     * @param currRow    Current cube row
-     * @param currCol    Current cube column
+     * @param loc        Tuple of the cell location in the matrix
      * @param directions Available directions
      * @param force      Force Changes
      * @param update     Update The direction cube
      * @return Returns the direction that selected
      */
-    private Direction setCellAtRandomPlace(int currRow, int currCol, Direction[] directions, boolean force, boolean update)
+    private Direction setCellAtRandomPlace(Tuple<Integer, Integer> loc, Direction[] directions, boolean force, boolean update)
     {
         ArrayList<Direction> directionAvailable = new ArrayList<>(Arrays.asList(directions));
         Direction selected = null;
-        int tempRow, tempCol;
+        Tuple<Integer, Integer> nextLoc;
 
         while (!directionAvailable.isEmpty()) {
             selected = directionAvailable.get(Instance.getRandomNumber(directionAvailable.size()));
 
-            tempRow = currRow + Instance.getHorizontalDirection((Direction) selected);
-            tempCol = currCol + Instance.getVerticalDirection((Direction) selected);
+            nextLoc = Instance.getNextCell(loc, selected);
 
-            if(Instance.inBounds(tempRow, tempCol, height, width)) {
-                System.out.println("row: " + tempRow + ", col: " +  tempCol + ", Direction: " + selected + ", res: " + this.mazeData[tempRow][tempCol].haveAllWalls());
+            if(Instance.inBounds(nextLoc, height, width)) {
+                System.out.println("row: " + nextLoc.item1 + ", col: " +  nextLoc.item2 + ", Direction: " + selected + ", res: " + this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls());
             }
 
-            if (Instance.inBounds(tempRow, tempCol, height, width) &&
-                    this.mazeData[tempRow][tempCol].haveAllWalls() &&
-                    this.mazeData[currRow][currCol].setCellAtDirection(this.mazeData[tempRow][tempCol], selected, force, update))
+            if (Instance.inBounds(nextLoc, height, width) &&
+                    this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() &&
+                    this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2], selected, force, update))
             {
                 return selected;
             }

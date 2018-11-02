@@ -10,12 +10,12 @@ public class Tuple<X, Y>
     /**
      * First value
      */
-    public final X item1;
+    public X item1;
 
     /**
      * Second value
      */
-    public final Y item2;
+    public Y item2;
 
     public Tuple(X item1, Y item2) {
         this.item1 = item1;

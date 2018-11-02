@@ -6,8 +6,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Stream;
 
-public class Utils
-{
+public class Utils {
     /**
      * Helpers.Helpers Instance
      */
@@ -25,8 +24,7 @@ public class Utils
      * @param until Until Number (Not included)
      * @return The random number
      */
-    public final int getRandomNumber(int from, int until)
-    {
+    public final int getRandomNumber(int from, int until) {
         return _random.nextInt(until) + from;
     }
 
@@ -36,8 +34,7 @@ public class Utils
      * @param until Until Number (Not included)
      * @return The random number
      */
-    public final int getRandomNumber(int until)
-    {
+    public final int getRandomNumber(int until) {
         return _random.nextInt(until);
     }
 
@@ -47,8 +44,7 @@ public class Utils
      * @param dir Direction - the value of <see cref="MazeGenerator.Maze.Direction"/>
      * @return Where To Go
      */
-    public final int getHorizontalDirection(Direction dir)
-    {
+    public final int getHorizontalDirection(Direction dir) {
         return dir == Direction.LEFT ? -1 : dir == Direction.RIGHT ? 1 : 0;
     }
 
@@ -58,9 +54,53 @@ public class Utils
      * @param dir Direction - the value of <see cref="MazeGenerator.Maze.Direction"/>
      * @return Where To Go
      */
-    public final int getVerticalDirection(Direction dir)
-    {
+    public final int getVerticalDirection(Direction dir) {
         return dir == Direction.TOP ? -1 : dir == Direction.BOTTOM ? 1 : 0;
+    }
+
+    /**
+     * Get next cell of of direction and current location
+     * @param loc Location
+     * @param nextDirection The direction to go
+     * @return Returns new Tuple of the next cell location
+     * @throws IllegalArgumentException in case of loc variable is null or nextDirection value is not recognized
+     */
+    public final Tuple<Integer, Integer> getNextCell(Tuple<Integer, Integer> loc, Direction nextDirection) {
+        if(loc == null) {
+            throw new IllegalArgumentException("Location can't be null");
+        }
+
+        int row = loc.item1,
+                col = loc.item2;
+        switch (nextDirection) {
+            case TOP:
+                row -= 1;
+                break;
+            case BOTTOM:
+                row += 1;
+                break;
+            case RIGHT:
+                col += 1;
+                break;
+            case LEFT:
+                col -= 1;
+                break;
+            default:
+                throw new IllegalArgumentException("Next direction didn't recognized");
+        }
+
+        return createLocTuple(row, col);
+    }
+
+    /**
+     * Create Location Tuple
+     *
+     * @param row Row
+     * @param col Column
+     * @return Return the tuple of the location
+     */
+    public final Tuple<Integer, Integer> createLocTuple(int row, int col) {
+        return new Tuple<>(row, col);
     }
 
     /**
@@ -71,8 +111,7 @@ public class Utils
      *              <typeparam name="T">Array Type</typeparam>
      * @return Returns if the index is in the vector boundaries
      */
-    public final <T> boolean inBounds(int index, T[] arr)
-    {
+    public final <T> boolean inBounds(int index, T[] arr) {
         return (index >= 0) && (index < arr.length);
     }
 
@@ -84,8 +123,7 @@ public class Utils
      * @param arr Array to check
      * @return Returns if the row and column are in the matrix boundaries
      */
-    public final <T> boolean inBounds(int row, int col, T[][] arr)
-    {
+    public final <T> boolean inBounds(int row, int col, T[][] arr) {
         return col >= 0 && col < arr.length && row >= 0 && row < arr[0].length;
     }
 
@@ -98,9 +136,20 @@ public class Utils
      * @param width  Width of Matrix
      * @return Returns if the row and column are in the matrix boundaries
      */
-    public final <T> boolean inBounds(int row, int col, int height, int width)
-    {
+    public final <T> boolean inBounds(int row, int col, int height, int width) {
         return col >= 0 && col < height && row >= 0 && row < width;
+    }
+
+    /**
+     * Check if row and column are in the boundaries of the matrix
+     *
+     * @param loc    Tuple of the row and the col in the matrix
+     * @param height Height of Matrix
+     * @param width  Width of Matrix
+     * @return Returns if the row and column are in the matrix boundaries
+     */
+    public final <T> boolean inBounds(Tuple<Integer, Integer> loc, int height, int width) {
+        return loc.item2 >= 0 && loc.item2 < height && loc.item1 >= 0 && loc.item1 < width;
     }
 
     /**
@@ -113,8 +162,7 @@ public class Utils
      * @param height    height of mat
      * @return Returns if in limit
      */
-    public final boolean inLimits(int row, int col, Direction direction, int width, int height)
-    {
+    public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
         return (row == 0 && direction == Direction.TOP) ||
                 (row == height - 1 && direction == Direction.BOTTOM) ||
                 (col == 0 && direction == Direction.LEFT) ||
@@ -129,8 +177,7 @@ public class Utils
      * @param <T> Type of the array
      * @return Returns the stream of the array
      */
-    public <T> Stream<T> convertArrayToStream(T[] arr)
-    {
+    public <T> Stream<T> convertArrayToStream(T[] arr) {
         return Arrays.stream(arr);
     }
 
@@ -141,8 +188,7 @@ public class Utils
      * @param <T> type of the matrix
      * @return Returns the stream of stream of the matrix
      */
-    public <T> Stream<Stream<T>> convertMatrixToStream(T[][] mat)
-    {
+    public <T> Stream<Stream<T>> convertMatrixToStream(T[][] mat) {
         return Arrays.stream(mat).map(Arrays::stream);
     }
 
