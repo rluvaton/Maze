@@ -2,10 +2,7 @@ package Maze;
 
 /**
  * Directions To Move
- * The Values are those because if I wanna know where to go in matrix I would know
- *
- * @see Helpers.Utils.getHorizontalDirection
- * @see Helpers.Utils.getVerticalDirection
+ * The Values are those because if I wanna know where to go in matrix I would kno
  *
  * @example
  * I Wanna Go to top and I at 3, 4

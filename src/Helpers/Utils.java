@@ -18,6 +18,15 @@ public class Utils {
     private final Random _random = new Random();
 
     /**
+     * Get Random State
+     *
+     * @return The random state (true or false
+     */
+    public final boolean getRandomState() {
+        return _random.nextInt(2) == 1;
+    }
+
+    /**
      * Get Random Number
      *
      * @param from  From Number (Included)

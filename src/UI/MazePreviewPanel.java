@@ -56,6 +56,9 @@ public class MazePreviewPanel extends JPanel
             y += verSpace;
             x = startX;
         }
+
+        // Draw the exists
+
     }
 
 

@@ -2,6 +2,7 @@ package Maze;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 import Helpers.Tuple;
@@ -13,7 +14,8 @@ import static Helpers.Utils.Instance;
 /**
  * Maze
  */
-public class Maze {
+public class Maze
+{
     /**
      * The mazeData
      */
@@ -28,6 +30,17 @@ public class Maze {
      * Height of the maze
      */
     private int width;
+
+
+    /**
+     * Entrances Points
+     */
+    List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
+
+    /**
+     * Exists Points
+     */
+    List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
 
     public Maze(DFSCell[][] mazeData) {
         this.mazeData = mazeData;
@@ -150,6 +163,8 @@ public class Maze {
             throw new IllegalArgumentException("minDistance");
         }
 
+        minDistance = (minDistance <= 0) ? 1 : minDistance;
+
         int visited = 0;
 
         // Init the mazeData with empty cubes
@@ -187,14 +202,87 @@ public class Maze {
             }
         }
 
-        // TODO - Random the start and end point
+        // List of entrances and exists
+        List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
+        List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
 
-        // Uncomment this to calculate min distance between each entrance and exit,
-        // (change the tuples to be the start and end location)
-        // DFSSolver.getSolvePathDist(this.mazeData, new Tuple<>(0, 0), new Tuple<>(5, 1))
+        while (entrances.size() < numberOfEntrance || exits.size() < numberOfExists) {
+            if (entrances.size() < numberOfEntrance) {
 
+                // Generate random location that don't exist yet
+                entrances.add(createUniqueLocation(entrances, exits, minDistance, false));
+            }
 
+            if (exits.size() < numberOfExists) {
+                exits.add(createUniqueLocation(entrances, exits, minDistance, true));
+            }
+        }
+
+        this.entrances = entrances;
+        this.exits = exits;
+
+        this.entrances.forEach(loc -> setExits(loc, height, width));
+        this.exits.forEach(loc -> setExits(loc, height, width));
     }
+
+    private void setExits(Tuple<Integer, Integer> loc, int height, int width) {
+        if (loc.item1 == 0) {
+                this.mazeData[loc.item1][loc.item2].setTopWall(false);
+            } else if (loc.item1 == height - 1) {
+                this.mazeData[loc.item1][loc.item2].setBottomWall(false);
+            } else if (loc.item2 == 0) {
+                this.mazeData[loc.item1][loc.item2].setLeftWall(false);
+            } else if (loc.item2 == width - 1) {
+                this.mazeData[loc.item1][loc.item2].setRightWall(false);
+            }
+    }
+
+    /**
+     * Generate Unique Location that doesn't exist in the entrances or exists
+     *
+     * @param entrances   Entrances location list
+     * @param exits       Exits Location list
+     * @param minDistance Min Distance
+     * @param isExit      Trying to create unique location to
+     * @return Return the unique location
+     */
+    private Tuple<Integer, Integer> createUniqueLocation(List<Tuple<Integer, Integer>> entrances, List<Tuple<Integer, Integer>> exits, int minDistance, boolean isExit) {
+        // Generate random location that don't exist yet
+        Tuple<Integer, Integer> tempLoc;
+        boolean state = Instance.getRandomState();
+
+        if (state) {
+            tempLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));
+        } else {
+            tempLoc = new Tuple<>(Instance.getRandomNumber(2) * (height - 1), Instance.getRandomNumber(width));
+        }
+
+        Tuple[] finalTempLoc = new Tuple[]{tempLoc};
+
+        while (
+                (entrances.size() != 0 &&
+                        entrances.stream().anyMatch(loc ->
+                                loc.item1.equals(finalTempLoc[0].item1) &&
+                                        loc.item2.equals(finalTempLoc[0].item2)) &&
+                        (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance))) ||
+                        (exits.size() != 0 &&
+                                exits.stream().anyMatch(loc ->
+                                        loc.item1.equals(finalTempLoc[0].item1) &&
+                                                loc.item2.equals(finalTempLoc[0].item2)) &&
+                                (!isExit || entrances.size() == 0 || entrances.stream().allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance)))) {
+            state = Instance.getRandomState();
+
+            if (state) {
+                tempLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));
+            } else {
+                tempLoc = new Tuple<>(Instance.getRandomNumber(2) * (height - 1), Instance.getRandomNumber(width));
+            }
+            finalTempLoc[0] = tempLoc;
+        }
+
+        return tempLoc;
+    }
+
 
     /**
      * Init mazeData with empty cubes
@@ -233,13 +321,10 @@ public class Maze {
 
             nextLoc = Instance.getNextCell(loc, selected);
 
-            if (Instance.inBounds(nextLoc, height, width)) {
-                System.out.println("row: " + nextLoc.item1 + ", col: " + nextLoc.item2 + ", Direction: " + selected + ", res: " + this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls());
-            }
-
             if (Instance.inBounds(nextLoc, height, width) &&
                     this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() &&
-                    this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2], selected, force, update)) {
+                    this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2], selected, force, update))
+            {
                 return selected;
             }
 
