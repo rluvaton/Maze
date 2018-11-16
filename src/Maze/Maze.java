@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Candy.*;

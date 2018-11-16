@@ -1,4 +1,4 @@
-package Maze;
+package Helpers;
 
 /**
  * Directions To Move

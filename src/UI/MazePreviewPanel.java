@@ -1,35 +1,58 @@
 package UI;
 
+import Helpers.Direction;
+import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
 import Maze.Maze;
 import Maze.MazeSolver.DFS.DFSCell;
+import player.BasePlayer;
+import player.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.stream.Stream;
 
 public class MazePreviewPanel extends JPanel
 {
     private Maze maze;
+    private BasePlayer[] players;
 
     public MazePreviewPanel() {
-
+        initGame();
     }
 
-    public MazePreviewPanel(Maze maze) {
+    public MazePreviewPanel(Maze maze, BasePlayer[] players) {
         this.maze = maze;
+        this.players = players;
+        initGame();
     }
 
-    public MazePreviewPanel(DFSCell[][] cells) {
+    public MazePreviewPanel(DFSCell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
+        this.players = players;
+        initGame();
     }
 
+    private void initGame() {
+        for (BasePlayer player : this.players) {
+            if(player instanceof HumanPlayer) {
+                this.addKeyListener((HumanPlayer)player);
+            }
+            player.getPlayerMoveObs()
+                    .subscribe(direction -> {
+                        this.movePlayer(player, direction);
+                    });
+        }
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         this.paintMaze(g, Color.BLUE);
+        this.showPlayers(g);
     }
 
     private void paintMaze(Graphics g, Color color) {
@@ -135,5 +158,64 @@ public class MazePreviewPanel extends JPanel
         }
 
         g.setColor(before);
+    }
+
+    private Tuple<Integer, Integer> calculateLocation(Tuple<Integer, Integer> location) {
+
+        int startX = 20;
+        int startY = 20;
+
+        int fullW = getWidth() - startX * 2;
+        int fullH = getHeight() - startY * 2;
+
+        int horSpace = fullW / this.maze.getWidth();
+        int verSpace = fullH / this.maze.getHeight();
+
+        int x = startX;
+        int y = startY;
+
+        y += verSpace * location.item1;
+        x += horSpace * location.item2;
+
+//        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
+//            for (int j = 0; j < w; j++) {
+//                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
+//                x += horSpace;
+//            }
+//            y += verSpace;
+//            x = startX;
+//        }
+
+        return new Tuple<>(x, y);
+    }
+
+    private void showPlayers(Graphics g) {
+        for (int i = 0; i < this.players.length; i++) {
+
+            Tuple<Integer, Integer> coordinates = this.calculateLocation(this.players[i].getLocation());
+
+
+            int startX = 20;
+            int startY = 20;
+
+            int fullW = getWidth() - startX * 2;
+            int fullH = getHeight() - startY * 2;
+
+            int horSpace = fullW / this.maze.getWidth();
+            int verSpace = fullH / this.maze.getHeight();
+
+
+            g.draw3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
+            g.fill3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
+            repaint();
+        }
+    }
+
+    private void movePlayer(BasePlayer player, Direction direction) {
+        // TODO - IMPLEMENT THIS METHOD
+        System.out.println("Move");
+        if(this.maze.getCell(player.getLocation()).haveCellAtDirection(direction)) {
+            player.setLocation(direction);
+        }
     }
 }

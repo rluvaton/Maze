@@ -1,5 +1,6 @@
 package Maze;
 
+import Helpers.Direction;
 import Maze.Candy.Candy;
 
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class Cell
             case BOTTOM:
                 return !haveBottomWall();
             case LEFT:
-                return haveLeftWall();
+                return !haveLeftWall();
             default:
                 throw new IndexOutOfBoundsException();
         }
