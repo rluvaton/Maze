@@ -17,7 +17,7 @@ public class Main {
 
                 PreviewFrame preview = new PreviewFrame();
                 preview.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                preview.add(new MazePreviewPanel(new Maze.Maze(height, width, 5, 5, 3)));
+                preview.add(new MazePreviewPanel(new Maze.Maze(height, width)));
                 preview.setSize(screenW,screenW * (height / width));
                 preview.setVisible(true);
             }

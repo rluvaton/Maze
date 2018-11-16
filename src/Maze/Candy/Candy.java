@@ -50,4 +50,34 @@ public abstract class Candy
         this.type = type;
         this.timeToLive = timeToLive;
     }
+
+    // region Getter & Setter
+    public boolean isGood() {
+        return isGood;
+    }
+
+    public void setGood(boolean good) {
+        isGood = good;
+    }
+
+    public int getCandyStrength() {
+        return CandyStrength;
+    }
+
+    public void setCandyStrength(int candyStrength) {
+        CandyStrength = candyStrength;
+    }
+
+    public CandyPowerType getType() {
+        return type;
+    }
+
+    public int getTimeToLive() {
+        return timeToLive;
+    }
+
+    public void setTimeToLive(int timeToLive) {
+        this.timeToLive = timeToLive;
+    }
+    // endregion
 }

@@ -21,7 +21,7 @@ public class MazePreviewPanel extends JPanel
         this.maze = maze;
     }
 
-    public MazePreviewPanel(DFSCell [][] cells) {
+    public MazePreviewPanel(DFSCell[][] cells) {
         this.maze = new Maze(cells);
     }
 
@@ -48,8 +48,8 @@ public class MazePreviewPanel extends JPanel
         int x = startX;
         int y = startY;
 
-        for(int i = 0, h =  this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
-            for(int j = 0; j < w; j++) {
+        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
+            for (int j = 0; j < w; j++) {
                 this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
                 x += horSpace;
             }
@@ -112,5 +112,28 @@ public class MazePreviewPanel extends JPanel
         if (cell.haveRightWall()) {
             g.drawLine(x + verSpace, y, x + verSpace, y + verLen);
         }
+
+        Color before = g.getColor();
+
+        if (!cell.getCandies().isEmpty()) {
+            cell.getCandies().forEach(candy -> {
+                switch (candy.getType()) {
+                    case Time:
+                        g.setColor(Color.decode("#6761A8"));
+                        break;
+                    case Points:
+                        g.setColor(Color.decode("#F26430"));
+                        break;
+                    case Location:
+                        g.setColor(Color.decode("#009B72"));
+                        break;
+                    default:
+                        return;
+                }
+                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+            });
+        }
+
+        g.setColor(before);
     }
 }

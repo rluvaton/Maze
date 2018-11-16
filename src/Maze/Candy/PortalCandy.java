@@ -99,4 +99,26 @@ public class PortalCandy extends Candy
         this.location = location;
     }
     // endregion
+
+
+    // region Getter & Setter
+
+    public boolean isTwoWayPortal() {
+        return twoWayPortal;
+    }
+
+    public void setTwoWayPortal(boolean twoWayPortal) {
+        this.twoWayPortal = twoWayPortal;
+    }
+
+    public Tuple<Integer, Integer> getLocation() {
+        return location;
+    }
+
+    public void setLocation(Tuple<Integer, Integer> location) {
+        this.location = location;
+    }
+
+
+    // endregion
 }

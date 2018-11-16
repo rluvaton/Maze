@@ -225,6 +225,8 @@ public class Maze
 
         this.entrances.forEach(loc -> setExits(loc, height, width));
         this.exits.forEach(loc -> setExits(loc, height, width));
+
+        this.generateRandomCandies((width * height) / 10);
     }
 
     private void setExits(Tuple<Integer, Integer> loc, int height, int width) {
