@@ -1,5 +1,9 @@
 package Maze;
 
+import Maze.Candy.Candy;
+
+import java.util.ArrayList;
+
 public class Cell
 {
     /**
@@ -25,6 +29,11 @@ public class Cell
      * If can't move left then it will be true
      */
     private boolean leftWall = true;
+
+    /**
+     * If the cell contain candy
+     */
+    private ArrayList<Candy> candies = new ArrayList<>();
 
     public Cell()
     {
@@ -246,6 +255,14 @@ public class Cell
 
     public void setLeftWall(boolean leftWall) {
         this.leftWall = leftWall;
+    }
+
+    public void addCandy(Candy candy) {
+        this.candies.add(candy);
+    }
+
+    public ArrayList<Candy> getCandies() {
+        return this.candies;
     }
 
 

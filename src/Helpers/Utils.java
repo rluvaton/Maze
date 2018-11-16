@@ -192,5 +192,18 @@ public class Utils {
     public <X, Y> boolean compareTuples(Tuple<X, Y> t1, Tuple<X, Y> t2) {
         return t1 == t2 || (t1.item1 == t2.item1 && t1.item2 == t2.item2);
     }
+
+    /**
+     * Generate Tuple
+     * @param firstLimit First item limit
+     * @param secondLimit Second item limit
+     * @return Returns The Tuple of items
+     *
+     * @example Generate Location in Matrix
+     * generateTuple(height, width)
+     */
+    public Tuple<Integer, Integer> generateTuple(int firstLimit, int secondLimit) {
+        return new Tuple<>(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
+    }
 }
 

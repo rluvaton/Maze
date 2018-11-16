@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Stack;
 
 import Helpers.Tuple;
+import Helpers.Utils;
+import Maze.Candy.*;
 import Maze.MazeSolver.DFS.DFSCell;
 import Maze.MazeSolver.DFS.DFSSolver;
 
@@ -227,14 +229,14 @@ public class Maze
 
     private void setExits(Tuple<Integer, Integer> loc, int height, int width) {
         if (loc.item1 == 0) {
-                this.mazeData[loc.item1][loc.item2].setTopWall(false);
-            } else if (loc.item1 == height - 1) {
-                this.mazeData[loc.item1][loc.item2].setBottomWall(false);
-            } else if (loc.item2 == 0) {
-                this.mazeData[loc.item1][loc.item2].setLeftWall(false);
-            } else if (loc.item2 == width - 1) {
-                this.mazeData[loc.item1][loc.item2].setRightWall(false);
-            }
+            this.mazeData[loc.item1][loc.item2].setTopWall(false);
+        } else if (loc.item1 == height - 1) {
+            this.mazeData[loc.item1][loc.item2].setBottomWall(false);
+        } else if (loc.item2 == 0) {
+            this.mazeData[loc.item1][loc.item2].setLeftWall(false);
+        } else if (loc.item2 == width - 1) {
+            this.mazeData[loc.item1][loc.item2].setRightWall(false);
+        }
     }
 
     /**
@@ -335,6 +337,171 @@ public class Maze
         return null;
     }
 
+    // region Candies
+
+    /**
+     * Generate Random candies that all of them are good
+     *
+     * @param count count of candies to generate
+     */
+    private void generateRandomCandies(int count) {
+        this.generateRandomCandies(count, true);
+    }
+
+    /**
+     * Generate random candies that if isAllGood property is false can be some bad candies too
+     *
+     * @param count            Count of candies to generate
+     * @param generateOnlyGood Is all the candies that gonna be generated will be only good or to random
+     */
+    private void generateRandomCandies(int count, boolean generateOnlyGood) {
+        Tuple<Integer, Integer> cellLoc;
+        Cell cell;
+
+        for (int i = 0; i < count; i++) {
+            cellLoc = Utils.Instance.generateTuple(this.height, this.width);
+            cell = this.getCell(cellLoc);
+
+            cell.addCandy(this.generateSingleCandy(null, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+        }
+    }
+
+    /**
+     * Generate Random Candies that all of them are good
+     *
+     * @param pointsCount Count of candies that change the points count
+     * @param timeCount   Count of candies that change the time that left
+     * @param portalCount Count of candies that make the cell be a portal to another one
+     */
+    private void generateRandomCandies(int pointsCount, int timeCount, int portalCount) {
+        this.generateRandomCandies(pointsCount, timeCount, portalCount, true);
+    }
+
+    /**
+     * Generate Random Candies that all of them are good
+     *
+     * @param pointsCount      Count of candies that change the points count
+     * @param timeCount        Count of candies that change the time that left
+     * @param portalCount      Count of candies that make the cell be a portal to another one
+     * @param generateOnlyGood Is all the candies that gonna be generated will be good
+     */
+    private void generateRandomCandies(int pointsCount, int timeCount, int portalCount, boolean generateOnlyGood) {
+        Tuple<Integer, Integer> cellLoc;
+        Cell cell;
+
+        for (int i = 0; i < pointsCount; i++) {
+            cellLoc = Utils.Instance.generateTuple(this.height, this.width);
+            cell = this.getCell(cellLoc);
+
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Points}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+        }
+
+        for (int i = 0; i < timeCount; i++) {
+            cellLoc = Utils.Instance.generateTuple(this.height, this.width);
+            cell = this.getCell(cellLoc);
+
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Time}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+        }
+
+        for (int i = 0; i < portalCount; i++) {
+            cellLoc = Utils.Instance.generateTuple(this.height, this.width);
+            cell = this.getCell(cellLoc);
+
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Location}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+        }
+    }
+
+    /**
+     * Generate Single Candy, look at the function notes to understand how to pass the parameters value
+     *
+     * @param types             Candy available types, if null then it's all types
+     * @param isGood            Is Good config
+     * @param timeToLive        Time to live config
+     * @param strengthPower     Strength power config
+     * @param twoWayPortal      Two way portal config
+     * @param otherCellLocation Other Cell Location config, in case of PortalCandy
+     * @param cellLoc           Cell Location in case of PortalCandy with 2 way portal
+     * @return Return the generated candy
+     * @implNote In the function parameters all tuples built with first item be a boolean - whether or not to random this value
+     * If the first value is true (you want predefine value) then item2 is the value that you want, or null for default
+     * (for parameters that the second item is a tuple too than his first item is the value)
+     * <p>
+     * If the first value is false and the type of the second item is tuple than the tuple values will be the range for this property
+     * @example I want to generate a candy that:
+     * - isGood is true
+     * - time to live is randomize between 1 to 5 seconds
+     * - strengthPower is 5
+     * - twoWayPortal is random
+     * <p>
+     * The function values will be
+     * generateSingleCandy(new Tuple<>(false, true),
+     * new Tuple<>(true, new Tuple<>(1000, 5000)),
+     * new Tuple<>(false, new Tuple<>(5, 0)),
+     * new Tuple<>(true, true));
+     */
+    private Candy generateSingleCandy(CandyPowerType[] types,
+                                      Tuple<Boolean, Boolean> isGood,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> timeToLive,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> strengthPower,
+                                      Tuple<Boolean, Boolean> twoWayPortal,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> otherCellLocation,
+                                      Tuple<Integer, Integer> cellLoc)
+    {
+        // The type of the candy that gonna be generated
+        CandyPowerType type;
+
+        types = types != null ? types : CandyPowerType.values();
+
+        type = types[Utils.Instance.getRandomNumber(types.length)];
+
+        boolean isGoodVal = isGood == null || (isGood.item1 ? Utils.Instance.getRandomState() : isGood.item2);
+
+        int timeToLiveVal = timeToLive == null ?
+                -1 :
+                timeToLive.item1 ?
+                        Utils.Instance.getRandomNumber(timeToLive.item2.item1, timeToLive.item2.item2) :
+                        timeToLive.item2 != null ?
+                                timeToLive.item2.item1 :
+                                -1;
+
+        int strengthPowerVal = strengthPower == null ?
+                1000 :
+                strengthPower.item1 ?
+                        Utils.Instance.getRandomNumber(strengthPower.item2.item1, strengthPower.item2.item2) :
+                        strengthPower.item2 != null ?
+                                strengthPower.item2.item1 :
+                                1000;
+
+        switch (type) {
+            case Time:
+                return new TimeCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
+            case Points:
+                return new PointsCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
+            case Location:
+
+                Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null ?
+                        Utils.Instance.generateTuple(height, width) :
+                        otherCellLocation.item1 ?
+                                Utils.Instance.generateTuple(otherCellLocation.item2.item1, otherCellLocation.item2.item2) :
+                                otherCellLocation.item2 != null ?
+                                        otherCellLocation.item2 :
+                                        Utils.Instance.generateTuple(height, width);
+
+                boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1 ? Utils.Instance.getRandomState() : twoWayPortal.item2);
+
+                if (twoWayPortalVal) {
+                    return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, this.getCell(otherCellLocationVal), cellLoc);
+                } else {
+                    return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, false);
+                }
+
+            default:
+                return null;
+        }
+    }
+
+    // endregion
+
     // region Getter & Setter
 
     public DFSCell[][] getMazeData() {
@@ -362,6 +529,20 @@ public class Maze
      */
     public Cell getCellAt(int i, int j) {
         return this.mazeData[i][j];
+    }
+
+    /**
+     * Get Maze cell at row & height
+     *
+     * @param location Location of the cell, item1 is row item2 is column
+     * @return Returns the cell
+     */
+    public Cell getCell(Tuple<Integer, Integer> location) {
+        assert location != null;
+        assert location.item1 >= 0 && location.item1 < this.height;
+        assert location.item2 >= 0 && location.item2 < this.width;
+
+        return this.mazeData[location.item1][location.item2];
     }
 
     // endregion
