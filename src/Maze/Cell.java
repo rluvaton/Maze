@@ -1,10 +1,14 @@
 package Maze;
 
+import java.util.ArrayList;
+
 import Helpers.Direction;
 import Maze.Candy.Candy;
 
-import java.util.ArrayList;
 
+/**
+ * Cell in maze
+ */
 public class Cell
 {
     /**
@@ -36,8 +40,12 @@ public class Cell
      */
     private ArrayList<Candy> candies = new ArrayList<>();
 
-    public Cell()
-    {
+    // region Constructors
+
+    /**
+     * Default Constructor
+     */
+    public Cell() {
     }
 
     /**
@@ -62,8 +70,7 @@ public class Cell
      * @throws IllegalArgumentException  Throw Error if neighbor is null
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public Cell(Cell neighbor, Direction direction, boolean force)
-    {
+    public Cell(Cell neighbor, Direction direction, boolean force) {
         if (neighbor == null) {
             throw new IllegalArgumentException("neighbor");
         }
@@ -94,6 +101,8 @@ public class Cell
         }
     }
 
+    // endregion
+
     /**
      * Get Cell at direction
      *
@@ -101,8 +110,7 @@ public class Cell
      * @return Returns the cube at the requested direction
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean haveCellAtDirection(Direction direction)
-    {
+    public boolean haveCellAtDirection(Direction direction) {
         switch (direction) {
             case TOP:
                 return !haveTopWall();
@@ -117,6 +125,8 @@ public class Cell
         }
     }
 
+    // region Set Cell At Direction
+
     /**
      * Set Cube at specific direction
      *
@@ -124,11 +134,10 @@ public class Cell
      * @param direction The direction of where to set the new cell
      * @param force     If to force the change (can delete other cell direction)
      * @return Returns if set the cell or not
-     * @throws IllegalArgumentException           Throw if cell is null and update is false
+     * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force)
-    {
+    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force) {
         return setCellAtDirection(cell, direction, force, false);
     }
 
@@ -138,11 +147,10 @@ public class Cell
      * @param cell      The new cell
      * @param direction The direction of where to set the new cell
      * @return Returns if set the cell or not
-     * @throws IllegalArgumentException           Throw if cell is null and update is false
+     * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction)
-    {
+    public boolean setCellAtDirection(Cell cell, Direction direction) {
         return setCellAtDirection(cell, direction, false, false);
     }
 
@@ -154,11 +162,10 @@ public class Cell
      * @param force     If to force the change (can delete other cell direction)
      * @param update    If need to update the cell
      * @return Returns if set the cell or not
-     * @throws IllegalArgumentException           Throw if cell is null and update is false
+     * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force, boolean update)
-    {
+    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force, boolean update) {
         if (!update && cell == null) {
             throw new IllegalArgumentException("cell");
         }
@@ -216,8 +223,11 @@ public class Cell
         }
     }
 
+    // endregion
+
     /**
      * If Have all walls
+     *
      * @return Returns if have all walls
      */
     public boolean haveAllWalls() {
@@ -265,7 +275,6 @@ public class Cell
     public ArrayList<Candy> getCandies() {
         return this.candies;
     }
-
 
     // endregion
 }

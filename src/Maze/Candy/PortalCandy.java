@@ -4,7 +4,8 @@ import Helpers.Tuple;
 import Maze.Cell;
 
 /**
- * When enter to cell portal to new place
+ * Portal Candy
+ * @description When enter to cell the candy portal the player to a new place
  */
 public class PortalCandy extends Candy
 {
@@ -21,8 +22,8 @@ public class PortalCandy extends Candy
      */
     private Tuple<Integer, Integer> location;
 
-
     // region Constructors
+
     public PortalCandy(boolean isGood, Tuple<Integer, Integer> location) {
         super(isGood, CandyPowerType.Location);
         this.location = location;
@@ -98,8 +99,8 @@ public class PortalCandy extends Candy
         this.twoWayPortal = twoWayPortal;
         this.location = location;
     }
-    // endregion
 
+    // endregion
 
     // region Getter & Setter
 
@@ -118,7 +119,6 @@ public class PortalCandy extends Candy
     public void setLocation(Tuple<Integer, Integer> location) {
         this.location = location;
     }
-
 
     // endregion
 }

@@ -1,7 +1,7 @@
 package Maze.Candy;
 
 /**
- * Candy Object for candy in cell
+ * Candy in cell
  */
 public abstract class Candy
 {
@@ -26,6 +26,7 @@ public abstract class Candy
      */
     protected int timeToLive = -1;
 
+    // region Constructors
 
     public Candy(boolean isGood, CandyPowerType type) {
         this.isGood = isGood;
@@ -51,7 +52,10 @@ public abstract class Candy
         this.timeToLive = timeToLive;
     }
 
+    // endregion
+
     // region Getter & Setter
+
     public boolean isGood() {
         return isGood;
     }
@@ -79,5 +83,6 @@ public abstract class Candy
     public void setTimeToLive(int timeToLive) {
         this.timeToLive = timeToLive;
     }
+
     // endregion
 }

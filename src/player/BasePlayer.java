@@ -8,6 +8,7 @@ import io.reactivex.subjects.BehaviorSubject;
 import static Helpers.Utils.Instance;
 
 /**
+ * Base Player
  * Abstract class for player
  */
 public abstract class BasePlayer
@@ -15,13 +16,18 @@ public abstract class BasePlayer
     /**
      * Subject for where the player move
      */
-    BehaviorSubject<Direction> playerMoveSub = BehaviorSubject.create();
+    private BehaviorSubject<Direction> playerMoveSub = BehaviorSubject.create();
 
     /**
      * Current Location
      */
     private Tuple<Integer, Integer> location;
 
+    /**
+     * Constructor
+     *
+     * @param location Starting location of the player
+     */
     public BasePlayer(Tuple<Integer, Integer> location) {
         this.location = location;
     }
@@ -51,6 +57,10 @@ public abstract class BasePlayer
         }
     }
 
+    /**
+     * Notify that the player moved
+     * @param direction Moving Direction
+     */
     protected void notifyMoved(Direction direction) {
         this.playerMoveSub.onNext(direction);
     }
@@ -77,6 +87,14 @@ public abstract class BasePlayer
 
     // region Getter & Setter
 
+    /**
+     * Get the player move observable
+     * @return Observable of the moving player
+     */
+    public Observable<Direction> getPlayerMoveObs() {
+        return this.playerMoveSub;
+    }
+
     public Tuple<Integer, Integer> getLocation() {
         return location;
     }
@@ -87,10 +105,6 @@ public abstract class BasePlayer
 
     public void setLocation(Direction direction) {
         this.location = Instance.getNextCell(this.location, direction);
-    }
-
-    public Observable<Direction> getPlayerMoveObs() {
-        return this.playerMoveSub;
     }
 
     // endregion

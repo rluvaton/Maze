@@ -1,7 +1,8 @@
 package Maze.Candy;
 
 /**
- * Candy that can add / subtract time
+ * Time Candy
+ * @description Candy that can add / subtract time
  *
  * @implNote  candyStrength is in milliseconds
  */

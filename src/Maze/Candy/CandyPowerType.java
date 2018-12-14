@@ -1,6 +1,7 @@
 package Maze.Candy;
 
 /**
+ * Candy Power Types
  * What the candy affect
  */
 public enum CandyPowerType {
