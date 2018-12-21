@@ -11,17 +11,26 @@ import static Helpers.Utils.Instance;
  * Base Player
  * Abstract class for player
  */
-public abstract class BasePlayer
-{
+public abstract class BasePlayer {
     /**
      * Subject for where the player move
      */
     private BehaviorSubject<Direction> playerMoveSub = BehaviorSubject.create();
 
     /**
+     * Subject for where the player move
+     */
+    private BehaviorSubject<LocationChanged> playerLocationChangedSub = BehaviorSubject.create();
+
+    /**
      * Current Location
      */
     private Tuple<Integer, Integer> location;
+
+    /**
+     * Previous Location
+     */
+    private Tuple<Integer, Integer> prevLocation;
 
     /**
      * Constructor
@@ -59,6 +68,7 @@ public abstract class BasePlayer
 
     /**
      * Notify that the player moved
+     *
      * @param direction Moving Direction
      */
     protected void notifyMoved(Direction direction) {
@@ -88,11 +98,21 @@ public abstract class BasePlayer
     // region Getter & Setter
 
     /**
-     * Get the player move observable
+     * Get the observables of the player moves
+     *
      * @return Observable of the moving player
      */
     public Observable<Direction> getPlayerMoveObs() {
         return this.playerMoveSub;
+    }
+
+    /**
+     * Get the observable of the player location
+     *
+     * @return Observable of the location player
+     */
+    public Observable<LocationChanged> getPlayerLocationChangedObs() {
+        return this.playerLocationChangedSub;
     }
 
     public Tuple<Integer, Integer> getLocation() {
@@ -100,11 +120,27 @@ public abstract class BasePlayer
     }
 
     public void setLocation(Tuple<Integer, Integer> location) {
+        prevLocation = this.location;
+
+        // Notify of the location change
+        this.playerLocationChangedSub.onNext(new LocationChanged(this.location, location));
+
         this.location = location;
     }
 
     public void setLocation(Direction direction) {
-        this.location = Instance.getNextCell(this.location, direction);
+        Tuple<Integer, Integer> nextLocation = Instance.getNextCell(this.location, direction);
+
+        prevLocation = this.location;
+
+        // Notify of the location change
+        this.playerLocationChangedSub.onNext(new LocationChanged(this.location, nextLocation, direction));
+
+        this.location = nextLocation;
+    }
+
+    public Tuple<Integer, Integer> getPrevLocation() {
+        return prevLocation;
     }
 
     // endregion

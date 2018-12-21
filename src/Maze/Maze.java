@@ -38,12 +38,12 @@ public class Maze
     /**
      * Entrances Points
      */
-    List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
+    private List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
 
     /**
      * Exists Points
      */
-    List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
+    private List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
 
     // region Constructors
 
@@ -168,7 +168,11 @@ public class Maze
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
      */
-    private void GenerateRectangleMaze(int height, int width, int minDistance, int numberOfEntrance, int numberOfExists) {
+    private void GenerateRectangleMaze(int height,
+                                       int width,
+                                       int minDistance,
+                                       int numberOfEntrance,
+                                       int numberOfExists) {
         int maxCells = width * height;
 
         // It's not possible to make distance more than the width * height
@@ -193,7 +197,8 @@ public class Maze
         Direction[] directions = Direction.values();
 
         // Create Tuple of the current location
-        Tuple<Integer, Integer> currLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(width));
+        Tuple<Integer, Integer> currLoc = new Tuple<>(Instance.getRandomNumber(height),
+                                                      Instance.getRandomNumber(width));
 
         // Push to the start of the steps
         steps.push(currLoc);
@@ -276,7 +281,10 @@ public class Maze
      * @param isExit      Trying to create unique location to
      * @return Return the unique location
      */
-    private Tuple<Integer, Integer> createUniqueLocation(List<Tuple<Integer, Integer>> entrances, List<Tuple<Integer, Integer>> exits, int minDistance, boolean isExit) {
+    private Tuple<Integer, Integer> createUniqueLocation(List<Tuple<Integer, Integer>> entrances,
+                                                         List<Tuple<Integer, Integer>> exits,
+                                                         int minDistance,
+                                                         boolean isExit) {
         // Generate random location that don't exist yet
         Tuple<Integer, Integer> tempLoc;
         boolean state = Instance.getRandomState();
@@ -289,7 +297,13 @@ public class Maze
 
         Tuple<Integer, Integer>[] finalTempLoc = new Tuple[]{tempLoc};
 
-        while ((entrances.size() != 0 && entrances.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance))) || (exits.size() != 0 && exits.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream().allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance)))) {
+        while ((entrances.size() != 0 && entrances.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
+                finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDist(
+                this.mazeData,
+                loc,
+                finalTempLoc[0]) >= minDistance))) || (exits.size() != 0 && exits.stream().anyMatch(loc -> loc.item1.equals(
+                finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream().allMatch(
+                loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance)))) {
             state = Instance.getRandomState();
 
             if (state) {
@@ -329,7 +343,10 @@ public class Maze
      * @param update     Update The direction cube
      * @return Returns the direction that selected
      */
-    private Direction setCellAtRandomPlace(Tuple<Integer, Integer> loc, Direction[] directions, boolean force, boolean update) {
+    private Direction setCellAtRandomPlace(Tuple<Integer, Integer> loc,
+                                           Direction[] directions,
+                                           boolean force,
+                                           boolean update) {
         ArrayList<Direction> directionAvailable = new ArrayList<>(Arrays.asList(directions));
         Direction selected;
         Tuple<Integer, Integer> nextLoc;
@@ -340,7 +357,14 @@ public class Maze
 
             nextLoc = Instance.getNextCell(loc, selected);
 
-            if (Instance.inBounds(nextLoc, height, width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2], selected, force, update)) {
+            if (Instance.inBounds(nextLoc,
+                                  height,
+                                  width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(
+                    this.mazeData[nextLoc.item1][nextLoc.item2],
+                    selected,
+                    force,
+                    update))
+            {
                 return selected;
             }
 
@@ -378,7 +402,13 @@ public class Maze
             cellLoc = Utils.Instance.generateTuple(this.height, this.width);
             cell = this.getCell(cellLoc);
 
-            cell.addCandy(this.generateSingleCandy(null, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+            cell.addCandy(this.generateSingleCandy(null,
+                                                   new Tuple<>(!generateOnlyGood, true),
+                                                   null,
+                                                   null,
+                                                   new Tuple<>(true, true),
+                                                   null,
+                                                   cellLoc));
         }
     }
 
@@ -409,21 +439,39 @@ public class Maze
             cellLoc = Utils.Instance.generateTuple(this.height, this.width);
             cell = this.getCell(cellLoc);
 
-            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Points}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Points},
+                                                   new Tuple<>(!generateOnlyGood, true),
+                                                   null,
+                                                   null,
+                                                   new Tuple<>(true, true),
+                                                   null,
+                                                   cellLoc));
         }
 
         for (int i = 0; i < timeCount; i++) {
             cellLoc = Utils.Instance.generateTuple(this.height, this.width);
             cell = this.getCell(cellLoc);
 
-            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Time}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Time},
+                                                   new Tuple<>(!generateOnlyGood, true),
+                                                   null,
+                                                   null,
+                                                   new Tuple<>(true, true),
+                                                   null,
+                                                   cellLoc));
         }
 
         for (int i = 0; i < portalCount; i++) {
             cellLoc = Utils.Instance.generateTuple(this.height, this.width);
             cell = this.getCell(cellLoc);
 
-            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Location}, new Tuple<>(!generateOnlyGood, true), null, null, new Tuple<>(true, true), null, cellLoc));
+            cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Location},
+                                                   new Tuple<>(!generateOnlyGood, true),
+                                                   null,
+                                                   null,
+                                                   new Tuple<>(true, true),
+                                                   null,
+                                                   cellLoc));
         }
     }
 
@@ -457,7 +505,13 @@ public class Maze
      * new Tuple<>(false, new Tuple<>(5, 0)),
      * new Tuple<>(true, true));
      */
-    private Candy generateSingleCandy(CandyPowerType[] types, Tuple<Boolean, Boolean> isGood, Tuple<Boolean, Tuple<Integer, Integer>> timeToLive, Tuple<Boolean, Tuple<Integer, Integer>> strengthPower, Tuple<Boolean, Boolean> twoWayPortal, Tuple<Boolean, Tuple<Integer, Integer>> otherCellLocation, Tuple<Integer, Integer> cellLoc) {
+    private Candy generateSingleCandy(CandyPowerType[] types,
+                                      Tuple<Boolean, Boolean> isGood,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> timeToLive,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> strengthPower,
+                                      Tuple<Boolean, Boolean> twoWayPortal,
+                                      Tuple<Boolean, Tuple<Integer, Integer>> otherCellLocation,
+                                      Tuple<Integer, Integer> cellLoc) {
         // The type of the candy that gonna be generated
         CandyPowerType type;
 
@@ -467,9 +521,12 @@ public class Maze
 
         boolean isGoodVal = isGood == null || (isGood.item1 ? Utils.Instance.getRandomState() : isGood.item2);
 
-        int timeToLiveVal = timeToLive == null ? -1 : timeToLive.item1 ? Utils.Instance.getRandomNumber(timeToLive.item2.item1, timeToLive.item2.item2) : timeToLive.item2 != null ? timeToLive.item2.item1 : -1;
+        int timeToLiveVal = timeToLive == null ? -1 : timeToLive.item1 ? Utils.Instance.getRandomNumber(timeToLive.item2.item1,
+                                                                                                        timeToLive.item2.item2) : timeToLive.item2 != null ? timeToLive.item2.item1 : -1;
 
-        int strengthPowerVal = strengthPower == null ? 1000 : strengthPower.item1 ? Utils.Instance.getRandomNumber(strengthPower.item2.item1, strengthPower.item2.item2) : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
+        int strengthPowerVal = strengthPower == null ? 1000 : strengthPower.item1 ? Utils.Instance.getRandomNumber(
+                strengthPower.item2.item1,
+                strengthPower.item2.item2) : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
 
         switch (type) {
             case Time:
@@ -478,12 +535,21 @@ public class Maze
                 return new PointsCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
             case Location:
 
-                Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null ? Utils.Instance.generateTuple(height, width) : otherCellLocation.item1 ? Utils.Instance.generateTuple(otherCellLocation.item2.item1, otherCellLocation.item2.item2) : otherCellLocation.item2 != null ? otherCellLocation.item2 : Utils.Instance.generateTuple(height, width);
+                Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null ? Utils.Instance.generateTuple(
+                        height,
+                        width) : otherCellLocation.item1 ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
+                                                                                        otherCellLocation.item2.item2) : otherCellLocation.item2 != null ? otherCellLocation.item2 : Utils.Instance.generateTuple(
+                        height,
+                        width);
 
                 boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1 ? Utils.Instance.getRandomState() : twoWayPortal.item2);
 
                 if (twoWayPortalVal) {
-                    return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, this.getCell(otherCellLocationVal), cellLoc);
+                    return new PortalCandy(isGoodVal,
+                                           timeToLiveVal,
+                                           otherCellLocationVal,
+                                           this.getCell(otherCellLocationVal),
+                                           cellLoc);
                 } else {
                     return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, false);
                 }
@@ -496,6 +562,30 @@ public class Maze
     // endregion
 
     // region Getter & Setter
+
+    /**
+     * Get Random Entrence
+     * @return The location of the entrence
+     */
+    public Tuple<Integer, Integer> getRandomEntrance() {
+        return entrances == null || entrances.size() == 0 ? null : entrances.get(Instance.getRandomNumber(entrances.size()));
+    }
+
+    public List<Tuple<Integer, Integer>> getEntrances() {
+        return entrances;
+    }
+
+    public void setEntrances(List<Tuple<Integer, Integer>> entrances) {
+        this.entrances = entrances;
+    }
+
+    public List<Tuple<Integer, Integer>> getExits() {
+        return exits;
+    }
+
+    public void setExits(List<Tuple<Integer, Integer>> exits) {
+        this.exits = exits;
+    }
 
     /**
      * Get Maze cell at row & height
@@ -515,9 +605,9 @@ public class Maze
      * @return Returns the cell
      */
     public Cell getCell(Tuple<Integer, Integer> location) {
-        assert location != null;
-        assert location.item1 >= 0 && location.item1 < this.height;
-        assert location.item2 >= 0 && location.item2 < this.width;
+        if (location == null || location.item1 < 0 || location.item1 >= this.height || location.item2 < 0 || location.item2 >= this.width) {
+            return null;
+        }
 
         return this.mazeData[location.item1][location.item2];
     }
