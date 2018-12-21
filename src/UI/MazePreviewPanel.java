@@ -40,13 +40,25 @@ public class MazePreviewPanel extends JPanel {
      * From where to start the maze X axis
      * Set to 20 so it start with a little padding
      */
-    private int startX = 20;
+    private final int startX = 20;
 
     /**
      * From where to start the maze Y axis
      * Set to 20 so it start with a little padding
      */
-    private int startY = 20;
+    private final int startY = 20;
+
+    /**
+     * From where to start the maze X axis
+     * Set to 20 so it start with a little padding
+     */
+    private final int cellVerMargin = 3;
+
+    /**
+     * From where to start the maze Y axis
+     * Set to 20 so it start with a little padding
+     */
+    private final int cellHorMargin = 3;
 
     // region Constructors
 
@@ -172,7 +184,7 @@ public class MazePreviewPanel extends JPanel {
             x = startX;
         }
 
-        // Draw the exists
+        // TODO - Add arrow directed to maze at the entrance points and another arrow directed outside in the exit points
 
     }
 
@@ -265,12 +277,18 @@ public class MazePreviewPanel extends JPanel {
 
             Tuple<Integer, Integer> coordinates = this.calculateLocation(player.getLocation());
 
-
             int horSpace = fullW / this.maze.getWidth();
             int verSpace = fullH / this.maze.getHeight();
 
-            g.draw3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
-            g.fill3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
+            g.drawRect(coordinates.item1 + this.cellHorMargin,
+                       coordinates.item2 + this.cellVerMargin,
+                       horSpace - this.cellHorMargin,
+                       verSpace - this.cellVerMargin);
+
+            g.fillRect(coordinates.item1 + this.cellHorMargin,
+                       coordinates.item2 + this.cellVerMargin,
+                       horSpace - this.cellHorMargin,
+                       verSpace - this.cellVerMargin);
             repaint();
         }
     }
@@ -302,7 +320,6 @@ public class MazePreviewPanel extends JPanel {
      * @return Returns the status of the move ${@link MoveStatus}
      */
     private MoveStatus movePlayer(BasePlayer player, Direction direction) {
-        // TODO - IMPLEMENT THIS METHOD
         Tuple<Integer, Integer> loc = player.getLocation();
 
         // Moved status
@@ -310,6 +327,8 @@ public class MazePreviewPanel extends JPanel {
 
         if (this.maze.checkIfValidMove(loc, direction) != null) {
             player.setLocation(direction);
+
+            // TODO - Set when on stepping on a candy it will be collected
 
             System.out.println("Move");
             moved = MoveStatus.Valid;
