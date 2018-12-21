@@ -291,13 +291,7 @@ public class MazePreviewPanel extends JPanel {
         int horSpace = fullW / this.maze.getWidth();
         int verSpace = fullH / this.maze.getHeight();
 
-        int x = startX;
-        int y = startY;
-
-        y += verSpace * location.item1;
-        x += horSpace * location.item2;
-
-        return new Tuple<>(x, y);
+        return new Tuple<>(startX + horSpace * location.item2, startY + verSpace * location.item1);
     }
 
     /**
