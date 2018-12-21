@@ -15,8 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.stream.Stream;
 
-public class MazePreviewPanel extends JPanel
-{
+public class MazePreviewPanel extends JPanel {
     private Maze maze;
     private BasePlayer[] players;
 
@@ -38,13 +37,23 @@ public class MazePreviewPanel extends JPanel
 
     private void initGame() {
         for (BasePlayer player : this.players) {
-            if(player instanceof HumanPlayer) {
-                this.addKeyListener((HumanPlayer)player);
+
+            // Move player when observable fire
+            player.getPlayerMoveObs().subscribe(direction -> {
+                this.movePlayer(player, direction);
+            });
+
+            // Set the key listener to the player if it Human player
+            if (player instanceof HumanPlayer) {
+                this.addKeyListener((HumanPlayer) player);
             }
-            player.getPlayerMoveObs()
-                    .subscribe(direction -> {
-                        this.movePlayer(player, direction);
-                    });
+
+            // Create entrance
+            Tuple<Integer, Integer> entrance = this.maze.getRandomEntrance();
+
+            // Set default location to 0,0
+            entrance = entrance != null ? entrance : new Tuple<>(0, 0);
+            player.setLocation(entrance);
         }
     }
 
@@ -177,14 +186,14 @@ public class MazePreviewPanel extends JPanel
         y += verSpace * location.item1;
         x += horSpace * location.item2;
 
-//        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
-//            for (int j = 0; j < w; j++) {
-//                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
-//                x += horSpace;
-//            }
-//            y += verSpace;
-//            x = startX;
-//        }
+        //        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
+        //            for (int j = 0; j < w; j++) {
+        //                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
+        //                x += horSpace;
+        //            }
+        //            y += verSpace;
+        //            x = startX;
+        //        }
 
         return new Tuple<>(x, y);
     }
@@ -214,7 +223,7 @@ public class MazePreviewPanel extends JPanel
     private void movePlayer(BasePlayer player, Direction direction) {
         // TODO - IMPLEMENT THIS METHOD
         System.out.println("Move");
-        if(this.maze.getCell(player.getLocation()).haveCellAtDirection(direction)) {
+        if (this.maze.getCell(player.getLocation()).haveCellAtDirection(direction)) {
             player.setLocation(direction);
         }
     }
