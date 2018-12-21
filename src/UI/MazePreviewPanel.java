@@ -2,7 +2,6 @@ package UI;
 
 import Helpers.Direction;
 import Helpers.Tuple;
-import Helpers.Utils;
 import Maze.Cell;
 import Maze.Maze;
 import Maze.MazeSolver.DFS.DFSCell;
@@ -11,13 +10,27 @@ import player.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.stream.Stream;
 
 public class MazePreviewPanel extends JPanel {
+    /**
+     * Maze
+     */
     private Maze maze;
+
+    /**
+     * Maze Players
+     */
     private BasePlayer[] players;
+
+    /**
+     * Background Color
+     */
+    private Color background = Color.WHITE;
+
+    /**
+     * Maze Color, The colors of the maze's borders
+     */
+    private Color mazeColor = Color.BLUE;
 
     public MazePreviewPanel() {
         initGame();
@@ -35,18 +48,14 @@ public class MazePreviewPanel extends JPanel {
         initGame();
     }
 
+    /**
+     * Init Game
+     * @description Start listening for players movements
+     */
     private void initGame() {
+        setBackground(Color.WHITE);
+
         for (BasePlayer player : this.players) {
-
-            // Move player when observable fire
-            player.getPlayerMoveObs().subscribe(direction -> {
-                this.movePlayer(player, direction);
-            });
-
-            // Set the key listener to the player if it Human player
-            if (player instanceof HumanPlayer) {
-                this.addKeyListener((HumanPlayer) player);
-            }
 
             // Create entrance
             Tuple<Integer, Integer> entrance = this.maze.getRandomEntrance();
@@ -54,18 +63,43 @@ public class MazePreviewPanel extends JPanel {
             // Set default location to 0,0
             entrance = entrance != null ? entrance : new Tuple<>(0, 0);
             player.setLocation(entrance);
+
+            // Move player when observable fire
+            player.getPlayerMoveObs().subscribe(direction -> {
+                Direction dir = this.maze.checkIfValidMove(player.getLocation(), direction);
+
+                // If the move isn't valid
+                if (dir == null) {
+                    System.out.println("Move not valid");
+                    return;
+                }
+
+                // Change location
+                // player.setLocation(direction);
+
+                this.movePlayer(player, dir);
+            });
+
+            // Set the key listener to the player if it Human player
+            if (player instanceof HumanPlayer) {
+                this.addKeyListener((HumanPlayer) player);
+            }
         }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        this.paintMaze(g, Color.BLUE);
+        this.paintMaze(g);
         this.showPlayers(g);
     }
 
-    private void paintMaze(Graphics g, Color color) {
-        g.setColor(color);
+    /**
+     * Paint Maze
+     * @param g Graphics
+     */
+    private void paintMaze(Graphics g) {
+        g.setColor(this.mazeColor);
 
         // Set to 20 so it start with a little padding
         int startX = 20;
@@ -92,7 +126,6 @@ public class MazePreviewPanel extends JPanel {
         // Draw the exists
 
     }
-
 
     /**
      * Paint Square Cell
@@ -169,6 +202,11 @@ public class MazePreviewPanel extends JPanel {
         g.setColor(before);
     }
 
+    /**
+     * Calculate location in the panel
+     * @param location Location in the matrix
+     * @return The x, y coordinates of the location in the panel
+     */
     private Tuple<Integer, Integer> calculateLocation(Tuple<Integer, Integer> location) {
 
         int startX = 20;
@@ -198,6 +236,11 @@ public class MazePreviewPanel extends JPanel {
         return new Tuple<>(x, y);
     }
 
+    /**
+     * Display the players in the maze
+     *
+     * @param g Graphics of the panel
+     */
     private void showPlayers(Graphics g) {
         for (int i = 0; i < this.players.length; i++) {
 

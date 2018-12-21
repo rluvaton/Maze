@@ -561,6 +561,24 @@ public class Maze
 
     // endregion
 
+    // region Helpers
+
+
+    /**
+     * Check if valid move
+     *
+     * @param location Location from where the move is made
+     * @param direction Wanted direction
+     * @return Return the direction of the move if it's valid
+     */
+    public Direction checkIfValidMove(Tuple<Integer, Integer> location, Direction direction) {
+        Cell destCell = this.getCell(location);
+
+        return (destCell == null || !destCell.haveCellAtDirection(direction)) ? null : direction;
+    }
+
+    // endregion
+
     // region Getter & Setter
 
     /**
