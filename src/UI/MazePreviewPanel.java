@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MazePreviewPanel extends JPanel {
+
     /**
      * Maze
      */
@@ -35,21 +36,52 @@ public class MazePreviewPanel extends JPanel {
      */
     private Color mazeColor = Color.BLUE;
 
+    /**
+     * From where to start the maze X axis
+     * Set to 20 so it start with a little padding
+     */
+    private int startX = 20;
+
+    /**
+     * From where to start the maze Y axis
+     * Set to 20 so it start with a little padding
+     */
+    private int startY = 20;
+
+    // region Constructors
+
+    /**
+     * Maze Preview Panel Base Constructor
+     */
     public MazePreviewPanel() {
         initGame();
     }
 
+    /**
+     * Maze Preview Panel Constructor
+     *
+     * @param maze    Maze to build
+     * @param players Players of the maze
+     */
     public MazePreviewPanel(Maze maze, BasePlayer[] players) {
         this.maze = maze;
         this.players = players;
         initGame();
     }
 
+    /**
+     * Maze Preview Panel Constructor
+     *
+     * @param cells   Cells of the maze
+     * @param players Players of the maze
+     */
     public MazePreviewPanel(DFSCell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
         this.players = players;
         initGame();
     }
+
+    // endregion
 
     /**
      * Init Game
@@ -69,9 +101,6 @@ public class MazePreviewPanel extends JPanel {
 
             // Move player when observable fire
             player.getPlayerMoveObs().subscribe(direction -> {
-
-                // Move player only if valid
-
                 MoveStatus res = this.movePlayer(player, direction);
                 switch (res) {
                     case Valid:
@@ -98,14 +127,17 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * Player Finished
+     *
      * @param player The player that finished
      */
     private void playerFinished(BasePlayer player) {
         // Remove key listener if the player is human player
-        if(player instanceof HumanPlayer) {
+        if (player instanceof HumanPlayer) {
             this.removeKeyListener((HumanPlayer) player);
         }
     }
+
+    // region GUI Painting
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -121,10 +153,6 @@ public class MazePreviewPanel extends JPanel {
      */
     private void paintMaze(Graphics g) {
         g.setColor(this.mazeColor);
-
-        // Set to 20 so it start with a little padding
-        int startX = 20;
-        int startY = 20;
 
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
@@ -224,15 +252,38 @@ public class MazePreviewPanel extends JPanel {
     }
 
     /**
+     * Display the players in the maze
+     *
+     * @param g Graphics of the panel
+     */
+    private void showPlayers(Graphics g) {
+
+        int fullW = getWidth() - startX * 2;
+        int fullH = getHeight() - startY * 2;
+
+        for (BasePlayer player : this.players) {
+
+            Tuple<Integer, Integer> coordinates = this.calculateLocation(player.getLocation());
+
+
+            int horSpace = fullW / this.maze.getWidth();
+            int verSpace = fullH / this.maze.getHeight();
+
+            g.draw3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
+            g.fill3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
+            repaint();
+        }
+    }
+
+    // endregion
+
+    /**
      * Calculate location in the panel
      *
      * @param location Location in the matrix
      * @return The x, y coordinates of the location in the panel
      */
     private Tuple<Integer, Integer> calculateLocation(Tuple<Integer, Integer> location) {
-
-        int startX = 20;
-        int startY = 20;
 
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
@@ -247,33 +298,6 @@ public class MazePreviewPanel extends JPanel {
         x += horSpace * location.item2;
 
         return new Tuple<>(x, y);
-    }
-
-    /**
-     * Display the players in the maze
-     *
-     * @param g Graphics of the panel
-     */
-    private void showPlayers(Graphics g) {
-        for (BasePlayer player : this.players) {
-
-            Tuple<Integer, Integer> coordinates = this.calculateLocation(player.getLocation());
-
-
-            int startX = 20;
-            int startY = 20;
-
-            int fullW = getWidth() - startX * 2;
-            int fullH = getHeight() - startY * 2;
-
-            int horSpace = fullW / this.maze.getWidth();
-            int verSpace = fullH / this.maze.getHeight();
-
-
-            g.draw3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
-            g.fill3DRect(coordinates.item1, coordinates.item2, horSpace, verSpace, true);
-            repaint();
-        }
     }
 
     /**
