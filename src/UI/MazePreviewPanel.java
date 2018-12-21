@@ -4,9 +4,12 @@ import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Cell;
 import Maze.Maze;
+import Maze.ELocation;
+import Maze.ELocationType;
 import Maze.MazeSolver.DFS.DFSCell;
 import player.BasePlayer;
 import player.HumanPlayer;
+import player.MoveStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,6 +53,7 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * Init Game
+     *
      * @description Start listening for players movements
      */
     private void initGame() {
@@ -58,32 +62,48 @@ public class MazePreviewPanel extends JPanel {
         for (BasePlayer player : this.players) {
 
             // Create entrance
-            Tuple<Integer, Integer> entrance = this.maze.getRandomEntrance();
+            ELocation entrance = this.maze.getRandomEntrance();
 
             // Set default location to 0,0
-            entrance = entrance != null ? entrance : new Tuple<>(0, 0);
-            player.setLocation(entrance);
+            player.setLocation(entrance != null ? entrance.getLocation() : new Tuple<>(0, 0));
 
             // Move player when observable fire
             player.getPlayerMoveObs().subscribe(direction -> {
-                Direction dir = this.maze.checkIfValidMove(player.getLocation(), direction);
 
-                // If the move isn't valid
-                if (dir == null) {
-                    System.out.println("Move not valid");
-                    return;
+                // Move player only if valid
+
+                MoveStatus res = this.movePlayer(player, direction);
+                switch (res) {
+                    case Valid:
+                        break;
+                    case NotValidMove:
+                        System.out.println("Not Valid Move");
+                        break;
+                    case Finished:
+                        System.out.println("User Finished!");
+                        this.playerFinished(player);
+                        break;
+                    default:
+                        System.out.println("Unknown move status " + res);
+                        break;
                 }
-
-                // Change location
-                // player.setLocation(direction);
-
-                this.movePlayer(player, dir);
             });
 
-            // Set the key listener to the player if it Human player
+            // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
                 this.addKeyListener((HumanPlayer) player);
             }
+        }
+    }
+
+    /**
+     * Player Finished
+     * @param player The player that finished
+     */
+    private void playerFinished(BasePlayer player) {
+        // Remove key listener if the player is human player
+        if(player instanceof HumanPlayer) {
+            this.removeKeyListener((HumanPlayer) player);
         }
     }
 
@@ -96,6 +116,7 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * Paint Maze
+     *
      * @param g Graphics
      */
     private void paintMaze(Graphics g) {
@@ -204,6 +225,7 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * Calculate location in the panel
+     *
      * @param location Location in the matrix
      * @return The x, y coordinates of the location in the panel
      */
@@ -224,15 +246,6 @@ public class MazePreviewPanel extends JPanel {
         y += verSpace * location.item1;
         x += horSpace * location.item2;
 
-        //        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
-        //            for (int j = 0; j < w; j++) {
-        //                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
-        //                x += horSpace;
-        //            }
-        //            y += verSpace;
-        //            x = startX;
-        //        }
-
         return new Tuple<>(x, y);
     }
 
@@ -242,9 +255,9 @@ public class MazePreviewPanel extends JPanel {
      * @param g Graphics of the panel
      */
     private void showPlayers(Graphics g) {
-        for (int i = 0; i < this.players.length; i++) {
+        for (BasePlayer player : this.players) {
 
-            Tuple<Integer, Integer> coordinates = this.calculateLocation(this.players[i].getLocation());
+            Tuple<Integer, Integer> coordinates = this.calculateLocation(player.getLocation());
 
 
             int startX = 20;
@@ -263,11 +276,28 @@ public class MazePreviewPanel extends JPanel {
         }
     }
 
-    private void movePlayer(BasePlayer player, Direction direction) {
+    /**
+     * Move Player Handler
+     *
+     * @param player    Player that wanted to move
+     * @param direction The direction of the move
+     * @return Returns the status of the move ${@link MoveStatus}
+     */
+    private MoveStatus movePlayer(BasePlayer player, Direction direction) {
         // TODO - IMPLEMENT THIS METHOD
-        System.out.println("Move");
-        if (this.maze.getCell(player.getLocation()).haveCellAtDirection(direction)) {
+        Tuple<Integer, Integer> loc = player.getLocation();
+
+        // Moved status
+        MoveStatus moved = MoveStatus.NotValidMove;
+
+        if (this.maze.checkIfValidMove(loc, direction) != null) {
             player.setLocation(direction);
+
+            System.out.println("Move");
+            moved = MoveStatus.Valid;
         }
+
+        // Don't use player.getLocation because it will bring you the new location
+        return this.maze.checkIfELocation(loc, direction, ELocationType.Exit) != null ? MoveStatus.Finished : moved;
     }
 }

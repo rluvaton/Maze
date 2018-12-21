@@ -1,14 +1,13 @@
 package Maze;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Candy.*;
+import Maze.ELocation;
 import Maze.MazeSolver.DFS.DFSCell;
 import Maze.MazeSolver.DFS.DFSSolver;
 
@@ -17,8 +16,7 @@ import static Helpers.Utils.Instance;
 /**
  * Maze
  */
-public class Maze
-{
+public class Maze {
     /**
      * The mazeData
      */
@@ -34,16 +32,15 @@ public class Maze
      */
     private int width;
 
-
     /**
      * Entrances Points
      */
-    private List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
+    private List<ELocation> entrances = new ArrayList<ELocation>();
 
     /**
      * Exists Points
      */
-    private List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
+    private List<ELocation> exits = new ArrayList<ELocation>();
 
     // region Constructors
 
@@ -235,11 +232,13 @@ public class Maze
             }
         }
 
-        this.entrances = entrances;
-        this.exits = exits;
+        this.entrances = entrances.stream()
+                                  .map(loc -> createELocations(loc, height, width, ELocationType.Entrance))
+                                  .collect(Collectors.toList());
 
-        this.entrances.forEach(loc -> setExits(loc, height, width));
-        this.exits.forEach(loc -> setExits(loc, height, width));
+        this.exits = exits.stream()
+                          .map(loc -> createELocations(loc, height, width, ELocationType.Exit))
+                          .collect(Collectors.toList());
 
         this.generateRandomCandies((width * height) / 10);
     }
@@ -247,29 +246,41 @@ public class Maze
     // endregion
 
     /**
-     * Remove the walls from the boundries in the exits
+     * Create ELocations (Enter / Exit Locations)
+     * Remove the walls from the boundaries in the entrances / exits
      *
-     * @param loc    Cell location
+     * @param loc    Exit / Enter location
      * @param height Maze height
      * @param width  Maze width
+     * @return ELocation of the exit / enter location
      */
-    private void setExits(Tuple<Integer, Integer> loc, int height, int width) {
+    private ELocation createELocations(Tuple<Integer, Integer> loc, int height, int width, ELocationType type) {
+        Direction dir = null;
+
         // If the x value (item 1) in the cell is at the top maze
         if (loc.item1 == 0) {
             this.mazeData[loc.item1][loc.item2].setTopWall(false);
+            dir = Direction.TOP;
         }
         // If the x value (item 1) in the cell is at the bottom of the maze
         else if (loc.item1 == height - 1) {
             this.mazeData[loc.item1][loc.item2].setBottomWall(false);
+            dir = Direction.BOTTOM;
         }
         // If the y value (item 2) in the cell is at the left maze
         else if (loc.item2 == 0) {
             this.mazeData[loc.item1][loc.item2].setLeftWall(false);
+            dir = Direction.LEFT;
         }
         // If the y value (item 2) in the cell is at the right maze
         else if (loc.item2 == width - 1) {
             this.mazeData[loc.item1][loc.item2].setRightWall(false);
+            dir = Direction.RIGHT;
+        } else {
+            System.out.println("The Enter / Exit location is not at the maze's borders");
         }
+
+        return new ELocation(loc, dir, type);
     }
 
     /**
@@ -297,13 +308,28 @@ public class Maze
 
         Tuple<Integer, Integer>[] finalTempLoc = new Tuple[]{tempLoc};
 
-        while ((entrances.size() != 0 && entrances.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
-                finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDist(
-                this.mazeData,
-                loc,
-                finalTempLoc[0]) >= minDistance))) || (exits.size() != 0 && exits.stream().anyMatch(loc -> loc.item1.equals(
-                finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream().allMatch(
-                loc -> DFSSolver.getSolvePathDist(this.mazeData, loc, finalTempLoc[0]) >= minDistance)))) {
+        while ((entrances.size() != 0 && entrances.stream()
+                                                  .anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) &&
+                                                                   loc.item2.equals(finalTempLoc[0].item2)) &&
+                (isExit || exits.size() == 0 || exits.stream()
+                                                     .allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData,
+                                                                                                 loc,
+                                                                                                 finalTempLoc[0]) >=
+                                                                      minDistance))) || (exits.size() != 0 &&
+                                                                                         exits.stream()
+                                                                                              .anyMatch(loc -> loc.item1
+                                                                                                                       .equals(finalTempLoc[0].item1) &&
+                                                                                                               loc.item2
+                                                                                                                       .equals(finalTempLoc[0].item2)) &&
+                                                                                         (!isExit ||
+                                                                                          entrances.size() == 0 ||
+                                                                                          entrances.stream()
+                                                                                                   .allMatch(loc -> DFSSolver
+                                                                                                                            .getSolvePathDist(
+                                                                                                                                    this.mazeData,
+                                                                                                                                    loc,
+                                                                                                                                    finalTempLoc[0]) >=
+                                                                                                                    minDistance)))) {
             state = Instance.getRandomState();
 
             if (state) {
@@ -357,13 +383,12 @@ public class Maze
 
             nextLoc = Instance.getNextCell(loc, selected);
 
-            if (Instance.inBounds(nextLoc,
-                                  height,
-                                  width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(
-                    this.mazeData[nextLoc.item1][nextLoc.item2],
-                    selected,
-                    force,
-                    update))
+            if (Instance.inBounds(nextLoc, height, width) &&
+                this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() &&
+                this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2],
+                                                                       selected,
+                                                                       force,
+                                                                       update))
             {
                 return selected;
             }
@@ -521,8 +546,10 @@ public class Maze
 
         boolean isGoodVal = isGood == null || (isGood.item1 ? Utils.Instance.getRandomState() : isGood.item2);
 
-        int timeToLiveVal = timeToLive == null ? -1 : timeToLive.item1 ? Utils.Instance.getRandomNumber(timeToLive.item2.item1,
-                                                                                                        timeToLive.item2.item2) : timeToLive.item2 != null ? timeToLive.item2.item1 : -1;
+        int timeToLiveVal = timeToLive == null ? -1 : timeToLive.item1
+                                                      ? Utils.Instance.getRandomNumber(timeToLive.item2.item1,
+                                                                                       timeToLive.item2.item2)
+                                                      : timeToLive.item2 != null ? timeToLive.item2.item1 : -1;
 
         int strengthPowerVal = strengthPower == null ? 1000 : strengthPower.item1 ? Utils.Instance.getRandomNumber(
                 strengthPower.item2.item1,
@@ -535,14 +562,18 @@ public class Maze
                 return new PointsCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
             case Location:
 
-                Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null ? Utils.Instance.generateTuple(
-                        height,
-                        width) : otherCellLocation.item1 ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
-                                                                                        otherCellLocation.item2.item2) : otherCellLocation.item2 != null ? otherCellLocation.item2 : Utils.Instance.generateTuple(
-                        height,
-                        width);
+                Tuple<Integer, Integer> otherCellLocationVal =
+                        otherCellLocation == null ? Utils.Instance.generateTuple(height, width)
+                                                  : otherCellLocation.item1 ? Utils.Instance.generateTuple(
+                                                          otherCellLocation.item2.item1,
+                                                          otherCellLocation.item2.item2)
+                                                                            : otherCellLocation.item2 != null
+                                                                              ? otherCellLocation.item2
+                                                                              : Utils.Instance.generateTuple(height,
+                                                                                                             width);
 
-                boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1 ? Utils.Instance.getRandomState() : twoWayPortal.item2);
+                boolean twoWayPortalVal = twoWayPortal == null ||
+                                          (twoWayPortal.item1 ? Utils.Instance.getRandomState() : twoWayPortal.item2);
 
                 if (twoWayPortalVal) {
                     return new PortalCandy(isGoodVal,
@@ -563,11 +594,10 @@ public class Maze
 
     // region Helpers
 
-
     /**
      * Check if valid move
      *
-     * @param location Location from where the move is made
+     * @param location  Location from where the move is made
      * @param direction Wanted direction
      * @return Return the direction of the move if it's valid
      */
@@ -577,31 +607,78 @@ public class Maze
         return (destCell == null || !destCell.haveCellAtDirection(direction)) ? null : direction;
     }
 
+    /**
+     * Check if location and direction is an Exit / Entrance Location
+     *
+     * @param location  location
+     * @param direction headed direction
+     * @return Return the ELocation if found one
+     */
+    public ELocation checkIfELocation(Tuple<Integer, Integer> location, Direction direction) {
+        Optional<ELocation> opELoc;
+
+        opELoc = exits.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
+
+        if (opELoc.isPresent()) {
+            return opELoc.get();
+        }
+
+        opELoc = entrances.stream().filter(enterLoc -> enterLoc.isAtELocation(location, direction)).findFirst();
+
+        return opELoc.orElse(null);
+    }
+
+    /**
+     * Check if location and direction is an Exit/Enter Location
+     *
+     * @param location  location
+     * @param direction headed direction
+     * @param type Type of ELocation to search (null will search all)
+     * @return Return the ELocation if found one
+     *
+     * @description More efficient if you search only specific type (enter / exit)
+     */
+    public ELocation checkIfELocation(Tuple<Integer, Integer> location, Direction direction, ELocationType type) {
+        Optional<ELocation> opELoc;
+
+        if (type == null) {
+            return this.checkIfELocation(location, direction);
+        }
+
+        List<ELocation> search = (type == ELocationType.Exit) ? exits : entrances;
+
+        opELoc = search.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
+
+        return opELoc.orElse(null);
+    }
+
     // endregion
 
     // region Getter & Setter
 
     /**
      * Get Random Entrence
+     *
      * @return The location of the entrence
      */
-    public Tuple<Integer, Integer> getRandomEntrance() {
-        return entrances == null || entrances.size() == 0 ? null : entrances.get(Instance.getRandomNumber(entrances.size()));
+    public ELocation getRandomEntrance() {
+        return entrances == null || entrances.size() == 0 ? null
+                                                          : entrances.get(Instance.getRandomNumber(entrances.size()));
     }
 
-    public List<Tuple<Integer, Integer>> getEntrances() {
+    public List<ELocation> getEntrances() {
         return entrances;
     }
 
-    public void setEntrances(List<Tuple<Integer, Integer>> entrances) {
+    public void setEntrances(List<ELocation> entrances) {
         this.entrances = entrances;
     }
 
-    public List<Tuple<Integer, Integer>> getExits() {
+    public List<ELocation> getExits() {
         return exits;
     }
 
-    public void setExits(List<Tuple<Integer, Integer>> exits) {
+    public void setExits(List<ELocation> exits) {
         this.exits = exits;
     }
 
@@ -623,7 +700,9 @@ public class Maze
      * @return Returns the cell
      */
     public Cell getCell(Tuple<Integer, Integer> location) {
-        if (location == null || location.item1 < 0 || location.item1 >= this.height || location.item2 < 0 || location.item2 >= this.width) {
+        if (location == null || location.item1 < 0 || location.item1 >= this.height || location.item2 < 0 ||
+            location.item2 >= this.width)
+        {
             return null;
         }
 
