@@ -608,6 +608,18 @@ public class Maze {
     }
 
     /**
+     * Check if valid location
+     *
+     * @param location  Location to check it's validation
+     * @return Return the result if location valid or not
+     */
+    public boolean checkIfValidLocation(Tuple<Integer, Integer> location) {
+        Cell destCell = this.getCell(location);
+
+        return destCell != null;
+    }
+
+    /**
      * Check if location and direction is an Exit / Entrance Location
      *
      * @param location  location
@@ -657,9 +669,9 @@ public class Maze {
     // region Getter & Setter
 
     /**
-     * Get Random Entrence
+     * Get Random Entrance
      *
-     * @return The location of the entrence
+     * @return The location of the entrance
      */
     public ELocation getRandomEntrance() {
         return entrances == null || entrances.size() == 0 ? null

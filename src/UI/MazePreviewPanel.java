@@ -116,7 +116,7 @@ public class MazePreviewPanel extends JPanel {
                 MoveStatus res = this.movePlayer(player, direction);
                 switch (res) {
                     case Valid:
-                        System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints()) ;
+                        System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
                         break;
                     case NotValidMove:
                         System.out.println("Not Valid Move");
@@ -322,6 +322,7 @@ public class MazePreviewPanel extends JPanel {
      * @param player    Player that wanted to move
      * @param direction The direction of the move
      * @return Returns the status of the move ${@link MoveStatus}
+     * @see #changePlayerLocation(BasePlayer, Tuple, boolean) Change Player Location - (i.e teleportation)
      */
     private MoveStatus movePlayer(BasePlayer player, Direction direction) {
         Tuple<Integer, Integer> loc = player.getLocation();
@@ -340,11 +341,58 @@ public class MazePreviewPanel extends JPanel {
             player.addTime(cell.collectTimeCandyStrengths());
             player.addPoints(cell.collectPointsCandyStrengths());
 
+            Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
+
+            if (teleportLocation != null) {
+                this.changePlayerLocation(player, teleportLocation, true);
+            }
+
             System.out.println("Move");
             moved = MoveStatus.Valid;
         }
 
         // Don't use player.getLocation() because it will bring you the new location
         return this.maze.checkIfELocation(loc, direction, ELocationType.Exit) != null ? MoveStatus.Finished : moved;
+    }
+
+    /**
+     * Change Player Location
+     *
+     * @param player       Player to move
+     * @param location     location to move the player to
+     * @param isTeleported Is the location changed due to teleportation?
+     * @return Returns if the played moved
+     * @see #movePlayer(BasePlayer, Direction) For Moving Player by direction of move
+     */
+    private boolean changePlayerLocation(BasePlayer player, Tuple<Integer, Integer> location, boolean isTeleported) {
+        Tuple<Integer, Integer> loc = player.getLocation();
+
+        if (!this.maze.checkIfValidLocation(location)) {
+            return false;
+        }
+
+        player.setLocation(location);
+
+        Cell cell = this.maze.getCell(player.getLocation());
+
+        // Add the time and points from the candy
+        player.addTime(cell.collectTimeCandyStrengths());
+        player.addPoints(cell.collectPointsCandyStrengths());
+
+        if (!isTeleported) {
+            Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
+
+            if (teleportLocation != null) {
+                this.changePlayerLocation(player, teleportLocation, true);
+            }
+        }
+
+        if (isTeleported) {
+            System.out.println("Teleported");
+        } else {
+            System.out.println("Changed location");
+        }
+
+        return true;
     }
 }

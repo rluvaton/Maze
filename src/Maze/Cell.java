@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import Helpers.Direction;
+import Helpers.Tuple;
 import Maze.Candy.*;
 
 
@@ -12,6 +13,9 @@ import Maze.Candy.*;
  * Cell in maze
  */
 public class Cell {
+
+    // region Variables
+
     /**
      * If have wall at the top or not
      * If can't move top then it will be true
@@ -40,6 +44,8 @@ public class Cell {
      * If the cell contain candy
      */
     private ArrayList<Candy> candies = new ArrayList<>();
+
+    // endregion
 
     // region Constructors
 
@@ -401,6 +407,7 @@ public class Cell {
      *
      * @return Returns the first Location (Portal) candy that founded
      * @implNote It doesn't remove the candy
+     * @see #collectLocationCandyPortal For getting the candy tranfer location
      */
     public PortalCandy collectLocationCandy() {
         return (PortalCandy) this.candies.stream()
@@ -408,6 +415,24 @@ public class Cell {
                                                                             candy.getType() == CandyPowerType.Location))
                                          .findFirst()
                                          .orElse(null);
+    }
+
+    /**
+     * Get the Location that the Location (Portal) Candy transfer you
+     *
+     * @return Returns Location that the first Location (Portal) candy that founded
+     * @implNote It doesn't remove the candy
+     *
+     * @see #collectLocationCandy For getting the location candy
+     */
+    public Tuple<Integer, Integer> collectLocationCandyPortal() {
+        return this.candies.stream()
+                           .filter(candy -> candy != null && (candy instanceof PortalCandy ||
+                                                              candy.getType() == CandyPowerType.Location))
+                           .findFirst()
+                           .map(candy -> (PortalCandy) candy)
+                           .map(PortalCandy::getLocation)
+                           .orElse(null);
     }
 
     // endregion
