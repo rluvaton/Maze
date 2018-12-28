@@ -116,6 +116,7 @@ public class MazePreviewPanel extends JPanel {
                 MoveStatus res = this.movePlayer(player, direction);
                 switch (res) {
                     case Valid:
+                        System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints()) ;
                         break;
                     case NotValidMove:
                         System.out.println("Not Valid Move");
@@ -134,6 +135,8 @@ public class MazePreviewPanel extends JPanel {
             if (player instanceof HumanPlayer) {
                 this.addKeyListener((HumanPlayer) player);
             }
+
+
         }
     }
 
@@ -241,6 +244,7 @@ public class MazePreviewPanel extends JPanel {
 
         Color before = g.getColor();
 
+        // TODO - Set timeout for the candies to disappear
         if (!cell.getCandies().isEmpty()) {
             cell.getCandies().forEach(candy -> {
                 switch (candy.getType()) {
@@ -330,11 +334,17 @@ public class MazePreviewPanel extends JPanel {
 
             // TODO - Set when on stepping on a candy it will be collected
 
+            Cell cell = this.maze.getCell(player.getLocation());
+
+            // Add the time and points from the candy
+            player.addTime(cell.collectTimeCandyStrengths());
+            player.addPoints(cell.collectPointsCandyStrengths());
+
             System.out.println("Move");
             moved = MoveStatus.Valid;
         }
 
-        // Don't use player.getLocation because it will bring you the new location
+        // Don't use player.getLocation() because it will bring you the new location
         return this.maze.checkIfELocation(loc, direction, ELocationType.Exit) != null ? MoveStatus.Finished : moved;
     }
 }

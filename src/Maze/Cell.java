@@ -1,16 +1,17 @@
 package Maze;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import Helpers.Direction;
-import Maze.Candy.Candy;
+import Maze.Candy.*;
 
 
 /**
  * Cell in maze
  */
-public class Cell
-{
+public class Cell {
     /**
      * If have wall at the top or not
      * If can't move top then it will be true
@@ -56,8 +57,7 @@ public class Cell
      * @throws IllegalArgumentException  Throw Error if neighbor is null
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public Cell(Cell neighbor, Direction direction)
-    {
+    public Cell(Cell neighbor, Direction direction) {
         this(neighbor, direction, false);
     }
 
@@ -234,6 +234,184 @@ public class Cell
         return this.topWall && this.bottomWall && this.leftWall && this.rightWall;
     }
 
+    // region Candies
+
+    public void addCandy(Candy candy) {
+        this.candies.add(candy);
+    }
+
+    public void removeCandy(Candy candy) {
+        this.candies.remove(candy);
+    }
+
+    // region Time Candies
+
+    /**
+     * Collect Time Candies and remove them from the cell candies
+     *
+     * @return Returns all the time candies in this cell
+     * @see #collectTimeCandy(boolean removeFoundedCandies) For option to collect without remove candies from cell
+     */
+    public List<TimeCandy> collectTimeCandy() {
+        return this.collectTimeCandy(true);
+    }
+
+    /**
+     * Collect Time Candies
+     *
+     * @param removeFoundedCandies Do you want to remove the founded time candies?
+     * @return Returns all the time candies in this cell
+     * @see #collectTimeCandy() For option to collect & remove candies from cell
+     */
+    public List<TimeCandy> collectTimeCandy(boolean removeFoundedCandies) {
+        List<TimeCandy> timeCandies = this.candies.stream()
+                                                  .filter(candy -> candy != null && (candy instanceof TimeCandy ||
+                                                                                     candy.getType() ==
+                                                                                     CandyPowerType.Time))
+                                                  .map(candy -> (TimeCandy) candy)
+                                                  .collect(Collectors.toList());
+        if (!removeFoundedCandies) {
+            return timeCandies;
+        }
+
+        timeCandies.forEach(timeCandy -> this.candies.remove(timeCandy));
+
+        return timeCandies;
+    }
+
+    /**
+     * Collect and sum the Time Candies Strength and remove them from the cell
+     *
+     * @return Returns the sum of the strengths of the time candies
+     * @see #collectTimeCandyStrengths(boolean removeFoundedCandies) For option to not remove the candies from to cell
+     */
+    public int collectTimeCandyStrengths() {
+        return this.collectTimeCandyStrengths(true);
+    }
+
+    /**
+     * Collect Time Candies Strength
+     *
+     * @param removeFoundedCandies Do you want to remove the founded time candies?
+     * @return Returns the sum of the strengths of the time candies
+     * @see #collectTimeCandyStrengths() For option to collect & remove time candies from cell
+     */
+    public int collectTimeCandyStrengths(boolean removeFoundedCandies) {
+        List<TimeCandy> timeCandies = this.candies.stream()
+                                                  .filter(candy -> candy != null && (candy instanceof TimeCandy ||
+                                                                                     candy.getType() ==
+                                                                                     CandyPowerType.Time))
+                                                  .map(candy -> (TimeCandy) candy)
+                                                  .collect(Collectors.toList());
+        if (!removeFoundedCandies) {
+            return timeCandies.stream()
+                              .mapToInt(Candy::getCandyStrength)
+                              .reduce((candy1, candy2) -> candy1 + candy2)
+                              .orElse(0);
+        }
+
+        timeCandies.forEach(timeCandy -> this.candies.remove(timeCandy));
+
+        return timeCandies.stream()
+                          .mapToInt(Candy::getCandyStrength)
+                          .reduce((candy1, candy2) -> candy1 + candy2)
+                          .orElse(0);
+    }
+
+    // endregion
+
+    // region Points Candies
+
+    /**
+     * Collect Points Candies and remove them from the cell candies
+     *
+     * @return Returns all the time candies in this cell
+     * @see #collectPointsCandy(boolean removeFoundedCandies) For option to collect without remove candies from cell
+     */
+    public List<PointsCandy> collectPointsCandy() {
+        return this.collectPointsCandy(true);
+    }
+
+    /**
+     * Collect Points Candies and remove them from the cell candies
+     *
+     * @param removeFoundedCandies Do you want to remove the founded points candies?
+     * @return Returns all the time candies in this cell
+     * @see #collectPointsCandy() For option to collect & remove candies from cell
+     */
+    public List<PointsCandy> collectPointsCandy(boolean removeFoundedCandies) {
+        List<PointsCandy> pointsCandies = this.candies.stream()
+                                                      .filter(candy -> candy != null && (candy instanceof PointsCandy ||
+                                                                                         candy.getType() ==
+                                                                                         CandyPowerType.Points))
+                                                      .map(candy -> (PointsCandy) candy)
+                                                      .collect(Collectors.toList());
+        if (!removeFoundedCandies) {
+            return pointsCandies;
+        }
+
+        pointsCandies.forEach(pointCandy -> this.candies.remove(pointCandy));
+
+        return pointsCandies;
+    }
+
+    /**
+     * Collect and sum the Time Candies Strength and remove them from the cell
+     *
+     * @return Returns the sum of the strengths of the points candies in this cell
+     * @see #collectPointsCandy(boolean removeFoundedCandies) For option to collect without remove candies from cell
+     */
+    public int collectPointsCandyStrengths() {
+        return this.collectPointsCandyStrengths(true);
+    }
+
+    /**
+     * Collect Points Candies and remove them from the cell candies
+     *
+     * @param removeFoundedCandies Do you want to remove the founded points candies?
+     * @return Returns all the time candies in this cell
+     * @see #collectPointsCandyStrengths() For option to collect & remove candies from cell
+     */
+    public int collectPointsCandyStrengths(boolean removeFoundedCandies) {
+        List<PointsCandy> pointsCandies = this.candies.stream()
+                                                      .filter(candy -> candy != null && (candy instanceof PointsCandy ||
+                                                                                         candy.getType() ==
+                                                                                         CandyPowerType.Points))
+                                                      .map(candy -> (PointsCandy) candy)
+                                                      .collect(Collectors.toList());
+        if (!removeFoundedCandies) {
+            return pointsCandies.stream()
+                                .mapToInt(Candy::getCandyStrength)
+                                .reduce((candy1, candy2) -> candy1 + candy2)
+                                .orElse(0);
+        }
+
+        pointsCandies.forEach(pointCandy -> this.candies.remove(pointCandy));
+
+        return pointsCandies.stream()
+                            .mapToInt(Candy::getCandyStrength)
+                            .reduce((candy1, candy2) -> candy1 + candy2)
+                            .orElse(0);
+    }
+
+    // endregion Points Candies
+
+    /**
+     * Get the Location (Portal) Candy
+     *
+     * @return Returns the first Location (Portal) candy that founded
+     * @implNote It doesn't remove the candy
+     */
+    public PortalCandy collectLocationCandy() {
+        return (PortalCandy) this.candies.stream()
+                                         .filter(candy -> candy != null && (candy instanceof PortalCandy ||
+                                                                            candy.getType() == CandyPowerType.Location))
+                                         .findFirst()
+                                         .orElse(null);
+    }
+
+    // endregion
+
     // region Getter & Setter
 
     public boolean haveTopWall() {
@@ -266,10 +444,6 @@ public class Cell
 
     public void setLeftWall(boolean leftWall) {
         this.leftWall = leftWall;
-    }
-
-    public void addCandy(Candy candy) {
-        this.candies.add(candy);
     }
 
     public ArrayList<Candy> getCandies() {

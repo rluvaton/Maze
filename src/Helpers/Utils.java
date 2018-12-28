@@ -18,10 +18,10 @@ public class Utils {
     /**
      * Get Random State
      *
-     * @return The random state (true or false
+     * @return The random state (true or false)
      */
     public final boolean getRandomState() {
-        return _random.nextInt(2) == 1;
+        return _random.nextBoolean();
     }
 
     /**

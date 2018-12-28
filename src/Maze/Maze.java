@@ -240,7 +240,7 @@ public class Maze {
                           .map(loc -> createELocations(loc, height, width, ELocationType.Exit))
                           .collect(Collectors.toList());
 
-        this.generateRandomCandies((width * height) / 10);
+        this.generateRandomCandies((width * height) / 10, false);
     }
 
     // endregion

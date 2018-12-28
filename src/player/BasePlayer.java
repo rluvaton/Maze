@@ -12,6 +12,9 @@ import static Helpers.Utils.Instance;
  * Abstract class for player
  */
 public abstract class BasePlayer {
+
+    // region Variables
+
     /**
      * Subject for where the player move
      */
@@ -31,6 +34,18 @@ public abstract class BasePlayer {
      * Previous Location
      */
     private Tuple<Integer, Integer> prevLocation;
+
+    /**
+     * Time left to user
+     */
+    private int time;
+
+    /**
+     * Points of the user
+     */
+    private int points = 0;
+
+    // endregion
 
     /**
      * Constructor
@@ -142,6 +157,46 @@ public abstract class BasePlayer {
     public Tuple<Integer, Integer> getPrevLocation() {
         return prevLocation;
     }
+
+    // region Points
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    public void addPoints(int points) {
+        this.points += points;
+    }
+
+    public void removePoints(int points) {
+        this.points -= points;
+    }
+
+    // endregion
+
+    // region Time
+
+    public int getTime() {
+        return time;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
+    }
+
+    public void addTime(int time) {
+        this.time += time;
+    }
+
+    public void removeTime(int time) {
+        this.time -= time;
+    }
+
+    // endregion
 
     // endregion
 }

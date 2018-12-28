@@ -21,7 +21,7 @@ public abstract class Candy
     protected CandyPowerType type;
 
     /**
-     * Time of candy to live
+     * Time of candy to live, until it's expired
      * -1 means no time
      */
     protected int timeToLive = -1;
