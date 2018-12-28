@@ -135,8 +135,6 @@ public class MazePreviewPanel extends JPanel {
             if (player instanceof HumanPlayer) {
                 this.addKeyListener((HumanPlayer) player);
             }
-
-
         }
     }
 

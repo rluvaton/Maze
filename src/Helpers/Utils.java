@@ -47,18 +47,18 @@ public class Utils {
 
     /**
      * Get next cell of of direction and current location
-     * @param loc Location
+     *
+     * @param loc           Location
      * @param nextDirection The direction to go
      * @return Returns new Tuple of the next cell location
      * @throws IllegalArgumentException in case of loc variable is null or nextDirection value is not recognized
      */
     public final Tuple<Integer, Integer> getNextCell(Tuple<Integer, Integer> loc, Direction nextDirection) {
-        if(loc == null) {
+        if (loc == null) {
             throw new IllegalArgumentException("Location can't be null");
         }
 
-        int row = loc.item1,
-                col = loc.item2;
+        int row = loc.item1, col = loc.item2;
         switch (nextDirection) {
             case TOP:
                 row -= 1;
@@ -150,10 +150,8 @@ public class Utils {
      * @return Returns if in limit
      */
     public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
-        return (row == 0 && direction == Direction.TOP) ||
-                (row == height - 1 && direction == Direction.BOTTOM) ||
-                (col == 0 && direction == Direction.LEFT) ||
-                (col == width - 1 && direction == Direction.RIGHT);
+        return (row == 0 && direction == Direction.TOP) || (row == height - 1 && direction == Direction.BOTTOM) ||
+               (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
     }
 
 
@@ -181,8 +179,9 @@ public class Utils {
 
     /**
      * Compare tuples
-     * @param t1 Tuple 1
-     * @param t2 Tuple 2
+     *
+     * @param t1  Tuple 1
+     * @param t2  Tuple 2
      * @param <X> First type of the tuple
      * @param <Y> Second type of the tuple
      * @return Returns if both tuples are equal in values or as tuples
@@ -193,15 +192,37 @@ public class Utils {
 
     /**
      * Generate Tuple
-     * @param firstLimit First item limit
+     *
+     * @param firstLimit  First item limit
      * @param secondLimit Second item limit
      * @return Returns The Tuple of items
-     *
      * @example Generate Location in Matrix
      * generateTuple(height, width)
      */
     public Tuple<Integer, Integer> generateTuple(int firstLimit, int secondLimit) {
         return new Tuple<>(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
+    }
+
+    /**
+     * Get Direction of the move
+     *
+     * @param from From location
+     * @param to   To location
+     * @return Direction of move
+     * @throws IllegalArgumentException If from or to or there values are null
+     */
+    public Direction getDirection(Tuple<Integer, Integer> from, Tuple<Integer, Integer> to) {
+        if (from == null || from.item1 == null || from.item2 == null) {
+            throw new IllegalArgumentException("from or it's values is null");
+        }
+        if (to == null || to.item1 == null || to.item2 == null) {
+            throw new IllegalArgumentException("to or it's values is null");
+        }
+
+        return (from.item1 > to.item1 && from.item2.equals(to.item2)) ? Direction.BOTTOM :
+               (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
+               (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
+               (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
     }
 }
 

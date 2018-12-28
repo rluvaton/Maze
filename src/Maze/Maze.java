@@ -7,7 +7,6 @@ import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Candy.*;
-import Maze.ELocation;
 import Maze.MazeSolver.DFS.DFSCell;
 import Maze.MazeSolver.DFS.DFSSolver;
 
@@ -312,9 +311,9 @@ public class Maze {
                                                   .anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) &&
                                                                    loc.item2.equals(finalTempLoc[0].item2)) &&
                 (isExit || exits.size() == 0 || exits.stream()
-                                                     .allMatch(loc -> DFSSolver.getSolvePathDist(this.mazeData,
-                                                                                                 loc,
-                                                                                                 finalTempLoc[0]) >=
+                                                     .allMatch(loc -> DFSSolver.getSolvePathDistance(this.mazeData,
+                                                                                                     loc,
+                                                                                                     finalTempLoc[0]) >=
                                                                       minDistance))) || (exits.size() != 0 &&
                                                                                          exits.stream()
                                                                                               .anyMatch(loc -> loc.item1
@@ -325,7 +324,7 @@ public class Maze {
                                                                                           entrances.size() == 0 ||
                                                                                           entrances.stream()
                                                                                                    .allMatch(loc -> DFSSolver
-                                                                                                                            .getSolvePathDist(
+                                                                                                                            .getSolvePathDistance(
                                                                                                                                     this.mazeData,
                                                                                                                                     loc,
                                                                                                                                     finalTempLoc[0]) >=
@@ -610,7 +609,7 @@ public class Maze {
     /**
      * Check if valid location
      *
-     * @param location  Location to check it's validation
+     * @param location Location to check it's validation
      * @return Return the result if location valid or not
      */
     public boolean checkIfValidLocation(Tuple<Integer, Integer> location) {
@@ -645,9 +644,8 @@ public class Maze {
      *
      * @param location  location
      * @param direction headed direction
-     * @param type Type of ELocation to search (null will search all)
+     * @param type      Type of ELocation to search (null will search all)
      * @return Return the ELocation if found one
-     *
      * @description More efficient if you search only specific type (enter / exit)
      */
     public ELocation checkIfELocation(Tuple<Integer, Integer> location, Direction direction, ELocationType type) {
