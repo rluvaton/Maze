@@ -41,6 +41,11 @@ public class Maze {
      */
     private List<ELocation> exits = new ArrayList<ELocation>();
 
+    /**
+     * List of candy and his location
+     */
+    private List<Tuple<Candy, Tuple<Integer, Integer>>> candies = new ArrayList<>();
+
     // region Constructors
 
     /**
@@ -240,6 +245,18 @@ public class Maze {
                           .collect(Collectors.toList());
 
         this.generateRandomCandies((width * height) / 10, false);
+
+        // Add candies to the candy list
+        for (int i = 0, len = this.mazeData.length; i < len; i++) {
+            for (int j = 0, rowLen = this.mazeData[i].length; j < rowLen; j++) {
+                int finalI = i;
+                int finalJ = j;
+                this.candies.addAll(this.mazeData[i][j].getCandies()
+                                                       .stream()
+                                                       .map(candy -> new Tuple<>(candy, new Tuple<>(finalI, finalJ)))
+                                                       .collect(Collectors.toList()));
+            }
+        }
     }
 
     // endregion
@@ -382,12 +399,13 @@ public class Maze {
 
             nextLoc = Instance.getNextCell(loc, selected);
 
-            if (Instance.inBounds(nextLoc, height, width) &&
-                this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() &&
-                this.mazeData[loc.item1][loc.item2].setCellAtDirection(this.mazeData[nextLoc.item1][nextLoc.item2],
-                                                                       selected,
-                                                                       force,
-                                                                       update))
+            if (Instance.inBounds(nextLoc,
+                                  height,
+                                  width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(
+                    this.mazeData[nextLoc.item1][nextLoc.item2],
+                    selected,
+                    force,
+                    update))
             {
                 return selected;
             }
@@ -428,7 +446,7 @@ public class Maze {
 
             cell.addCandy(this.generateSingleCandy(null,
                                                    new Tuple<>(!generateOnlyGood, true),
-                                                   null,
+                                                   new Tuple<>(Instance.getRandomState(), null),
                                                    null,
                                                    new Tuple<>(true, true),
                                                    null,
@@ -506,7 +524,7 @@ public class Maze {
      *
      * @param types             Candy available types, if null then it's all types
      * @param isGood            Is Good config
-     * @param timeToLive        Time to live config
+     * @param timeToLive        Time to live config none at default, the random value to create random between is in seconds if provided tuple of random time is between 1 to 20 seconds
      * @param strengthPower     Strength power config
      * @param twoWayPortal      Two way portal config
      * @param otherCellLocation Other Cell Location config, in case of PortalCandy
@@ -545,14 +563,27 @@ public class Maze {
 
         boolean isGoodVal = isGood == null || (isGood.item1 ? Utils.Instance.getRandomState() : isGood.item2);
 
-        int timeToLiveVal = timeToLive == null ? -1 : timeToLive.item1
-                                                      ? Utils.Instance.getRandomNumber(timeToLive.item2.item1,
-                                                                                       timeToLive.item2.item2)
-                                                      : timeToLive.item2 != null ? timeToLive.item2.item1 : -1;
+        // In case of timeToLive is null then it will set no time to live,
+        int timeToLiveVal;
+        if (timeToLive == null) timeToLiveVal = -1;
+        else timeToLiveVal = timeToLive.item1
+                             ? ((timeToLive.item2 == null)
+                                ? (Utils.Instance.getRandomNumber(1,
+                                                                  20) * 1000)
+                                : (Utils.Instance.getRandomNumber(timeToLive.item2.item1 == null
+                                                                  ? 1
+                                                                  : timeToLive.item2.item1,
+                                                                  timeToLive.item2.item2 == null
+                                                                  ? 20
+                                                                  : timeToLive.item2.item2) * 1000))
+                             : ((timeToLive.item2 != null) ? timeToLive.item2.item1 : -1);
 
-        int strengthPowerVal = strengthPower == null ? 1000 : strengthPower.item1 ? Utils.Instance.getRandomNumber(
-                strengthPower.item2.item1,
-                strengthPower.item2.item2) : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
+        int strengthPowerVal = strengthPower == null
+                               ? 1000
+                               : strengthPower.item1
+                                 ? Utils.Instance.getRandomNumber(strengthPower.item2.item1,
+                                                                  strengthPower.item2.item2)
+                                 : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
 
         switch (type) {
             case Time:
@@ -561,18 +592,19 @@ public class Maze {
                 return new PointsCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
             case Location:
 
-                Tuple<Integer, Integer> otherCellLocationVal =
-                        otherCellLocation == null ? Utils.Instance.generateTuple(height, width)
-                                                  : otherCellLocation.item1 ? Utils.Instance.generateTuple(
-                                                          otherCellLocation.item2.item1,
-                                                          otherCellLocation.item2.item2)
-                                                                            : otherCellLocation.item2 != null
-                                                                              ? otherCellLocation.item2
-                                                                              : Utils.Instance.generateTuple(height,
-                                                                                                             width);
+                Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null
+                                                               ? Utils.Instance.generateTuple(height,
+                                                                                              width)
+                                                               : otherCellLocation.item1
+                                                                 ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
+                                                                                                otherCellLocation.item2.item2)
+                                                                 : otherCellLocation.item2 != null
+                                                                   ? otherCellLocation.item2
+                                                                   : Utils.Instance.generateTuple(height, width);
 
-                boolean twoWayPortalVal = twoWayPortal == null ||
-                                          (twoWayPortal.item1 ? Utils.Instance.getRandomState() : twoWayPortal.item2);
+                boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1
+                                                                   ? Utils.Instance.getRandomState()
+                                                                   : twoWayPortal.item2);
 
                 if (twoWayPortalVal) {
                     return new PortalCandy(isGoodVal,
@@ -628,13 +660,17 @@ public class Maze {
     public ELocation checkIfELocation(Tuple<Integer, Integer> location, Direction direction) {
         Optional<ELocation> opELoc;
 
-        opELoc = exits.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
+        opELoc = exits.stream()
+                      .filter(exitLoc -> exitLoc.isAtELocation(location, direction))
+                      .findFirst();
 
         if (opELoc.isPresent()) {
             return opELoc.get();
         }
 
-        opELoc = entrances.stream().filter(enterLoc -> enterLoc.isAtELocation(location, direction)).findFirst();
+        opELoc = entrances.stream()
+                          .filter(enterLoc -> enterLoc.isAtELocation(location, direction))
+                          .findFirst();
 
         return opELoc.orElse(null);
     }
@@ -657,7 +693,9 @@ public class Maze {
 
         List<ELocation> search = (type == ELocationType.Exit) ? exits : entrances;
 
-        opELoc = search.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
+        opELoc = search.stream()
+                       .filter(exitLoc -> exitLoc.isAtELocation(location, direction))
+                       .findFirst();
 
         return opELoc.orElse(null);
     }
@@ -666,14 +704,19 @@ public class Maze {
 
     // region Getter & Setter
 
+    public List<Tuple<Candy, Tuple<Integer, Integer>>> getCandies() {
+        return candies;
+    }
+
     /**
      * Get Random Entrance
      *
      * @return The location of the entrance
      */
     public ELocation getRandomEntrance() {
-        return entrances == null || entrances.size() == 0 ? null
-                                                          : entrances.get(Instance.getRandomNumber(entrances.size()));
+        return entrances == null || entrances.size() == 0
+               ? null
+               : entrances.get(Instance.getRandomNumber(entrances.size()));
     }
 
     public List<ELocation> getEntrances() {
@@ -710,9 +753,7 @@ public class Maze {
      * @return Returns the cell
      */
     public Cell getCell(Tuple<Integer, Integer> location) {
-        if (location == null || location.item1 < 0 || location.item1 >= this.height || location.item2 < 0 ||
-            location.item2 >= this.width)
-        {
+        if (location == null || location.item1 < 0 || location.item1 >= this.height || location.item2 < 0 || location.item2 >= this.width) {
             return null;
         }
 

@@ -7,12 +7,14 @@ import Maze.Maze;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.MazeSolver.DFS.DFSCell;
+import io.reactivex.Observable;
 import player.BasePlayer;
 import player.HumanPlayer;
 import player.MoveStatus;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.TimeUnit;
 
 public class MazePreviewPanel extends JPanel {
 
@@ -112,30 +114,39 @@ public class MazePreviewPanel extends JPanel {
             player.setLocation(entrance != null ? entrance.getLocation() : new Tuple<>(0, 0));
 
             // Move player when observable fire
-            player.getPlayerMoveObs().subscribe(direction -> {
-                MoveStatus res = this.movePlayer(player, direction);
-                switch (res) {
-                    case Valid:
-                        System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
-                        break;
-                    case NotValidMove:
-                        System.out.println("Not Valid Move");
-                        break;
-                    case Finished:
-                        System.out.println("User Finished!");
-                        this.playerFinished(player);
-                        break;
-                    default:
-                        System.out.println("Unknown move status " + res);
-                        break;
-                }
-            });
+            player.getPlayerMoveObs()
+                  .subscribe(direction -> {
+                      MoveStatus res = this.movePlayer(player, direction);
+                      switch (res) {
+                          case Valid:
+                              System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
+                              break;
+                          case NotValidMove:
+                              System.out.println("Not Valid Move");
+                              break;
+                          case Finished:
+                              System.out.println("User Finished!");
+                              this.playerFinished(player);
+                              break;
+                          default:
+                              System.out.println("Unknown move status " + res);
+                              break;
+                      }
+                  });
 
             // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
                 this.addKeyListener((HumanPlayer) player);
             }
+
         }
+
+        this.maze.getCandies()
+                 .stream()
+                 .filter(candyLoc -> candyLoc.item1.getTimeToLive() > 0)
+                 .forEach(candyLoc -> Observable.timer(candyLoc.item1.getTimeToLive(), TimeUnit.MILLISECONDS)
+                                                .subscribe(finished -> this.maze.getCell(candyLoc.item2)
+                                                                                .removeCandy(candyLoc.item1)));
     }
 
     /**
@@ -243,23 +254,26 @@ public class MazePreviewPanel extends JPanel {
         Color before = g.getColor();
 
         // TODO - Set timeout for the candies to disappear
-        if (!cell.getCandies().isEmpty()) {
-            cell.getCandies().forEach(candy -> {
-                switch (candy.getType()) {
-                    case Time:
-                        g.setColor(Color.decode("#6761A8"));
-                        break;
-                    case Points:
-                        g.setColor(Color.decode("#F26430"));
-                        break;
-                    case Location:
-                        g.setColor(Color.decode("#009B72"));
-                        break;
-                    default:
-                        return;
-                }
-                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
-            });
+        if (!cell.getCandies()
+                 .isEmpty())
+        {
+            cell.getCandies()
+                .forEach(candy -> {
+                    switch (candy.getType()) {
+                        case Time:
+                            g.setColor(Color.decode("#6761A8"));
+                            break;
+                        case Points:
+                            g.setColor(Color.decode("#F26430"));
+                            break;
+                        case Location:
+                            g.setColor(Color.decode("#009B72"));
+                            break;
+                        default:
+                            return;
+                    }
+                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+                });
         }
 
         g.setColor(before);
