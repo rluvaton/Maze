@@ -658,6 +658,22 @@ public class Maze {
     }
 
     /**
+     * Check if valid move and return the cell if valid
+     *
+     * @param location  Location from where the move is made
+     * @param direction Wanted direction
+     * @return Return the cell of the move if it's valid
+     */
+    public Cell checkIfValidMoveCell(Tuple<Integer, Integer> location, Direction direction) {
+        Cell destCell = this.getCell(location);
+
+        Cell nextCell = destCell != null ? this.getCell(Instance.getNextCell(location, direction)) : null;
+
+        return (destCell == null || nextCell == null || !destCell.haveCellAtDirection(
+                direction)) ? null : nextCell;
+    }
+
+    /**
      * Check if valid location
      *
      * @param location Location to check it's validation

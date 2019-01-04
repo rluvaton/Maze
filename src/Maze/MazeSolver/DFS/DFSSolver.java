@@ -43,24 +43,18 @@ public class DFSSolver {
         while (!Tuple.compare(current, endPoint) && iterations < maxTries) {
             tempCell = (DFSCell) (maze.getCell(current));
             tempCell.setDeadEnd(true);
-            nextRes = tempCell.getPathNeighbour(tempCell.haveTopWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1 - 1, current.item2)),
-                                                tempCell.haveRightWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 + 1)),
-                                                tempCell.haveBottomWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1 + 1, current.item2)),
-                                                tempCell.haveLeftWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 - 1)));
+
+            nextRes = tempCell.getPathNeighbour(
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.TOP)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.RIGHT)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.BOTTOM)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.LEFT)));
 
             if (nextRes != null) {
                 iterations++;
                 path.push(current);
                 maybeNextLoc = maze.getCell(nextRes).collectLocationCandyPortal();
-                if(maybeNextLoc != null) {
+                if (maybeNextLoc != null) {
                     nextRes = maybeNextLoc;
                     current = nextRes.clone();
                 } else {
@@ -129,19 +123,11 @@ public class DFSSolver {
             tempCell = (DFSCell) (maze.getCell(current));
             tempCell.setDeadEnd(true);
 
-            nextRes = tempCell.getPathNeighbour(tempCell.haveTopWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1 - 1, current.item2)),
-                                                tempCell.haveRightWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 + 1)),
-                                                tempCell.haveBottomWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1 + 1, current.item2)),
-                                                tempCell.haveLeftWall()
-                                                ? null
-                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 - 1)));
-
+            nextRes = tempCell.getPathNeighbour(
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.TOP)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.RIGHT)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.BOTTOM)),
+                    (DFSCell) (maze.checkIfValidMoveCell(current, Direction.LEFT)));
 
 
             direction = Utils.Instance.getDirection(current, nextRes);
@@ -152,7 +138,7 @@ public class DFSSolver {
                 steps.push(direction);
 
                 maybeNextLoc = maze.getCell(nextRes).collectLocationCandyPortal();
-                if(maybeNextLoc != null) {
+                if (maybeNextLoc != null) {
                     nextRes = maybeNextLoc;
                     current = nextRes.clone();
                 } else {

@@ -1,6 +1,7 @@
 package UI;
 
 import Helpers.Direction;
+import Helpers.NoArgsVoidCallbackFunction;
 import Helpers.Tuple;
 import Maze.Cell;
 import Maze.Maze;
@@ -9,12 +10,16 @@ import Maze.ELocationType;
 import Maze.MazeSolver.DFS.DFSCell;
 import io.reactivex.Observable;
 import player.BasePlayer;
+import player.ComputerPlayer;
 import player.HumanPlayer;
 import player.MoveStatus;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MazePreviewPanel extends JPanel {
 
@@ -86,6 +91,46 @@ public class MazePreviewPanel extends JPanel {
     /**
      * Maze Preview Panel Constructor
      *
+     * @param maze        Maze to build
+     * @param players     Players of the maze
+     * @param atEntrances Set the players location at entrances
+     */
+    public MazePreviewPanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
+        this.maze = maze;
+        this.players = players;
+
+        if (atEntrances) {
+            List<Tuple<Integer, Integer>> locations = maze.getEntrances().stream().map(eLocation ->
+                    eLocation.getLocation()).collect(Collectors.toList());
+
+            if (locations.size() == 0) {
+                initGame();
+                return;
+            }
+
+            int defaultIndex = 0;
+
+            Tuple<Integer, Integer> defaultEntrance = locations.get(defaultIndex);
+            locations.remove(defaultIndex);
+
+            Tuple<Integer, Integer> playerLoc;
+
+            for (BasePlayer player : this.players) {
+                playerLoc = defaultEntrance;
+
+                if (!locations.isEmpty()) {
+                    playerLoc = locations.get(0);
+                    locations.remove(0);
+                }
+                player.setLocation(playerLoc);
+            }
+        }
+        initGame();
+    }
+
+    /**
+     * Maze Preview Panel Constructor
+     *
      * @param cells   Cells of the maze
      * @param players Players of the maze
      */
@@ -105,6 +150,8 @@ public class MazePreviewPanel extends JPanel {
     private void initGame() {
         setBackground(Color.WHITE);
 
+        ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
+
         for (BasePlayer player : this.players) {
 
             // Create entrance
@@ -115,38 +162,42 @@ public class MazePreviewPanel extends JPanel {
 
             // Move player when observable fire
             player.getPlayerMoveObs()
-                  .subscribe(direction -> {
-                      MoveStatus res = this.movePlayer(player, direction);
-                      switch (res) {
-                          case Valid:
-                              System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
-                              break;
-                          case NotValidMove:
-                              System.out.println("Not Valid Move");
-                              break;
-                          case Finished:
-                              System.out.println("User Finished!");
-                              this.playerFinished(player);
-                              break;
-                          default:
-                              System.out.println("Unknown move status " + res);
-                              break;
-                      }
-                  });
+                    .subscribe(direction -> {
+                        MoveStatus res = this.movePlayer(player, direction);
+                        switch (res) {
+                            case Valid:
+                                System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
+                                break;
+                            case NotValidMove:
+                                System.out.println("Not Valid Move");
+                                break;
+                            case Finished:
+                                System.out.println("User Finished!");
+                                this.playerFinished(player);
+                                break;
+                            default:
+                                System.out.println("Unknown move status " + res);
+                                break;
+                        }
+                    });
 
             // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
-                this.addKeyListener((HumanPlayer) player);
+                startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
+            } else if (player instanceof ComputerPlayer) {
+                startPlayersCallbacks.add(() -> ((ComputerPlayer) player).start(this.maze, this.maze.getEntrances().get(0).getLocation(), 100).start());
             }
-
         }
 
+        // Start the players
+        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+
         this.maze.getCandies()
-                 .stream()
-                 .filter(candyLoc -> candyLoc.item1.getTimeToLive() > 0)
-                 .forEach(candyLoc -> Observable.timer(candyLoc.item1.getTimeToLive(), TimeUnit.MILLISECONDS)
-                                                .subscribe(finished -> this.maze.getCell(candyLoc.item2)
-                                                                                .removeCandy(candyLoc.item1)));
+                .stream()
+                .filter(candyLoc -> candyLoc.item1.getTimeToLive() > 0)
+                .forEach(candyLoc -> Observable.timer(candyLoc.item1.getTimeToLive(), TimeUnit.MILLISECONDS)
+                        .subscribe(finished -> this.maze.getCell(candyLoc.item2)
+                                .removeCandy(candyLoc.item1)));
     }
 
     /**
@@ -255,25 +306,24 @@ public class MazePreviewPanel extends JPanel {
 
         // TODO - Set timeout for the candies to disappear
         if (!cell.getCandies()
-                 .isEmpty())
-        {
+                .isEmpty()) {
             cell.getCandies()
-                .forEach(candy -> {
-                    switch (candy.getType()) {
-                        case Time:
-                            g.setColor(Color.decode("#6761A8"));
-                            break;
-                        case Points:
-                            g.setColor(Color.decode("#F26430"));
-                            break;
-                        case Location:
-                            g.setColor(Color.decode("#009B72"));
-                            break;
-                        default:
-                            return;
-                    }
-                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
-                });
+                    .forEach(candy -> {
+                        switch (candy.getType()) {
+                            case Time:
+                                g.setColor(Color.decode("#6761A8"));
+                                break;
+                            case Points:
+                                g.setColor(Color.decode("#F26430"));
+                                break;
+                            case Location:
+                                g.setColor(Color.decode("#009B72"));
+                                break;
+                            default:
+                                return;
+                        }
+                        g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+                    });
         }
 
         g.setColor(before);
@@ -297,14 +347,14 @@ public class MazePreviewPanel extends JPanel {
             int verSpace = fullH / this.maze.getHeight();
 
             g.drawRect(coordinates.item1 + this.cellHorMargin,
-                       coordinates.item2 + this.cellVerMargin,
-                       horSpace - this.cellHorMargin,
-                       verSpace - this.cellVerMargin);
+                    coordinates.item2 + this.cellVerMargin,
+                    horSpace - this.cellHorMargin,
+                    verSpace - this.cellVerMargin);
 
             g.fillRect(coordinates.item1 + this.cellHorMargin,
-                       coordinates.item2 + this.cellVerMargin,
-                       horSpace - this.cellHorMargin,
-                       verSpace - this.cellVerMargin);
+                    coordinates.item2 + this.cellVerMargin,
+                    horSpace - this.cellHorMargin,
+                    verSpace - this.cellVerMargin);
             repaint();
         }
     }
@@ -347,7 +397,7 @@ public class MazePreviewPanel extends JPanel {
 
             Cell cell = this.maze.getCell(player.getLocation());
 
-            if(cell != null) {
+            if (cell != null) {
                 // Add the time and points from the candy
                 player.addTime(cell.collectTimeCandyStrengths());
                 player.addPoints(cell.collectPointsCandyStrengths());
