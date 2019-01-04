@@ -40,7 +40,7 @@ public class DFSSolver {
         int iterations = 0;
         int maxTries = maze.getHeight() * maze.getWidth() + 5;
 
-        while (!Utils.Instance.compareTuples(current, endPoint) && iterations < maxTries) {
+        while (!Tuple.compare(current, endPoint) && iterations < maxTries) {
             tempCell = (DFSCell) (maze.getCell(current));
             tempCell.setDeadEnd(true);
             nextRes = tempCell.getPathNeighbour(tempCell.haveTopWall()
@@ -125,7 +125,7 @@ public class DFSSolver {
         int iterations = 0;
         int maxTries = maze.getHeight() * maze.getWidth() + 5;
 
-        while (!Utils.Instance.compareTuples(current, endPoint) && iterations < maxTries) {
+        while (!Tuple.compare(current, endPoint) && iterations < maxTries) {
             tempCell = (DFSCell) (maze.getCell(current));
             tempCell.setDeadEnd(true);
 

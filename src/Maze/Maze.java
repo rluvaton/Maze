@@ -363,9 +363,7 @@ public class Maze {
                         // While entrances is empty
                         entrances.size() != 0 &&
                                 // And there already an entrance with the randomised location
-                                entrances.stream().anyMatch(loc ->
-                                        loc.item1.equals(finalTempLoc[0].item1) &&
-                                                loc.item2.equals(finalTempLoc[0].item2)) &&
+                                entrances.stream().anyMatch(loc -> Tuple.compare(loc, finalTempLoc[0])) &&
                                 // And either the wanted ELocation is an exit
                                 (isExit ||
                                         // Or the wanted location is entrance but there are no exits so there is no min distance to check
@@ -375,9 +373,7 @@ public class Maze {
                         // Or while exits is empty
                         (exits.size() != 0 &&
                                 // And there already an exit with the randomised location
-                                exits.stream().anyMatch(loc ->
-                                        loc.item1.equals(finalTempLoc[0].item1) &&
-                                                loc.item2.equals(finalTempLoc[0].item2)) &&
+                                exits.stream().anyMatch(loc -> Tuple.compare(loc, finalTempLoc[0])) &&
                                 // And either the wanted ELocation is entrance
                                 (!isExit ||
                                         // Or the wanted location is exit but there are no entrances so there is no min distance to check
@@ -484,7 +480,6 @@ public class Maze {
                     new Tuple<>(!generateOnlyGood, true),
                     new Tuple<>(Instance.getRandomState(), null),
                     null,
-                    new Tuple<>(true, true),
                     null,
                     cellLoc));
         }
@@ -521,7 +516,6 @@ public class Maze {
                     new Tuple<>(!generateOnlyGood, true),
                     null,
                     null,
-                    new Tuple<>(true, true),
                     null,
                     cellLoc));
         }
@@ -534,7 +528,6 @@ public class Maze {
                     new Tuple<>(!generateOnlyGood, true),
                     null,
                     null,
-                    new Tuple<>(true, true),
                     null,
                     cellLoc));
         }
@@ -547,7 +540,6 @@ public class Maze {
                     new Tuple<>(!generateOnlyGood, true),
                     null,
                     null,
-                    new Tuple<>(true, true),
                     null,
                     cellLoc));
         }
@@ -562,7 +554,6 @@ public class Maze {
      * @param isGood            Is Good config
      * @param timeToLive        Time to live config none at default, the random value to create random between is in seconds if provided tuple of random time is between 1 to 20 seconds
      * @param strengthPower     Strength power config
-     * @param twoWayPortal      Two way portal config
      * @param otherCellLocation Other Cell Location config, in case of PortalCandy
      * @param cellLoc           Cell Location in case of PortalCandy with 2 way portal
      * @return Return the generated candy
@@ -587,7 +578,6 @@ public class Maze {
                                       Tuple<Boolean, Boolean> isGood,
                                       Tuple<Boolean, Tuple<Integer, Integer>> timeToLive,
                                       Tuple<Boolean, Tuple<Integer, Integer>> strengthPower,
-                                      Tuple<Boolean, Boolean> twoWayPortal,
                                       Tuple<Boolean, Tuple<Integer, Integer>> otherCellLocation,
                                       Tuple<Integer, Integer> cellLoc) {
         // The type of the candy that gonna be generated
@@ -632,25 +622,15 @@ public class Maze {
                         ? Utils.Instance.generateTuple(height,
                         width)
                         : otherCellLocation.item1
-                        ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
-                        otherCellLocation.item2.item2)
+                        ? otherCellLocation.item2.clone()
                         : otherCellLocation.item2 != null
                         ? otherCellLocation.item2
                         : Utils.Instance.generateTuple(height, width);
 
-                boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1
-                        ? Utils.Instance.getRandomState()
-                        : twoWayPortal.item2);
-
-                if (twoWayPortalVal) {
-                    return new PortalCandy(isGoodVal,
-                            timeToLiveVal,
-                            otherCellLocationVal,
-                            this.getCell(otherCellLocationVal),
-                            cellLoc);
-                } else {
-                    return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, false);
-                }
+                return new PortalCandy(timeToLiveVal,
+                        otherCellLocationVal,
+                        this.getCell(otherCellLocationVal),
+                        cellLoc);
 
             default:
                 return null;

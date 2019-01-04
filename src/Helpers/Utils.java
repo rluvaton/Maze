@@ -178,19 +178,6 @@ public class Utils {
     }
 
     /**
-     * Compare tuples
-     *
-     * @param t1  Tuple 1
-     * @param t2  Tuple 2
-     * @param <X> First type of the tuple
-     * @param <Y> Second type of the tuple
-     * @return Returns if both tuples are equal in values or as tuples
-     */
-    public <X, Y> boolean compareTuples(Tuple<X, Y> t1, Tuple<X, Y> t2) {
-        return t1 == t2 || (t1.item1 == t2.item1 && t1.item2 == t2.item2);
-    }
-
-    /**
      * Generate Tuple
      *
      * @param firstLimit  First item limit

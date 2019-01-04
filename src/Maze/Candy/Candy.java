@@ -28,9 +28,18 @@ public abstract class Candy
 
     // region Constructors
 
+    protected Candy(CandyPowerType type) {
+        this.type = type;
+    }
+
     public Candy(boolean isGood, CandyPowerType type) {
         this.isGood = isGood;
         this.type = type;
+    }
+
+    protected Candy(CandyPowerType type, int timeToLive) {
+        this.type = type;
+        this.timeToLive = timeToLive;
     }
 
     public Candy(boolean isGood, CandyPowerType type, int timeToLive) {
@@ -45,8 +54,15 @@ public abstract class Candy
         this.type = type;
     }
 
+
     public Candy(boolean isGood, int candyStrength, CandyPowerType type, int timeToLive) {
         this.isGood = isGood;
+        CandyStrength = candyStrength;
+        this.type = type;
+        this.timeToLive = timeToLive;
+    }
+
+    protected Candy(int candyStrength, CandyPowerType type, int timeToLive) {
         CandyStrength = candyStrength;
         this.type = type;
         this.timeToLive = timeToLive;

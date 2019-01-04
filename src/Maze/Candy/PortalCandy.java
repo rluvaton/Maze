@@ -1,21 +1,22 @@
 package Maze.Candy;
 
+import Helpers.NoArgsCallbackFunction;
 import Helpers.Tuple;
 import Maze.Cell;
 
 /**
  * Portal Candy
+ *
  * @description When enter to cell the candy portal the player to a new place
  */
-public class PortalCandy extends Candy
-{
+public class PortalCandy extends Candy {
     /**
      * Is the Portal work 2 way
      *
      * @example twoWayPortal is true
      * I enter a portal and I can return to the same place that I enter the portal before
      */
-    private boolean twoWayPortal = false;
+    private boolean twoWayPortal = true;
 
     /**
      * Where the portal is moving you
@@ -24,92 +25,85 @@ public class PortalCandy extends Candy
 
     // region Constructors
 
-    public PortalCandy(boolean isGood, Tuple<Integer, Integer> location) {
-        super(isGood, CandyPowerType.Location);
+    /**
+     * Portal Candy Constructor
+     *
+     * @param location location of where the candy is teleporting you
+     *
+     * Private function because we don't want for now 1 Way portal candy
+     *
+     * @see #PortalCandy(Tuple, Cell, Tuple) for creating portal candy
+     */
+    private PortalCandy(Tuple<Integer, Integer> location) {
+        super(CandyPowerType.Location);
         this.location = location;
     }
 
-    public PortalCandy(boolean isGood, Tuple<Integer, Integer> location, boolean twoWayPortal) {
-        super(isGood, CandyPowerType.Location);
+    public PortalCandy(Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
+        super(CandyPowerType.Location);
         this.location = location;
-        this.twoWayPortal = twoWayPortal;
+
+        this.addOtherCellTeleportCandy(otherCell, myLocation, () -> new PortalCandy(myLocation));
     }
 
-    public PortalCandy(boolean isGood, Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
-        super(isGood, CandyPowerType.Location);
+    /**
+     * Portal Candy Constructor
+     *
+     * @param location   location of where the candy is teleporting you
+     * @param timeToLive Time until the candy expired
+     *
+     * Private function because we don't want for now 1 Way portal candy
+     *
+     * @see #PortalCandy(int, Tuple, Cell, Tuple) for creating portal candy
+     */
+    private PortalCandy(Tuple<Integer, Integer> location, int timeToLive) {
+        super(CandyPowerType.Location, timeToLive);
+        this.location = location;
+    }
+
+    public PortalCandy(int timeToLive, Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
+        super(CandyPowerType.Location, timeToLive);
         this.location = location;
 
-        assert otherCell != null;
-        assert myLocation != null;
-        assert myLocation.item1 >= 0;
-        assert myLocation.item2 >= 0;
+        this.addOtherCellTeleportCandy(otherCell, myLocation, () -> new PortalCandy(myLocation, timeToLive));
+    }
 
-        this.twoWayPortal = true;
+    // endregion
 
-        if (otherCell.getCandies().stream().noneMatch(candy ->
-                candy instanceof PortalCandy &&
-                        candy.isGood == isGood &&
-                        ((PortalCandy) candy).twoWayPortal &&
-                        ((PortalCandy) candy).location != null &&
-                        (((PortalCandy) candy).location == myLocation ||
-                                (((PortalCandy) candy).location.item1.equals(myLocation.item1) && ((PortalCandy) candy).location.item2.equals(myLocation.item2)))))
-        {
-            otherCell.addCandy(new PortalCandy(isGood, myLocation, true));
+    private void addOtherCellTeleportCandy(Cell cell, Tuple<Integer, Integer> myLocation, NoArgsCallbackFunction<PortalCandy> createCandy) {
+
+        if (cell == null) {
+            throw new IllegalArgumentException("cell can't be null");
         }
-    }
 
-    public PortalCandy(boolean isGood, int timeToLive, Tuple<Integer, Integer> location, boolean twoWayPortal) {
-        super(isGood, CandyPowerType.Location, timeToLive);
-        this.location = location;
-        this.twoWayPortal = twoWayPortal;
-    }
+        if (myLocation == null) {
+            throw new IllegalArgumentException("myLocation can't be null");
+        }
 
-    public PortalCandy(boolean isGood, int timeToLive, Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
-        super(isGood, CandyPowerType.Location, timeToLive);
-        this.location = location;
+        if (myLocation.item1 < 0) {
+            throw new IllegalArgumentException("myLocation.item1 can't be negative");
+        }
 
-        assert otherCell != null;
-        assert myLocation != null;
-        assert myLocation.item1 >= 0;
-        assert myLocation.item2 >= 0;
+        if (myLocation.item2 < 0) {
+            throw new IllegalArgumentException("myLocation.item2 can't be negative");
+        }
 
-        this.twoWayPortal = true;
-
-        if (otherCell.getCandies().stream().noneMatch(candy ->
+        if (cell.getCandies().stream().noneMatch(candy ->
                 candy instanceof PortalCandy &&
                         candy.isGood == isGood &&
                         candy.timeToLive == timeToLive &&
                         ((PortalCandy) candy).twoWayPortal &&
                         ((PortalCandy) candy).location != null &&
                         (((PortalCandy) candy).location == myLocation ||
-                                (((PortalCandy) candy).location.item1.equals(myLocation.item1) && ((PortalCandy) candy).location.item2.equals(myLocation.item2)))))
-        {
-            otherCell.addCandy(new PortalCandy(isGood, timeToLive, myLocation, true));
+                                (((PortalCandy) candy).location.compare(myLocation))))) {
+            cell.addCandy(createCandy.run());
         }
     }
-
-    public PortalCandy(boolean isGood, int candyStrength, boolean twoWayPortal, Tuple<Integer, Integer> location) {
-        super(isGood, candyStrength, CandyPowerType.Location);
-        this.twoWayPortal = twoWayPortal;
-        this.location = location;
-    }
-
-    public PortalCandy(boolean isGood, int candyStrength, int timeToLive, boolean twoWayPortal, Tuple<Integer, Integer> location) {
-        super(isGood, candyStrength, CandyPowerType.Location, timeToLive);
-        this.twoWayPortal = twoWayPortal;
-        this.location = location;
-    }
-
-    // endregion
 
     // region Getter & Setter
 
     public boolean isTwoWayPortal() {
         return twoWayPortal;
-    }
-
-    public void setTwoWayPortal(boolean twoWayPortal) {
-        this.twoWayPortal = twoWayPortal;
     }
 
     public Tuple<Integer, Integer> getLocation() {
