@@ -345,22 +345,22 @@ public class MazePreviewPanel extends JPanel {
         if (this.maze.checkIfValidMove(loc, direction) != null) {
             player.setLocation(direction);
 
-            // TODO - Set when on stepping on a candy it will be collected
-
             Cell cell = this.maze.getCell(player.getLocation());
 
-            // Add the time and points from the candy
-            player.addTime(cell.collectTimeCandyStrengths());
-            player.addPoints(cell.collectPointsCandyStrengths());
+            if(cell != null) {
+                // Add the time and points from the candy
+                player.addTime(cell.collectTimeCandyStrengths());
+                player.addPoints(cell.collectPointsCandyStrengths());
 
-            Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
+                Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
 
-            if (teleportLocation != null) {
-                this.changePlayerLocation(player, teleportLocation, true);
+                if (teleportLocation != null) {
+                    this.changePlayerLocation(player, teleportLocation, true);
+                }
+
+                System.out.println("Move");
+                moved = MoveStatus.Valid;
             }
-
-            System.out.println("Move");
-            moved = MoveStatus.Valid;
         }
 
         // Don't use player.getLocation() because it will bring you the new location

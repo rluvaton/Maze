@@ -325,27 +325,22 @@ public class Maze {
         Tuple<Integer, Integer>[] finalTempLoc = new Tuple[]{tempLoc};
 
         while ((entrances.size() != 0 && entrances.stream()
-                                                  .anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) &&
-                                                                   loc.item2.equals(finalTempLoc[0].item2)) &&
-                (isExit || exits.size() == 0 || exits.stream()
-                                                     .allMatch(loc -> DFSSolver.getSolvePathDistance(this.mazeData,
-                                                                                                     loc,
-                                                                                                     finalTempLoc[0]) >=
-                                                                      minDistance))) || (exits.size() != 0 &&
-                                                                                         exits.stream()
-                                                                                              .anyMatch(loc -> loc.item1
-                                                                                                                       .equals(finalTempLoc[0].item1) &&
-                                                                                                               loc.item2
-                                                                                                                       .equals(finalTempLoc[0].item2)) &&
-                                                                                         (!isExit ||
-                                                                                          entrances.size() == 0 ||
-                                                                                          entrances.stream()
-                                                                                                   .allMatch(loc -> DFSSolver
-                                                                                                                            .getSolvePathDistance(
-                                                                                                                                    this.mazeData,
-                                                                                                                                    loc,
-                                                                                                                                    finalTempLoc[0]) >=
-                                                                                                                    minDistance)))) {
+                                                  .anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
+                                                          finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream()
+                                                                                                                          .allMatch(
+                                                                                                                                  loc -> DFSSolver.getSolvePathDistance(
+                                                                                                                                          this.mazeData,
+                                                                                                                                          loc,
+                                                                                                                                          finalTempLoc[0]) >= minDistance))) || (exits.size() != 0 && exits.stream()
+                                                                                                                                                                                                           .anyMatch(
+                                                                                                                                                                                                                   loc -> loc.item1.equals(
+                                                                                                                                                                                                                           finalTempLoc[0].item1) && loc.item2.equals(
+                                                                                                                                                                                                                           finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream()
+                                                                                                                                                                                                                                                                                                    .allMatch(
+                                                                                                                                                                                                                                                                                                            loc -> DFSSolver.getSolvePathDistance(
+                                                                                                                                                                                                                                                                                                                    this.mazeData,
+                                                                                                                                                                                                                                                                                                                    loc,
+                                                                                                                                                                                                                                                                                                                    finalTempLoc[0]) >= minDistance)))) {
             state = Instance.getRandomState();
 
             if (state) {
@@ -635,7 +630,9 @@ public class Maze {
     public Direction checkIfValidMove(Tuple<Integer, Integer> location, Direction direction) {
         Cell destCell = this.getCell(location);
 
-        return (destCell == null || !destCell.haveCellAtDirection(direction)) ? null : direction;
+
+        return (destCell == null || this.getCell(Instance.getNextCell(location,
+                                                                      direction)) == null || !destCell.haveCellAtDirection(direction)) ? null : direction;
     }
 
     /**
