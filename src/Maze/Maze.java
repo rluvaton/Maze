@@ -201,7 +201,7 @@ public class Maze {
 
         // Create Tuple of the current location
         Tuple<Integer, Integer> currLoc = new Tuple<>(Instance.getRandomNumber(height),
-                                                      Instance.getRandomNumber(width));
+                Instance.getRandomNumber(width));
 
         // Push to the start of the steps
         steps.push(currLoc);
@@ -258,9 +258,9 @@ public class Maze {
         }
 
         this.entrances = entrances.stream().map(loc -> createELocations(loc,
-                                                                        height,
-                                                                        width,
-                                                                        ELocationType.Entrance)).collect(Collectors.toList());
+                height,
+                width,
+                ELocationType.Entrance)).collect(Collectors.toList());
 
         this.exits = exits.stream().map(loc -> createELocations(loc, height, width, ELocationType.Exit)).collect(
                 Collectors.toList());
@@ -282,9 +282,9 @@ public class Maze {
                 int finalI = i;
                 int finalJ = j;
                 this.candies.addAll(this.mazeData[i][j].getCandies().stream().map(candy -> new Tuple<>(candy,
-                                                                                                       new Tuple<>(
-                                                                                                               finalI,
-                                                                                                               finalJ))).collect(
+                        new Tuple<>(
+                                finalI,
+                                finalJ))).collect(
                         Collectors.toList()));
             }
         }
@@ -333,10 +333,10 @@ public class Maze {
     /**
      * Generate Unique Location that doesn't exist in the entrances or exists
      *
-     * @param entrances   Entrances location list
-     * @param exits       Exits Location list
-     * @param minDistance Min Distance
-     * @param isExit      Trying to create unique location to
+     * @param entrances           Entrances location list
+     * @param exits               Exits Location list
+     * @param minDistance         Min Distance
+     * @param isExit              Trying to create unique location to
      * @param withTeleportCandies If when calculation minimum distance we take into account the teleport candies
      * @return Return the unique location
      */
@@ -347,28 +347,45 @@ public class Maze {
                                                          boolean withTeleportCandies) {
         // Generate random location that don't exist yet
         Tuple<Integer, Integer> tempLoc;
-        boolean state = Instance.getRandomState();
 
-        if (state) {
+        if (Instance.getRandomState()) {
             tempLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));
         } else {
             tempLoc = new Tuple<>(Instance.getRandomNumber(2) * (height - 1), Instance.getRandomNumber(width));
         }
 
+        // Final for the lambda functions
         Tuple<Integer, Integer>[] finalTempLoc = new Tuple[]{tempLoc};
 
 
-        while ((entrances.size() != 0 && entrances.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
-                finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(
-                this,
-                loc,
-                finalTempLoc[0],
-                false) >= minDistance))) || (exits.size() != 0 && exits.stream().anyMatch(loc -> loc.item1.equals(
-                finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream().allMatch(
-                loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], false) >= minDistance)))) {
-            state = Instance.getRandomState();
+        while (
+                (
+                        // While entrances is empty
+                        entrances.size() != 0 &&
+                                // And there already an entrance with the randomised location
+                                entrances.stream().anyMatch(loc ->
+                                        loc.item1.equals(finalTempLoc[0].item1) &&
+                                                loc.item2.equals(finalTempLoc[0].item2)) &&
+                                // And either the wanted ELocation is an exit
+                                (isExit ||
+                                        // Or the wanted location is entrance but there are no exits so there is no min distance to check
+                                        exits.size() == 0 ||
+                                        // Or wanted location is entrance and not all the exits path to the randomised entrance is bigger than the minimum distance
+                                        !exits.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance))) ||
+                        // Or while exits is empty
+                        (exits.size() != 0 &&
+                                // And there already an exit with the randomised location
+                                exits.stream().anyMatch(loc ->
+                                        loc.item1.equals(finalTempLoc[0].item1) &&
+                                                loc.item2.equals(finalTempLoc[0].item2)) &&
+                                // And either the wanted ELocation is entrance
+                                (!isExit ||
+                                        // Or the wanted location is exit but there are no entrances so there is no min distance to check
+                                        entrances.size() == 0 ||
+                                        // Or wanted location is exit and not all the entrances path to the randomised exit is bigger than the minimum distance
+                                        !entrances.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance)))) {
 
-            if (state) {
+            if (Instance.getRandomState()) {
                 tempLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));
             } else {
                 tempLoc = new Tuple<>(Instance.getRandomNumber(2) * (height - 1), Instance.getRandomNumber(width));
@@ -420,13 +437,12 @@ public class Maze {
             nextLoc = Instance.getNextCell(loc, selected);
 
             if (Instance.inBounds(nextLoc,
-                                  height,
-                                  width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(
+                    height,
+                    width) && this.mazeData[nextLoc.item1][nextLoc.item2].haveAllWalls() && this.mazeData[loc.item1][loc.item2].setCellAtDirection(
                     this.mazeData[nextLoc.item1][nextLoc.item2],
                     selected,
                     force,
-                    update))
-            {
+                    update)) {
                 return selected;
             }
 
@@ -465,12 +481,12 @@ public class Maze {
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(null,
-                                                   new Tuple<>(!generateOnlyGood, true),
-                                                   new Tuple<>(Instance.getRandomState(), null),
-                                                   null,
-                                                   new Tuple<>(true, true),
-                                                   null,
-                                                   cellLoc));
+                    new Tuple<>(!generateOnlyGood, true),
+                    new Tuple<>(Instance.getRandomState(), null),
+                    null,
+                    new Tuple<>(true, true),
+                    null,
+                    cellLoc));
         }
     }
 
@@ -502,12 +518,12 @@ public class Maze {
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Points},
-                                                   new Tuple<>(!generateOnlyGood, true),
-                                                   null,
-                                                   null,
-                                                   new Tuple<>(true, true),
-                                                   null,
-                                                   cellLoc));
+                    new Tuple<>(!generateOnlyGood, true),
+                    null,
+                    null,
+                    new Tuple<>(true, true),
+                    null,
+                    cellLoc));
         }
 
         for (int i = 0; i < timeCount; i++) {
@@ -515,12 +531,12 @@ public class Maze {
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Time},
-                                                   new Tuple<>(!generateOnlyGood, true),
-                                                   null,
-                                                   null,
-                                                   new Tuple<>(true, true),
-                                                   null,
-                                                   cellLoc));
+                    new Tuple<>(!generateOnlyGood, true),
+                    null,
+                    null,
+                    new Tuple<>(true, true),
+                    null,
+                    cellLoc));
         }
 
         for (int i = 0; i < portalCount; i++) {
@@ -528,12 +544,12 @@ public class Maze {
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Location},
-                                                   new Tuple<>(!generateOnlyGood, true),
-                                                   null,
-                                                   null,
-                                                   new Tuple<>(true, true),
-                                                   null,
-                                                   cellLoc));
+                    new Tuple<>(!generateOnlyGood, true),
+                    null,
+                    null,
+                    new Tuple<>(true, true),
+                    null,
+                    cellLoc));
         }
     }
 
@@ -587,23 +603,23 @@ public class Maze {
         int timeToLiveVal;
         if (timeToLive == null) timeToLiveVal = -1;
         else timeToLiveVal = timeToLive.item1
-                             ? ((timeToLive.item2 == null)
-                                ? (Utils.Instance.getRandomNumber(1,
-                                                                  20) * 1000)
-                                : (Utils.Instance.getRandomNumber(timeToLive.item2.item1 == null
-                                                                  ? 1
-                                                                  : timeToLive.item2.item1,
-                                                                  timeToLive.item2.item2 == null
-                                                                  ? 20
-                                                                  : timeToLive.item2.item2) * 1000))
-                             : ((timeToLive.item2 != null) ? timeToLive.item2.item1 : -1);
+                ? ((timeToLive.item2 == null)
+                ? (Utils.Instance.getRandomNumber(1,
+                20) * 1000)
+                : (Utils.Instance.getRandomNumber(timeToLive.item2.item1 == null
+                        ? 1
+                        : timeToLive.item2.item1,
+                timeToLive.item2.item2 == null
+                        ? 20
+                        : timeToLive.item2.item2) * 1000))
+                : ((timeToLive.item2 != null) ? timeToLive.item2.item1 : -1);
 
         int strengthPowerVal = strengthPower == null
-                               ? 1000
-                               : strengthPower.item1
-                                 ? Utils.Instance.getRandomNumber(strengthPower.item2.item1,
-                                                                  strengthPower.item2.item2)
-                                 : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
+                ? 1000
+                : strengthPower.item1
+                ? Utils.Instance.getRandomNumber(strengthPower.item2.item1,
+                strengthPower.item2.item2)
+                : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
 
         switch (type) {
             case Time:
@@ -613,25 +629,25 @@ public class Maze {
             case Location:
 
                 Tuple<Integer, Integer> otherCellLocationVal = otherCellLocation == null
-                                                               ? Utils.Instance.generateTuple(height,
-                                                                                              width)
-                                                               : otherCellLocation.item1
-                                                                 ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
-                                                                                                otherCellLocation.item2.item2)
-                                                                 : otherCellLocation.item2 != null
-                                                                   ? otherCellLocation.item2
-                                                                   : Utils.Instance.generateTuple(height, width);
+                        ? Utils.Instance.generateTuple(height,
+                        width)
+                        : otherCellLocation.item1
+                        ? Utils.Instance.generateTuple(otherCellLocation.item2.item1,
+                        otherCellLocation.item2.item2)
+                        : otherCellLocation.item2 != null
+                        ? otherCellLocation.item2
+                        : Utils.Instance.generateTuple(height, width);
 
                 boolean twoWayPortalVal = twoWayPortal == null || (twoWayPortal.item1
-                                                                   ? Utils.Instance.getRandomState()
-                                                                   : twoWayPortal.item2);
+                        ? Utils.Instance.getRandomState()
+                        : twoWayPortal.item2);
 
                 if (twoWayPortalVal) {
                     return new PortalCandy(isGoodVal,
-                                           timeToLiveVal,
-                                           otherCellLocationVal,
-                                           this.getCell(otherCellLocationVal),
-                                           cellLoc);
+                            timeToLiveVal,
+                            otherCellLocationVal,
+                            this.getCell(otherCellLocationVal),
+                            cellLoc);
                 } else {
                     return new PortalCandy(isGoodVal, timeToLiveVal, otherCellLocationVal, false);
                 }
@@ -657,7 +673,7 @@ public class Maze {
 
 
         return (destCell == null || this.getCell(Instance.getNextCell(location,
-                                                                      direction)) == null || !destCell.haveCellAtDirection(
+                direction)) == null || !destCell.haveCellAtDirection(
                 direction)) ? null : direction;
     }
 
@@ -732,8 +748,8 @@ public class Maze {
      */
     public ELocation getRandomEntrance() {
         return entrances == null || entrances.size() == 0
-               ? null
-               : entrances.get(Instance.getRandomNumber(entrances.size()));
+                ? null
+                : entrances.get(Instance.getRandomNumber(entrances.size()));
     }
 
     public List<ELocation> getEntrances() {

@@ -4,6 +4,7 @@ import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
+import Maze.Maze;
 
 import java.util.Stack;
 
@@ -15,42 +16,56 @@ import java.util.Stack;
 public class DFSSolver {
 
     /**
-     * The mazeData
-     */
-    private Cell[][] mazeData;
-
-    /**
      * Get steps to solving the maze from starting to ending location
      *
-     * @param maze       Maze cells
-     * @param startPoint Location of a starting point
-     * @param endPoint   Location of an ending point
+     * @param maze              Maze cells
+     * @param startPoint        Location of a starting point
+     * @param endPoint          Location of an ending point
+     * @param withTeleportCandy Get the solve path with the candies teleportation
      * @return The steps to the solving path
-     * @see #getSolvePathDistance(DFSCell[][], Tuple, Tuple) For getting the length of the solved path
-     * @see #getSolvePathSteps(DFSCell[][], Tuple, Tuple) Get the Solve steps with the errors (the path that the DFS trying to solve)
+     * @see #getSolvePathDistance(Maze, Tuple, Tuple, boolean) For getting the length of the solved path
+     * @see #getSolvePathSteps(Maze, Tuple, Tuple, boolean) Get the Solve steps with the errors (the path that the DFS trying to solve)
      */
-    public static Stack<Tuple<Integer, Integer>> getSolvePath(DFSCell[][] maze,
+    public static Stack<Tuple<Integer, Integer>> getSolvePath(Maze maze,
                                                               Tuple<Integer, Integer> startPoint,
-                                                              Tuple<Integer, Integer> endPoint) {
+                                                              Tuple<Integer, Integer> endPoint,
+                                                              boolean withTeleportCandy) {
         Stack<Tuple<Integer, Integer>> path = new Stack<>();
         Tuple<Integer, Integer> current = startPoint;
         Tuple<Integer, Integer> nextRes;
+        Tuple<Integer, Integer> maybeNextLoc;
+
+        DFSCell tempCell;
 
         int iterations = 0;
-        int maxTries = maze.length * maze[0].length + 5;
+        int maxTries = maze.getHeight() * maze.getWidth() + 5;
 
         while (!Utils.Instance.compareTuples(current, endPoint) && iterations < maxTries) {
-            maze[current.item1][current.item2].setDeadEnd(true);
-            nextRes = maze[current.item1][current.item2].getPathNeighbour(
-                    maze[current.item1][current.item2].haveTopWall() ? null : maze[current.item1 - 1][current.item2],
-                    maze[current.item1][current.item2].haveRightWall() ? null : maze[current.item1][current.item2 + 1],
-                    maze[current.item1][current.item2].haveBottomWall() ? null : maze[current.item1 + 1][current.item2],
-                    maze[current.item1][current.item2].haveLeftWall() ? null : maze[current.item1][current.item2 - 1]);
+            tempCell = (DFSCell) (maze.getCell(current));
+            tempCell.setDeadEnd(true);
+            nextRes = tempCell.getPathNeighbour(tempCell.haveTopWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1 - 1, current.item2)),
+                                                tempCell.haveRightWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 + 1)),
+                                                tempCell.haveBottomWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1 + 1, current.item2)),
+                                                tempCell.haveLeftWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 - 1)));
 
             if (nextRes != null) {
                 iterations++;
                 path.push(current);
-                current = new Tuple<>(current.item1 + nextRes.item1, current.item2 + nextRes.item2);
+                maybeNextLoc = maze.getCell(nextRes).collectLocationCandyPortal();
+                if(maybeNextLoc != null) {
+                    nextRes = maybeNextLoc;
+                    current = nextRes.clone();
+                } else {
+                    current = new Tuple<>(current.item1 + nextRes.item1, current.item2 + nextRes.item2);
+                }
             } else if (!path.isEmpty()) {
                 try {
                     current = path.pop();
@@ -58,7 +73,6 @@ public class DFSSolver {
                     e.printStackTrace();
                 }
             }
-
         }
 
         return (iterations >= maxTries) ? null : path;
@@ -67,49 +81,68 @@ public class DFSSolver {
     /**
      * Get Solve Path Distance from starting to ending location
      *
-     * @param maze       Maze cells
-     * @param startPoint Location of a starting point
-     * @param endPoint   Location of an ending point
+     * @param maze              Maze cells
+     * @param startPoint        Location of a starting point
+     * @param endPoint          Location of an ending point
+     * @param withTeleportCandy Get the solve path with the candies teleportation
      * @return The length of the solved path
-     * @see #getSolvePath(DFSCell[][], Tuple, Tuple) For getting the steps to solve the maze
-     * @see #getSolvePathSteps(DFSCell[][], Tuple, Tuple) Get the Solve steps with the errors (the path that the DFS trying to solve)
+     * @see #getSolvePath(Maze, Tuple, Tuple, boolean) For getting the steps to solve the maze
+     * @see #getSolvePathSteps(Maze, Tuple, Tuple, boolean) Get the Solve steps with the errors (the path that the DFS trying to solve)
      */
-    public static int getSolvePathDistance(DFSCell[][] maze,
+    public static int getSolvePathDistance(Maze maze,
                                            Tuple<Integer, Integer> startPoint,
-                                           Tuple<Integer, Integer> endPoint) {
-        Stack<Tuple<Integer, Integer>> path = getSolvePath(maze, startPoint, endPoint);
+                                           Tuple<Integer, Integer> endPoint,
+                                           boolean withTeleportCandy) {
+        Stack<Tuple<Integer, Integer>> path = getSolvePath(maze, startPoint, endPoint, withTeleportCandy);
         return path == null ? -1 : path.size();
     }
 
     /**
      * Get the Solve steps with the errors (the path that the DFS trying to solve)
      *
-     * @param maze       Maze cells
-     * @param startPoint Location of a starting point
-     * @param endPoint   Location of an ending point
+     * @param maze              Maze cells
+     * @param startPoint        Location of a starting point
+     * @param endPoint          Location of an ending point
+     * @param withTeleportCandy Get the solve path with the candies teleportation
      * @return The tries direction from the starting point to end point
-     * @see #getSolvePath(DFSCell[][], Tuple, Tuple) For getting the steps to solve the maze
-     * @see #getSolvePathDistance(DFSCell[][], Tuple, Tuple) For getting the length of the solve path
+     * @see #getSolvePath(Maze, Tuple, Tuple, boolean) For getting the steps to solve the maze
+     * @see #getSolvePathDistance(Maze, Tuple, Tuple, boolean) For getting the length of the solve path
      */
-    public static Stack<Direction> getSolvePathSteps(DFSCell[][] maze,
-                                                                   Tuple<Integer, Integer> startPoint,
-                                                                   Tuple<Integer, Integer> endPoint) {
+    public static Stack<Direction> getSolvePathSteps(Maze maze,
+                                                     Tuple<Integer, Integer> startPoint,
+                                                     Tuple<Integer, Integer> endPoint,
+                                                     boolean withTeleportCandy) {
         Stack<Direction> steps = new Stack<>();
         Direction direction;
         Stack<Tuple<Integer, Integer>> path = new Stack<>();
         Tuple<Integer, Integer> current = startPoint;
         Tuple<Integer, Integer> nextRes;
+        Tuple<Integer, Integer> maybeNextLoc;
+
+
+        DFSCell tempCell;
 
         int iterations = 0;
-        int maxTries = maze.length * maze[0].length + 5;
+        int maxTries = maze.getHeight() * maze.getWidth() + 5;
 
         while (!Utils.Instance.compareTuples(current, endPoint) && iterations < maxTries) {
-            maze[current.item1][current.item2].setDeadEnd(true);
-            nextRes = maze[current.item1][current.item2].getPathNeighbour(
-                    maze[current.item1][current.item2].haveTopWall() ? null : maze[current.item1 - 1][current.item2],
-                    maze[current.item1][current.item2].haveRightWall() ? null : maze[current.item1][current.item2 + 1],
-                    maze[current.item1][current.item2].haveBottomWall() ? null : maze[current.item1 + 1][current.item2],
-                    maze[current.item1][current.item2].haveLeftWall() ? null : maze[current.item1][current.item2 - 1]);
+            tempCell = (DFSCell) (maze.getCell(current));
+            tempCell.setDeadEnd(true);
+
+            nextRes = tempCell.getPathNeighbour(tempCell.haveTopWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1 - 1, current.item2)),
+                                                tempCell.haveRightWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 + 1)),
+                                                tempCell.haveBottomWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1 + 1, current.item2)),
+                                                tempCell.haveLeftWall()
+                                                ? null
+                                                : (DFSCell) (maze.getCellAt(current.item1, current.item2 - 1)));
+
+
 
             direction = Utils.Instance.getDirection(current, nextRes);
 
@@ -117,7 +150,14 @@ public class DFSSolver {
                 iterations++;
                 path.push(current);
                 steps.push(direction);
-                current = new Tuple<>(current.item1 + nextRes.item1, current.item2 + nextRes.item2);
+
+                maybeNextLoc = maze.getCell(nextRes).collectLocationCandyPortal();
+                if(maybeNextLoc != null) {
+                    nextRes = maybeNextLoc;
+                    current = nextRes.clone();
+                } else {
+                    current = new Tuple<>(current.item1 + nextRes.item1, current.item2 + nextRes.item2);
+                }
             } else if (!path.isEmpty()) {
                 try {
                     current = path.pop();
