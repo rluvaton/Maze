@@ -117,6 +117,8 @@ public class Maze {
 
     // endregion
 
+    // region Maze Init
+
     // region Generate Rectangle Maze
 
     /**
@@ -220,6 +222,25 @@ public class Maze {
             }
         }
 
+        this.generateRandomCandies((width * height) / 10, false);
+
+        // Add candies to the candy list
+        this.addToCandyList(true);
+
+        this.generateELocations(numberOfEntrance, numberOfExists, minDistance);
+    }
+
+    // endregion
+
+    /**
+     * Generate Entrances and Exits
+     *
+     * @param numberOfEntrance Number of Maze Entrances
+     * @param numberOfExists   Number of maze Exists
+     * @param minDistance      Minimum Distance between each entrance and exit
+     */
+    private void generateELocations(int numberOfEntrance, int numberOfExists, int minDistance) {
+
         // List of entrances and exists
         List<Tuple<Integer, Integer>> entrances = new ArrayList<Tuple<Integer, Integer>>();
         List<Tuple<Integer, Integer>> exits = new ArrayList<Tuple<Integer, Integer>>();
@@ -228,33 +249,43 @@ public class Maze {
             if (entrances.size() < numberOfEntrance) {
 
                 // Generate random location that don't exist yet
-                entrances.add(createUniqueLocation(entrances, exits, minDistance, false));
+                entrances.add(createUniqueLocation(entrances, exits, minDistance, false, true));
             }
 
             if (exits.size() < numberOfExists) {
-                exits.add(createUniqueLocation(entrances, exits, minDistance, true));
+                exits.add(createUniqueLocation(entrances, exits, minDistance, true, true));
             }
         }
 
-        this.entrances = entrances.stream()
-                                  .map(loc -> createELocations(loc, height, width, ELocationType.Entrance))
-                                  .collect(Collectors.toList());
+        this.entrances = entrances.stream().map(loc -> createELocations(loc,
+                                                                        height,
+                                                                        width,
+                                                                        ELocationType.Entrance)).collect(Collectors.toList());
 
-        this.exits = exits.stream()
-                          .map(loc -> createELocations(loc, height, width, ELocationType.Exit))
-                          .collect(Collectors.toList());
+        this.exits = exits.stream().map(loc -> createELocations(loc, height, width, ELocationType.Exit)).collect(
+                Collectors.toList());
+    }
 
-        this.generateRandomCandies((width * height) / 10, false);
+    /**
+     * Add the candies that are in the cells to the list of all candies and their location
+     *
+     * @param removeAll Remove all candies in ${@link #candies}
+     */
+    private void addToCandyList(boolean removeAll) {
+        if (removeAll) {
+            this.candies.clear();
+        }
 
         // Add candies to the candy list
         for (int i = 0, len = this.mazeData.length; i < len; i++) {
             for (int j = 0, rowLen = this.mazeData[i].length; j < rowLen; j++) {
                 int finalI = i;
                 int finalJ = j;
-                this.candies.addAll(this.mazeData[i][j].getCandies()
-                                                       .stream()
-                                                       .map(candy -> new Tuple<>(candy, new Tuple<>(finalI, finalJ)))
-                                                       .collect(Collectors.toList()));
+                this.candies.addAll(this.mazeData[i][j].getCandies().stream().map(candy -> new Tuple<>(candy,
+                                                                                                       new Tuple<>(
+                                                                                                               finalI,
+                                                                                                               finalJ))).collect(
+                        Collectors.toList()));
             }
         }
     }
@@ -306,12 +337,14 @@ public class Maze {
      * @param exits       Exits Location list
      * @param minDistance Min Distance
      * @param isExit      Trying to create unique location to
+     * @param withTeleportCandies If when calculation minimum distance we take into account the teleport candies
      * @return Return the unique location
      */
     private Tuple<Integer, Integer> createUniqueLocation(List<Tuple<Integer, Integer>> entrances,
                                                          List<Tuple<Integer, Integer>> exits,
                                                          int minDistance,
-                                                         boolean isExit) {
+                                                         boolean isExit,
+                                                         boolean withTeleportCandies) {
         // Generate random location that don't exist yet
         Tuple<Integer, Integer> tempLoc;
         boolean state = Instance.getRandomState();
@@ -324,23 +357,15 @@ public class Maze {
 
         Tuple<Integer, Integer>[] finalTempLoc = new Tuple[]{tempLoc};
 
-        while ((entrances.size() != 0 && entrances.stream()
-                                                  .anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
-                                                          finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream()
-                                                                                                                          .allMatch(
-                                                                                                                                  loc -> DFSSolver.getSolvePathDistance(
-                                                                                                                                          this.mazeData,
-                                                                                                                                          loc,
-                                                                                                                                          finalTempLoc[0]) >= minDistance))) || (exits.size() != 0 && exits.stream()
-                                                                                                                                                                                                           .anyMatch(
-                                                                                                                                                                                                                   loc -> loc.item1.equals(
-                                                                                                                                                                                                                           finalTempLoc[0].item1) && loc.item2.equals(
-                                                                                                                                                                                                                           finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream()
-                                                                                                                                                                                                                                                                                                    .allMatch(
-                                                                                                                                                                                                                                                                                                            loc -> DFSSolver.getSolvePathDistance(
-                                                                                                                                                                                                                                                                                                                    this.mazeData,
-                                                                                                                                                                                                                                                                                                                    loc,
-                                                                                                                                                                                                                                                                                                                    finalTempLoc[0]) >= minDistance)))) {
+
+        while ((entrances.size() != 0 && entrances.stream().anyMatch(loc -> loc.item1.equals(finalTempLoc[0].item1) && loc.item2.equals(
+                finalTempLoc[0].item2)) && (isExit || exits.size() == 0 || exits.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(
+                this,
+                loc,
+                finalTempLoc[0],
+                false) >= minDistance))) || (exits.size() != 0 && exits.stream().anyMatch(loc -> loc.item1.equals(
+                finalTempLoc[0].item1) && loc.item2.equals(finalTempLoc[0].item2)) && (!isExit || entrances.size() == 0 || entrances.stream().allMatch(
+                loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], false) >= minDistance)))) {
             state = Instance.getRandomState();
 
             if (state) {
@@ -632,7 +657,8 @@ public class Maze {
 
 
         return (destCell == null || this.getCell(Instance.getNextCell(location,
-                                                                      direction)) == null || !destCell.haveCellAtDirection(direction)) ? null : direction;
+                                                                      direction)) == null || !destCell.haveCellAtDirection(
+                direction)) ? null : direction;
     }
 
     /**
@@ -657,17 +683,13 @@ public class Maze {
     public ELocation checkIfELocation(Tuple<Integer, Integer> location, Direction direction) {
         Optional<ELocation> opELoc;
 
-        opELoc = exits.stream()
-                      .filter(exitLoc -> exitLoc.isAtELocation(location, direction))
-                      .findFirst();
+        opELoc = exits.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
 
         if (opELoc.isPresent()) {
             return opELoc.get();
         }
 
-        opELoc = entrances.stream()
-                          .filter(enterLoc -> enterLoc.isAtELocation(location, direction))
-                          .findFirst();
+        opELoc = entrances.stream().filter(enterLoc -> enterLoc.isAtELocation(location, direction)).findFirst();
 
         return opELoc.orElse(null);
     }
@@ -690,9 +712,7 @@ public class Maze {
 
         List<ELocation> search = (type == ELocationType.Exit) ? exits : entrances;
 
-        opELoc = search.stream()
-                       .filter(exitLoc -> exitLoc.isAtELocation(location, direction))
-                       .findFirst();
+        opELoc = search.stream().filter(exitLoc -> exitLoc.isAtELocation(location, direction)).findFirst();
 
         return opELoc.orElse(null);
     }
