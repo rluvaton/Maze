@@ -63,8 +63,14 @@ public class ComputerPlayer extends BasePlayer {
      * @param stepSpeedMs    How much milliseconds to wait between each move
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
-    public Thread start(Maze maze, Tuple<Integer, Integer> endingLocation, int stepSpeedMs) {
-        Stack<Direction> steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), endingLocation, true);
+    public Thread createRunningThread(Maze maze, Tuple<Integer, Integer> endingLocation, int stepSpeedMs) {
+        Stack<Direction> steps;
+        try {
+            steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), endingLocation, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
         return new Thread(() ->
                 steps.forEach(direction -> {
@@ -83,13 +89,20 @@ public class ComputerPlayer extends BasePlayer {
     /**
      * Start The player and the player choose the closest exit
      *
-     * @param maze           Current Maze
-     * @param stepSpeedMs    How much milliseconds to wait between each move
+     * @param maze        Current Maze
+     * @param stepSpeedMs How much milliseconds to wait between each move
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
-    public Thread start(Maze maze, int stepSpeedMs) {
+    public Thread createRunningThread(Maze maze, int stepSpeedMs) {
         // TODO - Find the closest exit from the current location
-        Stack<Direction> steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), null, true);
+        Stack<Direction> steps;
+
+        try {
+            steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), null, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
         return new Thread(() ->
                 steps.forEach(direction -> {

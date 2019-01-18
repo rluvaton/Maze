@@ -16,6 +16,11 @@ public abstract class BasePlayer {
     // region Variables
 
     /**
+     * Player name
+     */
+    private String name = "Player " + BasePlayer.count;
+
+    /**
      * Subject for where the player move
      */
     private BehaviorSubject<Direction> playerMoveSub = BehaviorSubject.create();
@@ -45,6 +50,8 @@ public abstract class BasePlayer {
      */
     private int points = 0;
 
+    private static int count = 1;
+
     // endregion
 
     /**
@@ -53,6 +60,18 @@ public abstract class BasePlayer {
      * @param location Starting location of the player
      */
     public BasePlayer(Tuple<Integer, Integer> location) {
+        this.location = location;
+        this.name = "Player " + count++;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param location Starting location of the player
+     * @param name Player name
+     */
+    public BasePlayer(Tuple<Integer, Integer> location, String name) {
+        this.name = name;
         this.location = location;
     }
 
@@ -156,6 +175,14 @@ public abstract class BasePlayer {
 
     public Tuple<Integer, Integer> getPrevLocation() {
         return prevLocation;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     // region Points

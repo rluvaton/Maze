@@ -74,7 +74,7 @@ public class Maze {
      *
      * @param height      Height Of The Maz
      * @param width       Width Of The mazeData
-     * @param minDistance Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance Minimum Distance (number of cubes) between the createRunningThread and the end
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
      */
@@ -87,7 +87,7 @@ public class Maze {
      *
      * @param height           Height Of The Maz
      * @param width            Width Of The mazeData
-     * @param minDistance      Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance      Minimum Distance (number of cubes) between the createRunningThread and the end
      * @param numberOfEntrance Number Of Starting Points
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
@@ -102,7 +102,7 @@ public class Maze {
      *
      * @param height           Height Of The Maz
      * @param width            Width Of The mazeData
-     * @param minDistance      Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance      Minimum Distance (number of cubes) between the createRunningThread and the end
      * @param numberOfEntrance Number Of Starting Points
      * @param numberOfExists   Number Of Exists
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
@@ -126,7 +126,7 @@ public class Maze {
      *
      * @param height           Height Of The Maz
      * @param width            Width Of The mazeData
-     * @param minDistance      Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance      Minimum Distance (number of cubes) between the createRunningThread and the end
      * @param numberOfEntrance Number Of Starting Points
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
@@ -140,7 +140,7 @@ public class Maze {
      *
      * @param height      Height Of The Maz
      * @param width       Width Of The mazeData
-     * @param minDistance Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance Minimum Distance (number of cubes) between the createRunningThread and the end
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
      * @throws RuntimeException         Throw error if next direction is null and steps are empty
      */
@@ -165,7 +165,7 @@ public class Maze {
      *
      * @param height           Height Of The Maz
      * @param width            Width Of The mazeData
-     * @param minDistance      Minimum Distance (number of cubes) between the start and the end
+     * @param minDistance      Minimum Distance (number of cubes) between the createRunningThread and the end
      * @param numberOfEntrance Number Of Starting Points
      * @param numberOfExists   Number Of Exists
      * @throws IllegalArgumentException Throw error if distance more bigger then width * height
@@ -203,7 +203,7 @@ public class Maze {
         Tuple<Integer, Integer> currLoc = new Tuple<>(Instance.getRandomNumber(height),
                 Instance.getRandomNumber(width));
 
-        // Push to the start of the steps
+        // Push to the createRunningThread of the steps
         steps.push(currLoc);
         visited++;
 
@@ -369,7 +369,14 @@ public class Maze {
                                         // Or the wanted location is entrance but there are no exits so there is no min distance to check
                                         exits.size() == 0 ||
                                         // Or wanted location is entrance and not all the exits path to the randomised entrance is bigger than the minimum distance
-                                        !exits.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance))) ||
+                                        !exits.stream().allMatch(loc -> {
+                                            try {
+                                                return DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance;
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                return false;
+                                            }
+                                        }))) ||
                         // Or while exits is empty
                         (exits.size() != 0 &&
                                 // And there already an exit with the randomised location
@@ -379,7 +386,14 @@ public class Maze {
                                         // Or the wanted location is exit but there are no entrances so there is no min distance to check
                                         entrances.size() == 0 ||
                                         // Or wanted location is exit and not all the entrances path to the randomised exit is bigger than the minimum distance
-                                        !entrances.stream().allMatch(loc -> DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance)))) {
+                                        !entrances.stream().allMatch(loc -> {
+                                            try {
+                                                return DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance;
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                return false;
+                                            }
+                                        })))) {
 
             if (Instance.getRandomState()) {
                 tempLoc = new Tuple<>(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));

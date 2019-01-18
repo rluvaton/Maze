@@ -1,5 +1,6 @@
 package Maze.MazeSolver.DFS;
 
+import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
@@ -27,25 +28,25 @@ public class DFSCell extends Cell
      * @param right Right cell
      * @param bottom Bottom cell
      * @param left Left cell
-     * @return the next cell location to go to
+     * @return PathNeighbourResult that contain the next cell location to go to with that direction
      */
-    public Tuple<Integer, Integer> getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
-        List<Tuple<Integer, Integer>> neighbours = new ArrayList<Tuple<Integer, Integer>>();
+    public PathNeighbourResult getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
+        List<PathNeighbourResult> neighbours = new ArrayList<>();
 
         if (top != null && !top.deadEnd && !this.haveTopWall()) {
-            neighbours.add(new Tuple<>(-1, 0));
+            neighbours.add(new PathNeighbourResult(top, new Tuple<>(-1, 0), Direction.TOP));
         }
 
         if (right != null && !right.deadEnd && !this.haveRightWall()) {
-            neighbours.add(new Tuple<>(0, 1));
+            neighbours.add(new PathNeighbourResult(right, new Tuple<>(0, 1), Direction.RIGHT));
         }
 
         if (bottom != null && !bottom.deadEnd && !this.haveBottomWall()) {
-            neighbours.add(new Tuple<>(1, 0));
+            neighbours.add(new PathNeighbourResult(bottom, new Tuple<>(1, 0), Direction.BOTTOM));
         }
 
         if (left != null && !left.deadEnd && !this.haveLeftWall()) {
-            neighbours.add(new Tuple<>(0, -1));
+            neighbours.add(new PathNeighbourResult(left, new Tuple<>(0, -1), Direction.LEFT));
         }
 
         if (neighbours.size() == 0) {

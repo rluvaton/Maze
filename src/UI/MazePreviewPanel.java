@@ -44,26 +44,26 @@ public class MazePreviewPanel extends JPanel {
     private Color mazeColor = Color.BLUE;
 
     /**
-     * From where to start the maze X axis
-     * Set to 20 so it start with a little padding
+     * From where to createRunningThread the maze X axis
+     * Set to 20 so it createRunningThread with a little padding
      */
     private final int startX = 20;
 
     /**
-     * From where to start the maze Y axis
-     * Set to 20 so it start with a little padding
+     * From where to createRunningThread the maze Y axis
+     * Set to 20 so it createRunningThread with a little padding
      */
     private final int startY = 20;
 
     /**
-     * From where to start the maze X axis
-     * Set to 20 so it start with a little padding
+     * From where to createRunningThread the maze X axis
+     * Set to 20 so it createRunningThread with a little padding
      */
     private final int cellVerMargin = 3;
 
     /**
-     * From where to start the maze Y axis
-     * Set to 20 so it start with a little padding
+     * From where to createRunningThread the maze Y axis
+     * Set to 20 so it createRunningThread with a little padding
      */
     private final int cellHorMargin = 3;
 
@@ -185,7 +185,16 @@ public class MazePreviewPanel extends JPanel {
             if (player instanceof HumanPlayer) {
                 startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
             } else if (player instanceof ComputerPlayer) {
-                startPlayersCallbacks.add(() -> ((ComputerPlayer) player).start(this.maze, this.maze.getEntrances().get(0).getLocation(), 100).start());
+                startPlayersCallbacks.add(() -> {
+                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, this.maze.getEntrances().get(0).getLocation(), 100);
+
+                    if (playerThread == null) {
+                        System.out.println("Player " + player.getName() + " can't start running");
+                        return;
+                    }
+
+                    playerThread.start();
+                });
             }
         }
 
@@ -389,28 +398,36 @@ public class MazePreviewPanel extends JPanel {
     private MoveStatus movePlayer(BasePlayer player, Direction direction) {
         Tuple<Integer, Integer> loc = player.getLocation();
 
+        Cell cell;
+        Tuple<Integer, Integer> teleportLocation;
+
         // Moved status
         MoveStatus moved = MoveStatus.NotValidMove;
 
         if (this.maze.checkIfValidMove(loc, direction) != null) {
             player.setLocation(direction);
 
-            Cell cell = this.maze.getCell(player.getLocation());
+            cell = this.maze.getCell(player.getLocation());
 
             if (cell != null) {
                 // Add the time and points from the candy
                 player.addTime(cell.collectTimeCandyStrengths());
                 player.addPoints(cell.collectPointsCandyStrengths());
 
-                Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
+                teleportLocation = cell.collectLocationCandyPortal();
 
                 if (teleportLocation != null) {
                     this.changePlayerLocation(player, teleportLocation, true);
                 }
 
-                System.out.println("Move");
+                System.out.println("Player " + player.getName() + " Moved");
                 moved = MoveStatus.Valid;
             }
+        } else if ((cell = this.maze.getCell(loc)) != null && (teleportLocation = cell.collectLocationCandyPortal()) != null) {
+            this.changePlayerLocation(player, teleportLocation, true);
+
+            System.out.println("Player " + player.getName() + " Moved");
+            moved = MoveStatus.Valid;
         }
 
         // Don't use player.getLocation() because it will bring you the new location

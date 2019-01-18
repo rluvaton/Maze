@@ -22,6 +22,16 @@ public class HumanPlayer extends BasePlayer implements KeyListener
         super(location);
     }
 
+    /**
+     * Human Player Constructor
+     *
+     * @param location Starting location of the player
+     * @param name Player name
+     */
+    public HumanPlayer(Tuple<Integer, Integer> location, String name) {
+        super(location, name);
+    }
+
     // region Base Player abstract functions
 
     /**
