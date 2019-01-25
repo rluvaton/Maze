@@ -19,42 +19,6 @@ public class ComputerPlayer extends BasePlayer {
         super(location);
     }
 
-    // region Base Player abstract functions
-
-    /**
-     * Move Top
-     */
-    @Override
-    public void top() {
-        this.notifyMoved(Direction.TOP);
-    }
-
-    /**
-     * Move Right
-     */
-    @Override
-    public void right() {
-        this.notifyMoved(Direction.RIGHT);
-    }
-
-    /**
-     * Move Bottom
-     */
-    @Override
-    public void bottom() {
-        this.notifyMoved(Direction.BOTTOM);
-    }
-
-    /**
-     * Move Left
-     */
-    @Override
-    public void left() {
-        this.notifyMoved(Direction.LEFT);
-    }
-
-    // endregion
-
     /**
      * Start The player
      *
@@ -115,6 +79,5 @@ public class ComputerPlayer extends BasePlayer {
                         e.printStackTrace();
                     }
                 }));
-
     }
 }

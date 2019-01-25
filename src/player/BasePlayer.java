@@ -11,14 +11,15 @@ import static Helpers.Utils.Instance;
  * Base Player
  * Abstract class for player
  */
-public abstract class BasePlayer {
+public class BasePlayer
+{
 
     // region Variables
 
     /**
      * Player name
      */
-    private String name = "Player " + BasePlayer.count;
+    private String name;
 
     /**
      * Subject for where the player move
@@ -68,7 +69,7 @@ public abstract class BasePlayer {
      * Constructor
      *
      * @param location Starting location of the player
-     * @param name Player name
+     * @param name     Player name
      */
     public BasePlayer(Tuple<Integer, Integer> location, String name) {
         this.name = name;
@@ -112,22 +113,30 @@ public abstract class BasePlayer {
     /**
      * Move Top
      */
-    public abstract void top();
+    public void top() {
+        this.notifyMoved(Direction.TOP);
+    }
 
     /**
      * Move Right
      */
-    public abstract void right();
+    public void right() {
+        this.notifyMoved(Direction.RIGHT);
+    }
 
     /**
      * Move Bottom
      */
-    public abstract void bottom();
+    public void bottom() {
+        this.notifyMoved(Direction.BOTTOM);
+    }
 
     /**
      * Move Left
      */
-    public abstract void left();
+    public void left() {
+        this.notifyMoved(Direction.LEFT);
+    }
 
     // region Getter & Setter
 
