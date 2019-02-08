@@ -1,4 +1,4 @@
-package Maze.MazeSolver.DFS;
+package Maze.Solver.DFS;
 
 import Helpers.Direction;
 import Helpers.Tuple;
@@ -20,6 +20,9 @@ public class DFSCell extends Cell
      */
     private boolean deadEnd = false;
 
+    public DFSCell(Cell cell) {
+        super(cell);
+    }
 
     /**
      * Gets a neighbour that could potentially be part of the solution path.
@@ -58,6 +61,10 @@ public class DFSCell extends Cell
         }
 
         return neighbours.get(Utils.Instance.getRandomNumber(neighbours.size()));
+    }
+
+    public static DFSCell createFromCell(Cell cell) {
+        return new DFSCell(cell);
     }
 
     // region Getter & Setter

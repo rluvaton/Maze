@@ -7,8 +7,8 @@ import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Candy.*;
-import Maze.MazeSolver.DFS.DFSCell;
-import Maze.MazeSolver.DFS.DFSSolver;
+import Maze.Solver.Adapter.SolverAdapter;
+import Maze.Solver.DFS.DFSSolverAdapter;
 
 import static Helpers.Utils.Instance;
 
@@ -19,7 +19,7 @@ public class Maze {
     /**
      * The mazeData
      */
-    private DFSCell[][] mazeData;
+    private Cell[][] mazeData;
 
     /**
      * Width of the maze
@@ -46,6 +46,8 @@ public class Maze {
      */
     private List<Tuple<Candy, Tuple<Integer, Integer>>> candies = new ArrayList<>();
 
+    private SolverAdapter solverAdapter = new DFSSolverAdapter();
+
     // region Constructors
 
     /**
@@ -53,7 +55,7 @@ public class Maze {
      *
      * @param mazeData DFS cells
      */
-    public Maze(DFSCell[][] mazeData) {
+    public Maze(Cell[][] mazeData) {
         this.mazeData = mazeData;
     }
 
@@ -371,7 +373,7 @@ public class Maze {
                                         // Or wanted location is entrance and not all the exits path to the randomised entrance is bigger than the minimum distance
                                         !exits.stream().allMatch(loc -> {
                                             try {
-                                                return DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance;
+                                                return solverAdapter.solveMaze(this, loc, finalTempLoc[0], withTeleportCandies).length >= minDistance;
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                                 return false;
@@ -388,7 +390,7 @@ public class Maze {
                                         // Or wanted location is exit and not all the entrances path to the randomised exit is bigger than the minimum distance
                                         !entrances.stream().allMatch(loc -> {
                                             try {
-                                                return DFSSolver.getSolvePathDistance(this, loc, finalTempLoc[0], withTeleportCandies) >= minDistance;
+                                                return solverAdapter.solveMaze(this, loc, finalTempLoc[0], withTeleportCandies).length >= minDistance;
                                             } catch (Exception e) {
                                                 e.printStackTrace();
                                                 return false;
@@ -413,12 +415,12 @@ public class Maze {
      * @param width  Width of the mazeData
      */
     private void InitMaze(int height, int width) {
-        setMazeData(new DFSCell[height][width]);
+        setMazeData(new Cell[height][width]);
 
         // Init the mazeData with empty cubes
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                getMazeData()[i][j] = new DFSCell();
+                getMazeData()[i][j] = new Cell(i, j);
             }
         }
     }
@@ -803,11 +805,11 @@ public class Maze {
         return this.mazeData[location.item1][location.item2];
     }
 
-    public DFSCell[][] getMazeData() {
+    public Cell[][] getMazeData() {
         return mazeData;
     }
 
-    public void setMazeData(DFSCell[][] mazeData) {
+    public void setMazeData(Cell[][] mazeData) {
         this.mazeData = mazeData;
     }
 
@@ -817,6 +819,14 @@ public class Maze {
 
     public int getWidth() {
         return width;
+    }
+
+    public SolverAdapter getSolverAdapter() {
+        return solverAdapter;
+    }
+
+    public void setSolverAdapter(SolverAdapter solverAdapter) {
+        this.solverAdapter = solverAdapter;
     }
 
     // endregion

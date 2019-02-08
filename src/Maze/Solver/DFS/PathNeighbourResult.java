@@ -1,4 +1,4 @@
-package Maze.MazeSolver.DFS;
+package Maze.Solver.DFS;
 
 import Helpers.Direction;
 import Helpers.Tuple;

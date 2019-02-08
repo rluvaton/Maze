@@ -3,11 +3,11 @@ package UI;
 import Helpers.Direction;
 import Helpers.NoArgsVoidCallbackFunction;
 import Helpers.Tuple;
+import Maze.Candy.CandyPowerType;
 import Maze.Cell;
-import Maze.Maze;
 import Maze.ELocation;
 import Maze.ELocationType;
-import Maze.MazeSolver.DFS.DFSCell;
+import Maze.Maze;
 import io.reactivex.Observable;
 import player.BasePlayer;
 import player.ComputerPlayer;
@@ -134,7 +134,7 @@ public class MazePreviewPanel extends JPanel {
      * @param cells   Cells of the maze
      * @param players Players of the maze
      */
-    public MazePreviewPanel(DFSCell[][] cells, BasePlayer[] players) {
+    public MazePreviewPanel(Cell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
         this.players = players;
         initGame();
@@ -249,7 +249,7 @@ public class MazePreviewPanel extends JPanel {
 
         for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
             for (int j = 0; j < w; j++) {
-                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j));
+                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j), i, j);
                 x += horSpace;
             }
             y += verSpace;
@@ -269,9 +269,11 @@ public class MazePreviewPanel extends JPanel {
      * @param len   Length of each line
      * @param space Space between each lines (space between horizontal lines and space between vertical lines)
      * @param cell  Cell to pain, if null then it will paint all the walls
+     * @param row      Cell row at maze
+     * @param col      Cell column at maze
      */
-    private void paintCell(Graphics g, int x, int y, int len, int space, Cell cell) {
-        this.paintCell(g, x, y, len, len, space, space, cell);
+    private void paintCell(Graphics g, int x, int y, int len, int space, Cell cell, int row, int col) {
+        this.paintCell(g, x, y, len, len, space, space, cell, row, col);
     }
 
     /**
@@ -285,10 +287,12 @@ public class MazePreviewPanel extends JPanel {
      * @param verSpace Space between vertical lines
      * @param horSpace Space between horizontal lines
      * @param cell     Cell to pain, if null then it will paint all the walls
+     * @param row      Cell row at maze
+     * @param col      Cell column at maze
      */
-    private void paintCell(Graphics g, int x, int y, int verLen, int horLen, int verSpace, int horSpace, Cell cell) {
+    private void paintCell(Graphics g, int x, int y, int verLen, int horLen, int verSpace, int horSpace, Cell cell, int row, int col) {
         if (cell == null) {
-            cell = new Cell();
+            cell = new Cell(row, col);
         }
 
         // Top Wall
@@ -313,7 +317,6 @@ public class MazePreviewPanel extends JPanel {
 
         Color before = g.getColor();
 
-        // TODO - Set timeout for the candies to disappear
         if (!cell.getCandies()
                 .isEmpty()) {
             cell.getCandies()

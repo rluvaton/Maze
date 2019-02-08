@@ -1,6 +1,8 @@
 package Helpers;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Stream;
 
@@ -14,6 +16,8 @@ public class Utils {
      * Random Instance for random numbers one after another
      */
     private final Random _random = new Random();
+
+    public static Map<Direction, Tuple<Integer, Integer>> DIRECTIONS = Utils.createDirectionsMap();
 
     /**
      * Get Random State
@@ -58,25 +62,25 @@ public class Utils {
             throw new IllegalArgumentException("Location can't be null");
         }
 
-        int row = loc.item1, col = loc.item2;
-        switch (nextDirection) {
-            case TOP:
-                row -= 1;
-                break;
-            case BOTTOM:
-                row += 1;
-                break;
-            case RIGHT:
-                col += 1;
-                break;
-            case LEFT:
-                col -= 1;
-                break;
-            default:
-                throw new IllegalArgumentException("Next direction didn't recognized");
+        Tuple<Integer, Integer> dirToAdd = DIRECTIONS.get(nextDirection);
+
+        if (dirToAdd == null) {
+            throw new IllegalArgumentException("Next direction didn't recognized");
         }
 
-        return createLocTuple(row, col);
+        return createLocTuple(loc.item1 + dirToAdd.item1, loc.item2 + dirToAdd.item2);
+    }
+
+    public final Tuple<Integer, Integer> getNextLocation(Tuple<Integer, Integer> loc, Tuple<Integer, Integer> dirToAdd) {
+        if (loc == null) {
+            throw new IllegalArgumentException("Location can't be null");
+        }
+
+        if (dirToAdd == null) {
+            throw new IllegalArgumentException("Next direction didn't recognized");
+        }
+
+        return createLocTuple(loc.item1 + dirToAdd.item1, loc.item2 + dirToAdd.item2);
     }
 
     /**
@@ -151,7 +155,7 @@ public class Utils {
      */
     public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
         return (row == 0 && direction == Direction.TOP) || (row == height - 1 && direction == Direction.BOTTOM) ||
-               (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
+            (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
     }
 
 
@@ -207,9 +211,21 @@ public class Utils {
         }
 
         return (from.item1 > to.item1 && from.item2.equals(to.item2)) ? Direction.BOTTOM :
-               (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
-               (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
-               (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
+            (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
+                (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
+                    (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
+    }
+
+
+    public static Map<Direction, Tuple<Integer, Integer>> createDirectionsMap() {
+        HashMap<Direction, Tuple<Integer, Integer>> directions = new HashMap<>();
+
+        directions.put(Direction.TOP, new Tuple<>(-1, 0));
+        directions.put(Direction.RIGHT, new Tuple<>(0, 1));
+        directions.put(Direction.BOTTOM, new Tuple<>(1, 0));
+        directions.put(Direction.LEFT, new Tuple<>(0, -1));
+
+        return directions;
     }
 }
 

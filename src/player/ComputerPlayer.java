@@ -3,10 +3,9 @@ package player;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Maze;
-import Maze.MazeSolver.DFS.DFSCell;
-import Maze.MazeSolver.DFS.DFSSolver;
 
-import java.util.Stack;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 public class ComputerPlayer extends BasePlayer {
 
@@ -28,25 +27,30 @@ public class ComputerPlayer extends BasePlayer {
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
     public Thread createRunningThread(Maze maze, Tuple<Integer, Integer> endingLocation, int stepSpeedMs) {
-        Stack<Direction> steps;
+        // TODO - IF CANDY DISAPPEARED THEN RECALCULATE
+        // TODO - YOU CAN USE LISTENER FOR CANDY COLLECTED OR CANDY DISAPPEARED AND FILTER ONLY TO LOCATION CANDIES
+
+        Direction[] steps;
         try {
-            steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), endingLocation, true);
+            steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), endingLocation, true);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
+        Stream<Direction> stepsStream = Arrays.stream(steps);
+
         return new Thread(() ->
-                steps.forEach(direction -> {
-                    System.out.println("Computer moved " + direction);
-                    super.move(direction);
-                    try {
-                        Thread.sleep(stepSpeedMs);
-                    } catch (InterruptedException e) {
-                        System.out.println("Error in thread sleep in computer player move");
-                        e.printStackTrace();
-                    }
-                }));
+                              stepsStream.forEach(direction -> {
+                                  System.out.println("Computer moved " + direction);
+                                  super.move(direction);
+                                  try {
+                                      Thread.sleep(stepSpeedMs);
+                                  } catch (InterruptedException e) {
+                                      System.out.println("Error in thread sleep in computer player move");
+                                      e.printStackTrace();
+                                  }
+                              }));
 
     }
 
@@ -59,25 +63,27 @@ public class ComputerPlayer extends BasePlayer {
      */
     public Thread createRunningThread(Maze maze, int stepSpeedMs) {
         // TODO - Find the closest exit from the current location
-        Stack<Direction> steps;
+        Direction[] steps;
 
         try {
-            steps = DFSSolver.getSolvePathSteps(maze, this.getLocation(), null, true);
+            steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), null, true);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
+        Stream<Direction> stepsStream = Arrays.stream(steps);
+
         return new Thread(() ->
-                steps.forEach(direction -> {
-                    System.out.println("Computer moved " + direction);
-                    super.move(direction);
-                    try {
-                        Thread.sleep(stepSpeedMs);
-                    } catch (InterruptedException e) {
-                        System.out.println("Error in thread sleep in computer player move");
-                        e.printStackTrace();
-                    }
-                }));
+                              stepsStream.forEach(direction -> {
+                                  System.out.println("Computer moved " + direction);
+                                  super.move(direction);
+                                  try {
+                                      Thread.sleep(stepSpeedMs);
+                                  } catch (InterruptedException e) {
+                                      System.out.println("Error in thread sleep in computer player move");
+                                      e.printStackTrace();
+                                  }
+                              }));
     }
 }

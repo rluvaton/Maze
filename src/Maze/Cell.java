@@ -45,6 +45,8 @@ public class Cell {
      */
     private ArrayList<Candy> candies = new ArrayList<>();
 
+    private Tuple<Integer, Integer> location;
+
     // endregion
 
     // region Constructors
@@ -53,6 +55,29 @@ public class Cell {
      * Default Constructor
      */
     public Cell() {
+    }
+
+    public Cell(Cell cell) {
+        if(cell == null) {
+            return;
+        }
+
+        // TODO - WHEN CELL PROPERTIES UPDATED DON'T FORGET TO UPDATE THIS TOO
+
+        this.location = cell.location;
+        this.topWall = cell.topWall;
+        this.bottomWall = cell.bottomWall;
+        this.rightWall = cell.rightWall;
+        this.leftWall = cell.leftWall;
+        this.candies = cell.candies;
+    }
+
+    public Cell(Tuple<Integer, Integer> location) {
+        this.location = location;
+    }
+
+    public Cell(int row, int col) {
+        this.location = new Tuple<>(row, col);
     }
 
     /**
@@ -473,6 +498,14 @@ public class Cell {
 
     public ArrayList<Candy> getCandies() {
         return this.candies;
+    }
+
+    public Tuple<Integer, Integer> getLocation() {
+        return location;
+    }
+
+    public void setLocation(Tuple<Integer, Integer> location) {
+        this.location = location;
     }
 
     // endregion
