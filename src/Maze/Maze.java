@@ -225,15 +225,28 @@ public class Maze {
             }
         }
 
-        this.generateRandomCandies((width * height) / 10, false);
+//        this.generateRandomCandies((width * height) / 10, false);
 
         // Add candies to the candy list
-        this.addToCandyList(true);
+//        this.addToCandyList(true);
 
+        this.initCellsNeighbors();
+
+        // MUST BE AFTER INIT CELL NEIGHBORS BECAUSE THE GENERATION USE THE CELL NEIGHBORS
         this.generateELocations(numberOfEntrance, numberOfExists, minDistance);
+
+
     }
 
     // endregion
+
+    private void initCellsNeighbors() {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                this.mazeData[i][j].setNeighbors(this.searchCellNeighbors(i, j));
+            }
+        }
+    }
 
     /**
      * Generate Entrances and Exits
@@ -418,18 +431,12 @@ public class Maze {
             }
         }
 
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
 
-                mazeCells[i][j].setNeighbors(this.searchCellNeighbors(mazeCells, i, j));
-            }
-        }
-
-        setMazeData(mazeCells);
+        this.mazeData = mazeCells;
     }
 
-    private LinkedList<Tuple<Cell, Direction>> searchCellNeighbors(Cell[][] mazeCells, int cellRow, int cellCol) {
-        Cell cell = mazeCells[cellRow][cellCol];
+    private LinkedList<Tuple<Cell, Direction>> searchCellNeighbors(int cellRow, int cellCol) {
+        Cell cell = this.mazeData[cellRow][cellCol];
         LinkedList<Tuple<Cell, Direction>> neighbors = new LinkedList<>();
         Direction direction;
 

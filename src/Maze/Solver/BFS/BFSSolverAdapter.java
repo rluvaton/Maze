@@ -14,6 +14,10 @@ import java.util.LinkedList;
 import java.util.function.Function;
 
 public class BFSSolverAdapter extends SolverAdapter {
+
+    private Coordinate startingCoordination = null;
+    public HashMap<Integer, HashMap<Integer, SearchResult>> results = null;
+
     /**
      * Solve Maze
      *
@@ -26,30 +30,40 @@ public class BFSSolverAdapter extends SolverAdapter {
      */
     @Override
     public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
-        Cell startingCell = maze.getCell(start);
-        HashMap<Coordinate, SearchResult> cellsData = this.getAllDistancesAndPathFromStartToMazeCells(maze, startingCell);
-        SearchResult result = cellsData.get(startingCell.getLocation());
 
-        return Utils.Instance.reverseList(result.path).toArray(new Direction[0]);
+        Cell startingCell = maze.getCell(start);
+
+        if(this.results == null || !start.equals(startingCoordination)) {
+            this.startingCoordination = start;
+            this.results = this.getAllDistancesAndPathFromStartToMazeCells(maze, startingCell);
+        }
+
+        SearchResult result = this.results.get(end.getRow()).get(end.getColumn());
+
+        return result.path.toArray(new Direction[0]);
     }
 
 
-    public HashMap<Coordinate, SearchResult> getAllDistancesAndPathFromStartToMazeCells(Maze maze, Cell start) {
+    public HashMap<Integer, HashMap<Integer, SearchResult>> getAllDistancesAndPathFromStartToMazeCells(Maze maze, Cell start) {
         LinkedList<Cell> queue = new LinkedList<>();
         queue.add(start);
 
-        HashMap<Coordinate, SearchResult> distances = new HashMap<Coordinate, SearchResult>();
+        HashMap<Integer, HashMap<Integer, SearchResult>> distances = new HashMap<>();
         Cell[][] mazeData = maze.getMazeData();
 
         LinkedList<Tuple<Cell, Direction>> neighbors;
 
         for (Cell[] row : mazeData) {
             for (Cell cell : row) {
-                distances.put(cell.getLocation(), new SearchResult());
+                Coordinate cellLocation = cell.getLocation();
+                HashMap<Integer, SearchResult> columnsResults = distances.computeIfAbsent(cellLocation.getRow(), k -> new HashMap<>());
+
+                columnsResults.put(cellLocation.getColumn(), new SearchResult());
             }
         }
 
-        distances.get(start.getLocation()).setDistance(1);
+        Coordinate cellLocation = start.getLocation();
+        distances.get(cellLocation.getRow()).get(cellLocation.getColumn()).setDistance(1);
 
 
         SearchResult currentNodeSearchResult;
@@ -59,15 +73,17 @@ public class BFSSolverAdapter extends SolverAdapter {
 
         while (!queue.isEmpty()) {
             Cell currentCell = queue.poll();
+            cellLocation = currentCell.getLocation();
 
-            currentNodeSearchResult = distances.get(currentCell.getLocation());
+            currentNodeSearchResult = distances.get(cellLocation.getRow()).get(cellLocation.getColumn());
             neighbors = currentCell.getNeighbors();
 
             for (Tuple<Cell, Direction> neighbor : neighbors) {
                 neighborCell = neighbor.item1;
                 neighborDirection = neighbor.item2;
+                Coordinate neighborLocation = neighborCell.getLocation();
 
-                neighborNodeSearchResult = distances.get(neighborCell.getLocation());
+                neighborNodeSearchResult = distances.get(neighborLocation.getRow()).get(neighborLocation.getColumn());
                 if (neighborNodeSearchResult.distance == -1) {
                     neighborNodeSearchResult.distance = currentNodeSearchResult.distance + 1;
                     neighborNodeSearchResult.path = new LinkedList<Direction>(currentNodeSearchResult.path);
@@ -77,6 +93,8 @@ public class BFSSolverAdapter extends SolverAdapter {
                 }
             }
         }
+
+        distances.forEach(((row, colResults) -> colResults.forEach((col, searchResult) -> searchResult.path = (LinkedList<Direction>)(Utils.Instance.reverseList(searchResult.path)))));
 
         return distances;
     }

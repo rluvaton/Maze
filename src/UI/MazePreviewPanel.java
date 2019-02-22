@@ -185,7 +185,7 @@ public class MazePreviewPanel extends JPanel {
                 startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
             } else if (player instanceof ComputerPlayer) {
                 startPlayersCallbacks.add(() -> {
-                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, this.maze.getEntrances().get(0).getLocation(), 100);
+                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, this.maze.getExits().get(0).getLocation(), 100);
 
                     if (playerThread == null) {
                         System.out.println("Player " + player.getName() + " can't start running");
