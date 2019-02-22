@@ -1,5 +1,6 @@
 package Maze.Solver.Adapter;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Maze;
@@ -18,7 +19,7 @@ public abstract class SolverAdapter {
      * @return Direction of the path that solved
      * @throws Exception When the maze can't be solved
      */
-    public abstract Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies) throws Exception;
+    public abstract Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception;
 
     /**
      * Solve Maze
@@ -31,5 +32,5 @@ public abstract class SolverAdapter {
      * @return Direction of the path that solved
      * @throws Exception When the maze can't be solved
      */
-    public abstract Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception;
+    public abstract Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception;
 }

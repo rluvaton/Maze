@@ -1,3 +1,4 @@
+import Helpers.Coordinate;
 import Helpers.Tuple;
 import UI.MazePreviewPanel;
 import UI.PreviewFrame;
@@ -24,7 +25,7 @@ public class Main {
             PreviewFrame preview = new PreviewFrame();
             preview.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(new Maze.Maze(height, width, minDistance, 2), new BasePlayer[]{new HumanPlayer(new Tuple<>(0, 0)), new ComputerPlayer(new Tuple<>(0, 0))}, true);
+            MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(new Maze.Maze(height, width, minDistance, 2), new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);
             mazePreviewPanel.requestFocusInWindow();
 

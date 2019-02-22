@@ -1,9 +1,8 @@
 package UI;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.NoArgsVoidCallbackFunction;
-import Helpers.Tuple;
-import Maze.Candy.CandyPowerType;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -100,7 +99,7 @@ public class MazePreviewPanel extends JPanel {
         this.players = players;
 
         if (atEntrances) {
-            List<Tuple<Integer, Integer>> locations = maze.getEntrances().stream().map(eLocation ->
+            List<Coordinate> locations = maze.getEntrances().stream().map(eLocation ->
                     eLocation.getLocation()).collect(Collectors.toList());
 
             if (locations.size() == 0) {
@@ -110,10 +109,10 @@ public class MazePreviewPanel extends JPanel {
 
             int defaultIndex = 0;
 
-            Tuple<Integer, Integer> defaultEntrance = locations.get(defaultIndex);
+            Coordinate defaultEntrance = locations.get(defaultIndex);
             locations.remove(defaultIndex);
 
-            Tuple<Integer, Integer> playerLoc;
+            Coordinate playerLoc;
 
             for (BasePlayer player : this.players) {
                 playerLoc = defaultEntrance;
@@ -158,7 +157,7 @@ public class MazePreviewPanel extends JPanel {
             ELocation entrance = this.maze.getRandomEntrance();
 
             // Set default location to 0,0
-            player.setLocation(entrance != null ? entrance.getLocation() : new Tuple<>(0, 0));
+            player.setLocation(entrance != null ? entrance.getLocation() : new Coordinate(0, 0));
 
             // Move player when observable fire
             player.getPlayerMoveObs()
@@ -249,7 +248,7 @@ public class MazePreviewPanel extends JPanel {
 
         for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
             for (int j = 0; j < w; j++) {
-                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCellAt(i, j), i, j);
+                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCell(i, j), i, j);
                 x += horSpace;
             }
             y += verSpace;
@@ -353,18 +352,18 @@ public class MazePreviewPanel extends JPanel {
 
         for (BasePlayer player : this.players) {
 
-            Tuple<Integer, Integer> coordinates = this.calculateLocation(player.getLocation());
+            Coordinate coordinates = this.calculateLocation(player.getLocation());
 
             int horSpace = fullW / this.maze.getWidth();
             int verSpace = fullH / this.maze.getHeight();
 
-            g.drawRect(coordinates.item1 + this.cellHorMargin,
-                    coordinates.item2 + this.cellVerMargin,
+            g.drawRect(coordinates.getRow() + this.cellHorMargin,
+                    coordinates.getColumn() + this.cellVerMargin,
                     horSpace - this.cellHorMargin,
                     verSpace - this.cellVerMargin);
 
-            g.fillRect(coordinates.item1 + this.cellHorMargin,
-                    coordinates.item2 + this.cellVerMargin,
+            g.fillRect(coordinates.getRow() + this.cellHorMargin,
+                    coordinates.getColumn() + this.cellVerMargin,
                     horSpace - this.cellHorMargin,
                     verSpace - this.cellVerMargin);
             repaint();
@@ -379,7 +378,7 @@ public class MazePreviewPanel extends JPanel {
      * @param location Location in the matrix
      * @return The x, y coordinates of the location in the panel
      */
-    private Tuple<Integer, Integer> calculateLocation(Tuple<Integer, Integer> location) {
+    private Coordinate calculateLocation(Coordinate location) {
 
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
@@ -387,7 +386,7 @@ public class MazePreviewPanel extends JPanel {
         int horSpace = fullW / this.maze.getWidth();
         int verSpace = fullH / this.maze.getHeight();
 
-        return new Tuple<>(startX + horSpace * location.item2, startY + verSpace * location.item1);
+        return new Coordinate(startX + horSpace * location.getColumn(), startY + verSpace * location.getRow());
     }
 
     /**
@@ -396,13 +395,13 @@ public class MazePreviewPanel extends JPanel {
      * @param player    Player that wanted to move
      * @param direction The direction of the move
      * @return Returns the status of the move ${@link MoveStatus}
-     * @see #changePlayerLocation(BasePlayer, Tuple, boolean) Change Player Location - (i.e teleportation)
+     * @see #changePlayerLocation(BasePlayer, Coordinate, boolean) Change Player Location - (i.e teleportation)
      */
     private MoveStatus movePlayer(BasePlayer player, Direction direction) {
-        Tuple<Integer, Integer> loc = player.getLocation();
+        Coordinate loc = player.getLocation();
 
         Cell cell;
-        Tuple<Integer, Integer> teleportLocation;
+        Coordinate teleportLocation;
 
         // Moved status
         MoveStatus moved = MoveStatus.NotValidMove;
@@ -446,10 +445,10 @@ public class MazePreviewPanel extends JPanel {
      * @return Returns if the played moved
      * @see #movePlayer(BasePlayer, Direction) For Moving Player by direction of move
      */
-    private boolean changePlayerLocation(BasePlayer player, Tuple<Integer, Integer> location, boolean isTeleported) {
-        Tuple<Integer, Integer> loc = player.getLocation();
+    private boolean changePlayerLocation(BasePlayer player, Coordinate location, boolean isTeleported) {
+        Coordinate loc = player.getLocation();
 
-        if (!this.maze.checkIfValidLocation(location)) {
+        if (!this.maze.isValidLocation(location)) {
             return false;
         }
 
@@ -462,7 +461,7 @@ public class MazePreviewPanel extends JPanel {
         player.addPoints(cell.collectPointsCandyStrengths());
 
         if (!isTeleported) {
-            Tuple<Integer, Integer> teleportLocation = cell.collectLocationCandyPortal();
+            Coordinate teleportLocation = cell.collectLocationCandyPortal();
 
             if (teleportLocation != null) {
                 this.changePlayerLocation(player, teleportLocation, true);

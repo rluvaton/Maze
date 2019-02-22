@@ -1,7 +1,7 @@
 package player;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -34,12 +34,12 @@ public class BasePlayer
     /**
      * Current Location
      */
-    private Tuple<Integer, Integer> location;
+    private Coordinate location;
 
     /**
      * Previous Location
      */
-    private Tuple<Integer, Integer> prevLocation;
+    private Coordinate prevLocation;
 
     /**
      * Time left to user
@@ -60,7 +60,7 @@ public class BasePlayer
      *
      * @param location Starting location of the player
      */
-    public BasePlayer(Tuple<Integer, Integer> location) {
+    public BasePlayer(Coordinate location) {
         this.location = location;
         this.name = "Player " + count++;
     }
@@ -71,7 +71,7 @@ public class BasePlayer
      * @param location Starting location of the player
      * @param name     Player name
      */
-    public BasePlayer(Tuple<Integer, Integer> location, String name) {
+    public BasePlayer(Coordinate location, String name) {
         this.name = name;
         this.location = location;
     }
@@ -158,11 +158,11 @@ public class BasePlayer
         return this.playerLocationChangedSub;
     }
 
-    public Tuple<Integer, Integer> getLocation() {
+    public Coordinate getLocation() {
         return location;
     }
 
-    public void setLocation(Tuple<Integer, Integer> location) {
+    public void setLocation(Coordinate location) {
         prevLocation = this.location;
 
         // Notify of the location change
@@ -172,7 +172,7 @@ public class BasePlayer
     }
 
     public void setLocation(Direction direction) {
-        Tuple<Integer, Integer> nextLocation = Instance.getNextCell(this.location, direction);
+        Coordinate nextLocation = Instance.getNextLocation(this.location, direction);
 
         prevLocation = this.location;
 
@@ -182,7 +182,7 @@ public class BasePlayer
         this.location = nextLocation;
     }
 
-    public Tuple<Integer, Integer> getPrevLocation() {
+    public Coordinate getPrevLocation() {
         return prevLocation;
     }
 

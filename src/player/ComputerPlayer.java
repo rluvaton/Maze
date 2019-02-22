@@ -1,5 +1,6 @@
 package player;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Maze;
@@ -14,7 +15,7 @@ public class ComputerPlayer extends BasePlayer {
      *
      * @param location Starting location of the player
      */
-    public ComputerPlayer(Tuple<Integer, Integer> location) {
+    public ComputerPlayer(Coordinate location) {
         super(location);
     }
 
@@ -26,7 +27,7 @@ public class ComputerPlayer extends BasePlayer {
      * @param stepSpeedMs    How much milliseconds to wait between each move
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
-    public Thread createRunningThread(Maze maze, Tuple<Integer, Integer> endingLocation, int stepSpeedMs) {
+    public Thread createRunningThread(Maze maze, Coordinate endingLocation, int stepSpeedMs) {
         // TODO - IF CANDY DISAPPEARED THEN RECALCULATE
         // TODO - YOU CAN USE LISTENER FOR CANDY COLLECTED OR CANDY DISAPPEARED AND FILTER ONLY TO LOCATION CANDIES
 

@@ -1,24 +1,22 @@
 package player;
 
+import Helpers.Coordinate;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import Helpers.Direction;
-import Helpers.Tuple;
 
 /**
  * Human Player
  *
  * @implNote Implement {@link KeyListener} for moving with the keyboard
  */
-public class HumanPlayer extends BasePlayer implements KeyListener
-{
+public class HumanPlayer extends BasePlayer implements KeyListener {
     /**
      * Human Player Constructor
      *
      * @param location Starting location of the player
      */
-    public HumanPlayer(Tuple<Integer, Integer> location) {
+    public HumanPlayer(Coordinate location) {
         super(location);
     }
 
@@ -26,9 +24,9 @@ public class HumanPlayer extends BasePlayer implements KeyListener
      * Human Player Constructor
      *
      * @param location Starting location of the player
-     * @param name Player name
+     * @param name     Player name
      */
-    public HumanPlayer(Tuple<Integer, Integer> location, String name) {
+    public HumanPlayer(Coordinate location, String name) {
         super(location, name);
     }
 

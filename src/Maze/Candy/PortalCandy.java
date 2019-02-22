@@ -1,5 +1,6 @@
 package Maze.Candy;
 
+import Helpers.Coordinate;
 import Helpers.NoArgsCallbackFunction;
 import Helpers.Tuple;
 import Maze.Cell;
@@ -21,7 +22,7 @@ public class PortalCandy extends Candy {
     /**
      * Where the portal is moving you
      */
-    private Tuple<Integer, Integer> location;
+    private Coordinate location;
 
     // region Constructors
 
@@ -32,14 +33,14 @@ public class PortalCandy extends Candy {
      *
      * Private function because we don't want for now 1 Way portal candy
      *
-     * @see #PortalCandy(Tuple, Cell, Tuple) for creating portal candy
+     * @see #PortalCandy(Coordinate, Cell, Coordinate) for creating portal candy
      */
-    private PortalCandy(Tuple<Integer, Integer> location) {
+    private PortalCandy(Coordinate location) {
         super(CandyPowerType.Location);
         this.location = location;
     }
 
-    public PortalCandy(Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
+    public PortalCandy(Coordinate location, Cell otherCell, Coordinate myLocation) {
         super(CandyPowerType.Location);
         this.location = location;
 
@@ -54,14 +55,14 @@ public class PortalCandy extends Candy {
      *
      * Private function because we don't want for now 1 Way portal candy
      *
-     * @see #PortalCandy(int, Tuple, Cell, Tuple) for creating portal candy
+     * @see #PortalCandy(int, Coordinate, Cell, Coordinate) for creating portal candy
      */
-    private PortalCandy(Tuple<Integer, Integer> location, int timeToLive) {
+    private PortalCandy(Coordinate location, int timeToLive) {
         super(CandyPowerType.Location, timeToLive);
         this.location = location;
     }
 
-    public PortalCandy(int timeToLive, Tuple<Integer, Integer> location, Cell otherCell, Tuple<Integer, Integer> myLocation) {
+    public PortalCandy(int timeToLive, Coordinate location, Cell otherCell, Coordinate myLocation) {
         super(CandyPowerType.Location, timeToLive);
         this.location = location;
 
@@ -70,7 +71,7 @@ public class PortalCandy extends Candy {
 
     // endregion
 
-    private void addOtherCellTeleportCandy(Cell cell, Tuple<Integer, Integer> myLocation, NoArgsCallbackFunction<PortalCandy> createCandy) {
+    private void addOtherCellTeleportCandy(Cell cell, Coordinate myLocation, NoArgsCallbackFunction<PortalCandy> createCandy) {
 
         if (cell == null) {
             throw new IllegalArgumentException("cell can't be null");
@@ -80,12 +81,12 @@ public class PortalCandy extends Candy {
             throw new IllegalArgumentException("myLocation can't be null");
         }
 
-        if (myLocation.item1 < 0) {
-            throw new IllegalArgumentException("myLocation.item1 can't be negative");
+        if (myLocation.getRow() < 0) {
+            throw new IllegalArgumentException("myLocation row can't be negative");
         }
 
-        if (myLocation.item2 < 0) {
-            throw new IllegalArgumentException("myLocation.item2 can't be negative");
+        if (myLocation.getColumn() < 0) {
+            throw new IllegalArgumentException("myLocation column can't be negative");
         }
 
         if (cell.getCandies().stream().noneMatch(candy ->
@@ -95,7 +96,7 @@ public class PortalCandy extends Candy {
                         ((PortalCandy) candy).twoWayPortal &&
                         ((PortalCandy) candy).location != null &&
                         (((PortalCandy) candy).location == myLocation ||
-                                (((PortalCandy) candy).location.compare(myLocation))))) {
+                                (((PortalCandy) candy).location.equals(myLocation))))) {
             cell.addCandy(createCandy.run());
         }
     }
@@ -106,11 +107,11 @@ public class PortalCandy extends Candy {
         return twoWayPortal;
     }
 
-    public Tuple<Integer, Integer> getLocation() {
+    public Coordinate getLocation() {
         return location;
     }
 
-    public void setLocation(Tuple<Integer, Integer> location) {
+    public void setLocation(Coordinate location) {
         this.location = location;
     }
 

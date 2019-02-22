@@ -1,5 +1,6 @@
 package Maze;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 
@@ -10,7 +11,7 @@ public class ELocation {
     /**
      * The location of the exit / enter
      */
-    private Tuple<Integer, Integer> location;
+    private Coordinate location;
 
     /**
      * The direction to go to, for exiting / entering
@@ -22,7 +23,7 @@ public class ELocation {
      */
     private ELocationType type;
 
-    public ELocation(Tuple<Integer, Integer> location, Direction direction, ELocationType type) {
+    public ELocation(Coordinate location, Direction direction, ELocationType type) {
         this.location = location;
         this.direction = direction;
         this.type = type;
@@ -35,18 +36,17 @@ public class ELocation {
      * @param direction Direction to check
      * @return Returns if the combination of the location and direction is entrance / exit location
      */
-    public boolean isAtELocation(Tuple<Integer, Integer> location, Direction direction) {
-        return !(location == null || direction == null || !this.location.item1.equals(location.item1) ||
-                 !this.location.item2.equals(location.item2) || this.direction != direction);
+    public boolean isAtELocation(Coordinate location, Direction direction) {
+        return Coordinate.equals(this.location, location) && this.direction == direction;
     }
 
     // region Getters & Setter
 
-    public Tuple<Integer, Integer> getLocation() {
+    public Coordinate getLocation() {
         return location;
     }
 
-    public void setLocation(Tuple<Integer, Integer> location) {
+    public void setLocation(Coordinate location) {
         this.location = location;
     }
 

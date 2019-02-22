@@ -6,6 +6,10 @@ public class BFSCell extends Cell {
 
     private boolean isVisited = false;
 
+    public BFSCell(Cell cell) {
+        super(cell);
+    }
+
     public boolean isVisited() {
         return isVisited;
     }

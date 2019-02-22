@@ -1,18 +1,21 @@
 package Maze;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.Node;
 import Helpers.Tuple;
 import Maze.Candy.*;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
  * Cell in maze
  */
-public class Cell {
+public class Cell extends Node<Coordinate> {
 
     // region Variables
 
@@ -45,26 +48,24 @@ public class Cell {
      */
     private ArrayList<Candy> candies = new ArrayList<>();
 
-    private Tuple<Integer, Integer> location;
+    /**
+     * The location is also the ID
+     */
+    private Coordinate location;
+
+
+    private LinkedList<Tuple<Cell, Direction>> neighbors = new LinkedList<>();
 
     // endregion
 
     // region Constructors
 
-    /**
-     * Default Constructor
-     */
-    public Cell() {
-    }
-
     public Cell(Cell cell) {
-        if(cell == null) {
-            return;
-        }
+        super(cell.id);
 
         // TODO - WHEN CELL PROPERTIES UPDATED DON'T FORGET TO UPDATE THIS TOO
 
-        this.location = cell.location;
+        this.location = this.id;
         this.topWall = cell.topWall;
         this.bottomWall = cell.bottomWall;
         this.rightWall = cell.rightWall;
@@ -72,67 +73,18 @@ public class Cell {
         this.candies = cell.candies;
     }
 
-    public Cell(Tuple<Integer, Integer> location) {
-        this.location = location;
-    }
-
     public Cell(int row, int col) {
-        this.location = new Tuple<>(row, col);
-    }
+        super(new Coordinate(row, col));
 
-    /**
-     * Create Cube with one open neighbor
-     *
-     * @param neighbor  Neighbor to add
-     * @param direction Direction of where to add the cube
-     * @throws IllegalArgumentException  Throw Error if neighbor is null
-     * @throws IndexOutOfBoundsException Throw if direction is not recognized
-     */
-    public Cell(Cell neighbor, Direction direction) {
-        this(neighbor, direction, false);
-    }
-
-    /**
-     * Create Cube with one open neighbor
-     *
-     * @param neighbor  Neighbor to add
-     * @param direction Direction of where to add the cube
-     * @param force     If to force the change (can delete other cube direction)
-     * @throws IllegalArgumentException  Throw Error if neighbor is null
-     * @throws IndexOutOfBoundsException Throw if direction is not recognized
-     */
-    public Cell(Cell neighbor, Direction direction, boolean force) {
-        if (neighbor == null) {
-            throw new IllegalArgumentException("neighbor");
-        }
-
-        switch (direction) {
-            case TOP:
-                if (neighbor.haveCellAtDirection(Direction.BOTTOM) || force) {
-                    neighbor.setCellAtDirection(this, Direction.BOTTOM);
-                }
-                break;
-            case RIGHT:
-                if (neighbor.haveCellAtDirection(Direction.LEFT) || force) {
-                    neighbor.setCellAtDirection(this, Direction.LEFT);
-                }
-                break;
-            case BOTTOM:
-                if (neighbor.haveCellAtDirection(Direction.TOP) || force) {
-                    neighbor.setCellAtDirection(this, Direction.TOP);
-                }
-                break;
-            case LEFT:
-                if (neighbor.haveCellAtDirection(Direction.RIGHT) || force) {
-                    neighbor.setCellAtDirection(this, Direction.RIGHT);
-                }
-                break;
-            default:
-                throw new IndexOutOfBoundsException();
-        }
+        this.location = id;
     }
 
     // endregion
+
+    @Override
+    public boolean equals(Node<Coordinate> cell) {
+        return cell != null && this.id.equals(cell.id);
+    }
 
     /**
      * Get Cell at direction
@@ -296,11 +248,11 @@ public class Cell {
      */
     public List<TimeCandy> collectTimeCandy(boolean removeFoundedCandies) {
         List<TimeCandy> timeCandies = this.candies.stream()
-                                                  .filter(candy -> candy != null && (candy instanceof TimeCandy ||
-                                                                                     candy.getType() ==
-                                                                                     CandyPowerType.Time))
-                                                  .map(candy -> (TimeCandy) candy)
-                                                  .collect(Collectors.toList());
+                .filter(candy -> candy != null && (candy instanceof TimeCandy ||
+                        candy.getType() ==
+                                CandyPowerType.Time))
+                .map(candy -> (TimeCandy) candy)
+                .collect(Collectors.toList());
         if (!removeFoundedCandies) {
             return timeCandies;
         }
@@ -329,24 +281,24 @@ public class Cell {
      */
     public int collectTimeCandyStrengths(boolean removeFoundedCandies) {
         List<TimeCandy> timeCandies = this.candies.stream()
-                                                  .filter(candy -> candy != null && (candy instanceof TimeCandy ||
-                                                                                     candy.getType() ==
-                                                                                     CandyPowerType.Time))
-                                                  .map(candy -> (TimeCandy) candy)
-                                                  .collect(Collectors.toList());
+                .filter(candy -> candy != null && (candy instanceof TimeCandy ||
+                        candy.getType() ==
+                                CandyPowerType.Time))
+                .map(candy -> (TimeCandy) candy)
+                .collect(Collectors.toList());
         if (!removeFoundedCandies) {
             return timeCandies.stream()
-                              .mapToInt(Candy::getCandyStrength)
-                              .reduce((candy1, candy2) -> candy1 + candy2)
-                              .orElse(0);
+                    .mapToInt(Candy::getCandyStrength)
+                    .reduce((candy1, candy2) -> candy1 + candy2)
+                    .orElse(0);
         }
 
         timeCandies.forEach(timeCandy -> this.candies.remove(timeCandy));
 
         return timeCandies.stream()
-                          .mapToInt(Candy::getCandyStrength)
-                          .reduce((candy1, candy2) -> candy1 + candy2)
-                          .orElse(0);
+                .mapToInt(Candy::getCandyStrength)
+                .reduce((candy1, candy2) -> candy1 + candy2)
+                .orElse(0);
     }
 
     // endregion
@@ -372,11 +324,11 @@ public class Cell {
      */
     public List<PointsCandy> collectPointsCandy(boolean removeFoundedCandies) {
         List<PointsCandy> pointsCandies = this.candies.stream()
-                                                      .filter(candy -> candy != null && (candy instanceof PointsCandy ||
-                                                                                         candy.getType() ==
-                                                                                         CandyPowerType.Points))
-                                                      .map(candy -> (PointsCandy) candy)
-                                                      .collect(Collectors.toList());
+                .filter(candy -> candy != null && (candy instanceof PointsCandy ||
+                        candy.getType() ==
+                                CandyPowerType.Points))
+                .map(candy -> (PointsCandy) candy)
+                .collect(Collectors.toList());
         if (!removeFoundedCandies) {
             return pointsCandies;
         }
@@ -405,24 +357,24 @@ public class Cell {
      */
     public int collectPointsCandyStrengths(boolean removeFoundedCandies) {
         List<PointsCandy> pointsCandies = this.candies.stream()
-                                                      .filter(candy -> candy != null && (candy instanceof PointsCandy ||
-                                                                                         candy.getType() ==
-                                                                                         CandyPowerType.Points))
-                                                      .map(candy -> (PointsCandy) candy)
-                                                      .collect(Collectors.toList());
+                .filter(candy -> candy != null && (candy instanceof PointsCandy ||
+                        candy.getType() ==
+                                CandyPowerType.Points))
+                .map(candy -> (PointsCandy) candy)
+                .collect(Collectors.toList());
         if (!removeFoundedCandies) {
             return pointsCandies.stream()
-                                .mapToInt(Candy::getCandyStrength)
-                                .reduce((candy1, candy2) -> candy1 + candy2)
-                                .orElse(0);
+                    .mapToInt(Candy::getCandyStrength)
+                    .reduce((candy1, candy2) -> candy1 + candy2)
+                    .orElse(0);
         }
 
         pointsCandies.forEach(pointCandy -> this.candies.remove(pointCandy));
 
         return pointsCandies.stream()
-                            .mapToInt(Candy::getCandyStrength)
-                            .reduce((candy1, candy2) -> candy1 + candy2)
-                            .orElse(0);
+                .mapToInt(Candy::getCandyStrength)
+                .reduce((candy1, candy2) -> candy1 + candy2)
+                .orElse(0);
     }
 
     // endregion Points Candies
@@ -436,10 +388,10 @@ public class Cell {
      */
     public PortalCandy collectLocationCandy() {
         return (PortalCandy) this.candies.stream()
-                                         .filter(candy -> candy != null && (candy instanceof PortalCandy ||
-                                                                            candy.getType() == CandyPowerType.Location))
-                                         .findFirst()
-                                         .orElse(null);
+                .filter(candy -> candy != null && (candy instanceof PortalCandy ||
+                        candy.getType() == CandyPowerType.Location))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -447,17 +399,16 @@ public class Cell {
      *
      * @return Returns Location that the first Location (Portal) candy that founded
      * @implNote It doesn't remove the candy
-     *
      * @see #collectLocationCandy For getting the location candy
      */
-    public Tuple<Integer, Integer> collectLocationCandyPortal() {
+    public Coordinate collectLocationCandyPortal() {
         return this.candies.stream()
-                           .filter(candy -> candy != null && (candy instanceof PortalCandy ||
-                                                              candy.getType() == CandyPowerType.Location))
-                           .findFirst()
-                           .map(candy -> (PortalCandy) candy)
-                           .map(PortalCandy::getLocation)
-                           .orElse(null);
+                .filter(candy -> candy != null && (candy instanceof PortalCandy ||
+                        candy.getType() == CandyPowerType.Location))
+                .findFirst()
+                .map(candy -> (PortalCandy) candy)
+                .map(PortalCandy::getLocation)
+                .orElse(null);
     }
 
     // endregion
@@ -500,12 +451,25 @@ public class Cell {
         return this.candies;
     }
 
-    public Tuple<Integer, Integer> getLocation() {
+    public Coordinate getLocation() {
         return location;
     }
 
-    public void setLocation(Tuple<Integer, Integer> location) {
+    public void setLocation(Coordinate location) {
+        if (location == null) {
+            throw new IllegalArgumentException("Location can't be null");
+        }
+
         this.location = location;
+        this.id = this.location;
+    }
+
+    public LinkedList<Tuple<Cell, Direction>> getNeighbors() {
+        return neighbors;
+    }
+
+    public void setNeighbors(LinkedList<Tuple<Cell, Direction>> neighbors) {
+        this.neighbors = neighbors;
     }
 
     // endregion

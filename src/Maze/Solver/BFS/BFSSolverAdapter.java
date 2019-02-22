@@ -1,20 +1,17 @@
 package Maze.Solver.BFS;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
-import Maze.ELocationType;
 import Maze.Maze;
 import Maze.Solver.Adapter.SolverAdapter;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.function.Function;
-
-import static Helpers.Utils.DIRECTIONS;
 
 public class BFSSolverAdapter extends SolverAdapter {
     /**
@@ -28,54 +25,60 @@ public class BFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies) throws Exception {
-        ArrayList<Direction> steps = new ArrayList<>();
-        LinkedList<Tuple<Integer, Integer>> nextToVisit = new LinkedList<>();
+    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+        Cell startingCell = maze.getCell(start);
+        HashMap<Coordinate, SearchResult> cellsData = this.getAllDistancesAndPathFromStartToMazeCells(maze, startingCell);
+        SearchResult result = cellsData.get(startingCell.getLocation());
 
-        BFSCell[][] bfsCells = this.convertMazeCellsToBFSCells(maze.getMazeData());
+        return Utils.Instance.reverseList(result.path).toArray(new Direction[0]);
+    }
 
-        nextToVisit.add(start);
 
-        Tuple<Integer, Integer> currentloc;
+    public HashMap<Coordinate, SearchResult> getAllDistancesAndPathFromStartToMazeCells(Maze maze, Cell start) {
+        LinkedList<Cell> queue = new LinkedList<>();
+        queue.add(start);
 
-        while (!nextToVisit.isEmpty()) {
-            currentloc = nextToVisit.remove();
-            steps.remove(0);
+        HashMap<Coordinate, SearchResult> distances = new HashMap<Coordinate, SearchResult>();
+        Cell[][] mazeData = maze.getMazeData();
 
-            if (!maze.checkIfValidLocation(currentloc) || getBFSCellFromLocation(bfsCells, currentloc).isVisited()) {
-                continue;
-            }
+        LinkedList<Tuple<Cell, Direction>> neighbors;
 
-            for (Map.Entry<Direction, Tuple<Integer, Integer>> entry : DIRECTIONS.entrySet()) {
-                Direction direction = entry.getKey();
-
-                steps.add(direction);
-
-                // Check if is Exit
-                if (maze.checkIfELocation(currentloc, direction, ELocationType.Exit) != null) {
-                    return steps.toArray(new Direction[0]);
-                }
-
-                BFSCell cell = getBFSCellFromCell(bfsCells, maze.checkIfValidMoveCell(currentloc, direction));
-
-                if (cell != null) {
-                    cell.setVisited(true);
-
-                    if(withCandies) {
-                        Tuple<Integer, Integer> maybeNextLocation = cell.collectLocationCandyPortal();
-
-                        if(maybeNextLocation != null) {
-                            nextToVisit.add(maybeNextLocation);
-                            continue;
-                        }
-                    }
-                }
-
-                nextToVisit.add(Utils.Instance.getNextLocation(currentloc, entry.getValue()));
+        for (Cell[] row : mazeData) {
+            for (Cell cell : row) {
+                distances.put(cell.getLocation(), new SearchResult());
             }
         }
 
-        return new Direction[0];
+        distances.get(start.getLocation()).setDistance(1);
+
+
+        SearchResult currentNodeSearchResult;
+        SearchResult neighborNodeSearchResult;
+        Cell neighborCell;
+        Direction neighborDirection;
+
+        while (!queue.isEmpty()) {
+            Cell currentCell = queue.poll();
+
+            currentNodeSearchResult = distances.get(currentCell.getLocation());
+            neighbors = currentCell.getNeighbors();
+
+            for (Tuple<Cell, Direction> neighbor : neighbors) {
+                neighborCell = neighbor.item1;
+                neighborDirection = neighbor.item2;
+
+                neighborNodeSearchResult = distances.get(neighborCell.getLocation());
+                if (neighborNodeSearchResult.distance == -1) {
+                    neighborNodeSearchResult.distance = currentNodeSearchResult.distance + 1;
+                    neighborNodeSearchResult.path = new LinkedList<Direction>(currentNodeSearchResult.path);
+                    neighborNodeSearchResult.path.add(neighborDirection);
+
+                    queue.add(neighborCell);
+                }
+            }
+        }
+
+        return distances;
     }
 
     /**
@@ -90,12 +93,12 @@ public class BFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
+    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
         return new Direction[0];
     }
 
     private BFSCell[][] convertMazeCellsToBFSCells(Cell[][] cells) {
-        return Arrays.stream(cells).map(cellsRow -> Arrays.stream(cellsRow).map(cell -> (BFSCell) cell).toArray(BFSCell[]::new)).toArray(BFSCell[][]::new);
+        return Arrays.stream(cells).map(cellsRow -> Arrays.stream(cellsRow).map(cell -> (BFSCell) new BFSCell(cell)).toArray(BFSCell[]::new)).toArray(BFSCell[][]::new);
     }
 
     private BFSCell getBFSCellFromCell(BFSCell[][] cells, Cell cell) {
@@ -106,13 +109,45 @@ public class BFSSolverAdapter extends SolverAdapter {
         return getBFSCellFromLocation(cells, cell.getLocation());
     }
 
-    private BFSCell getBFSCellFromLocation(BFSCell[][] cells, Tuple<Integer, Integer> cellLocation) {
+    private BFSCell getBFSCellFromLocation(BFSCell[][] cells, Coordinate cellLocation) {
         return (
-            cellLocation == null ||
-                cellLocation.item1 < 0 ||
-                cellLocation.item1 > cells.length ||
-                cellLocation.item2 < 0 ||
-                cellLocation.item2 > cells[cellLocation.item1].length
-        ) ? null : cells[cellLocation.item1][cellLocation.item2];
+                cellLocation == null ||
+                        cellLocation.getRow() < 0 ||
+                        cellLocation.getRow() > cells.length ||
+                        cellLocation.getColumn() < 0 ||
+                        cellLocation.getColumn() > cells[cellLocation.getRow()].length
+        ) ? null : cells[cellLocation.getRow()][cellLocation.getColumn()];
+    }
+
+
+    public class SearchResult {
+        private int distance;
+        private LinkedList<Direction> path;
+
+        public SearchResult() {
+            this.distance = -1;
+            this.path = new LinkedList<>();
+        }
+
+        public SearchResult(int distance, LinkedList<Direction> path) {
+            this.distance = distance;
+            this.path = path;
+        }
+
+        public int getDistance() {
+            return distance;
+        }
+
+        public void setDistance(int distance) {
+            this.distance = distance;
+        }
+
+        public LinkedList<Direction> getPath() {
+            return path;
+        }
+
+        public void setPath(LinkedList<Direction> path) {
+            this.path = path;
+        }
     }
 }

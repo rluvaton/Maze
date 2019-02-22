@@ -1,6 +1,7 @@
 package Maze.Solver.DFS;
 
 
+import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Cell;
@@ -27,13 +28,13 @@ public class DFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies) throws Exception {
-        Stack<Tuple<Integer, Integer>> path = new Stack<>();
+    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+        Stack<Coordinate> path = new Stack<>();
         ArrayList<Direction> steps = new ArrayList<>();
 
-        Tuple<Integer, Integer> current = start;
+        Coordinate current = start;
         PathNeighbourResult pathNeighbourResult;
-        Tuple<Integer, Integer> maybeNextLoc;
+        Coordinate maybeNextLoc;
         ELocation eLocation;
 
         DFSCell[][] dfsCells = convertMazeCellsToBFSCells(maze.getMazeData());
@@ -42,7 +43,7 @@ public class DFSSolverAdapter extends SolverAdapter {
         int iterations = 0;
         int maxTries = maze.getHeight() * maze.getWidth() + 5;
 
-        while (!Tuple.compare(current, end) && iterations < maxTries) {
+        while (!Coordinate.equals(current, end) && iterations < maxTries) {
             tempCell = this.getDFSCellFromCell(dfsCells, maze.getCell(current));
             tempCell.setDeadEnd(true);
 
@@ -101,12 +102,12 @@ public class DFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Tuple<Integer, Integer> start, Tuple<Integer, Integer> end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
+    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
         return new Direction[0];
     }
 
     private DFSCell[][] convertMazeCellsToBFSCells(Cell[][] cells) {
-        return Arrays.stream(cells).map(cellsRow -> Arrays.stream(cellsRow).map(cell -> DFSCell.createFromCell(cell)).toArray(DFSCell[]::new)).toArray(DFSCell[][]::new);
+        return Arrays.stream(cells).map(cellsRow -> Arrays.stream(cellsRow).map(DFSCell::createFromCell).toArray(DFSCell[]::new)).toArray(DFSCell[][]::new);
     }
 
     private DFSCell getDFSCellFromCell(DFSCell[][] cells, Cell cell) {
@@ -114,15 +115,15 @@ public class DFSSolverAdapter extends SolverAdapter {
             return null;
         }
 
-        Tuple<Integer, Integer> cellLocation = cell.getLocation();
+        Coordinate cellLocation = cell.getLocation();
 
         return (
             cellLocation == null ||
-                cellLocation.item1 < 0 ||
-                cellLocation.item1 > cells.length ||
-                cellLocation.item2 < 0 ||
-                cellLocation.item2 > cells[cellLocation.item1].length
-        ) ? null : cells[cellLocation.item1][cellLocation.item2];
+                cellLocation.getRow() < 0 ||
+                cellLocation.getRow() > cells.length ||
+                cellLocation.getColumn() < 0 ||
+                cellLocation.getColumn() > cells[cellLocation.getRow()].length
+        ) ? null : cells[cellLocation.getRow()][cellLocation.getColumn()];
 
     }
 }
