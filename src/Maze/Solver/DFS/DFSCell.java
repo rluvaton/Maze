@@ -1,5 +1,7 @@
-package Maze.MazeSolver.DFS;
+package Maze.Solver.DFS;
 
+import Helpers.Coordinate;
+import Helpers.Direction;
 import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
@@ -19,6 +21,9 @@ public class DFSCell extends Cell
      */
     private boolean deadEnd = false;
 
+    public DFSCell(Cell cell) {
+        super(cell);
+    }
 
     /**
      * Gets a neighbour that could potentially be part of the solution path.
@@ -27,25 +32,25 @@ public class DFSCell extends Cell
      * @param right Right cell
      * @param bottom Bottom cell
      * @param left Left cell
-     * @return the next cell location to go to
+     * @return PathNeighbourResult that contain the next cell location to go to with that direction
      */
-    public Tuple<Integer, Integer> getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
-        List<Tuple<Integer, Integer>> neighbours = new ArrayList<Tuple<Integer, Integer>>();
+    public PathNeighbourResult getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
+        List<PathNeighbourResult> neighbours = new ArrayList<>();
 
         if (top != null && !top.deadEnd && !this.haveTopWall()) {
-            neighbours.add(new Tuple<>(-1, 0));
+            neighbours.add(new PathNeighbourResult(top, Utils.DIRECTIONS.get(Direction.TOP), Direction.TOP));
         }
 
         if (right != null && !right.deadEnd && !this.haveRightWall()) {
-            neighbours.add(new Tuple<>(0, 1));
+            neighbours.add(new PathNeighbourResult(right, Utils.DIRECTIONS.get(Direction.RIGHT), Direction.RIGHT));
         }
 
         if (bottom != null && !bottom.deadEnd && !this.haveBottomWall()) {
-            neighbours.add(new Tuple<>(1, 0));
+            neighbours.add(new PathNeighbourResult(bottom, Utils.DIRECTIONS.get(Direction.BOTTOM), Direction.BOTTOM));
         }
 
         if (left != null && !left.deadEnd && !this.haveLeftWall()) {
-            neighbours.add(new Tuple<>(0, -1));
+            neighbours.add(new PathNeighbourResult(left, Utils.DIRECTIONS.get(Direction.LEFT), Direction.LEFT));
         }
 
         if (neighbours.size() == 0) {
@@ -57,6 +62,10 @@ public class DFSCell extends Cell
         }
 
         return neighbours.get(Utils.Instance.getRandomNumber(neighbours.size()));
+    }
+
+    public static DFSCell createFromCell(Cell cell) {
+        return new DFSCell(cell);
     }
 
     // region Getter & Setter

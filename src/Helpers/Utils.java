@@ -1,7 +1,6 @@
 package Helpers;
 
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Utils {
@@ -14,6 +13,9 @@ public class Utils {
      * Random Instance for random numbers one after another
      */
     private final Random _random = new Random();
+
+    public static Map<Direction, Coordinate> DIRECTIONS = Utils.createDirectionsMap();
+    public static Map<Direction, Direction> OPPOSITE_DIRECTIONS = Utils.createOppositeDirectionsMap();
 
     /**
      * Get Random State
@@ -53,41 +55,28 @@ public class Utils {
      * @return Returns new Tuple of the next cell location
      * @throws IllegalArgumentException in case of loc variable is null or nextDirection value is not recognized
      */
-    public final Tuple<Integer, Integer> getNextCell(Tuple<Integer, Integer> loc, Direction nextDirection) {
+    public final Coordinate getNextLocation(Coordinate loc, Direction nextDirection) {
         if (loc == null) {
             throw new IllegalArgumentException("Location can't be null");
         }
 
-        int row = loc.item1, col = loc.item2;
-        switch (nextDirection) {
-            case TOP:
-                row -= 1;
-                break;
-            case BOTTOM:
-                row += 1;
-                break;
-            case RIGHT:
-                col += 1;
-                break;
-            case LEFT:
-                col -= 1;
-                break;
-            default:
-                throw new IllegalArgumentException("Next direction didn't recognized");
-        }
-
-        return createLocTuple(row, col);
+        return this.getNextLocation(loc, DIRECTIONS.get(nextDirection));
     }
 
-    /**
-     * Create Location Tuple
-     *
-     * @param row Row
-     * @param col Column
-     * @return Return the tuple of the location
-     */
-    public final Tuple<Integer, Integer> createLocTuple(int row, int col) {
-        return new Tuple<>(row, col);
+    public final Coordinate getNextLocation(Coordinate loc, Coordinate dirToAdd) {
+        if (loc == null) {
+            throw new IllegalArgumentException("Location can't be null");
+        }
+
+        return this.getNextLocation(loc.getRow(), loc.getColumn(), dirToAdd);
+    }
+
+    public final Coordinate getNextLocation(int currRow, int currCol, Coordinate dirToAdd) {
+        if (dirToAdd == null) {
+            throw new IllegalArgumentException("Next direction didn't recognized");
+        }
+
+        return new Coordinate(currRow + dirToAdd.getRow(), currCol + dirToAdd.getColumn());
     }
 
     /**
@@ -135,8 +124,8 @@ public class Utils {
      * @param width  Width of Matrix
      * @return Returns if the row and column are in the matrix boundaries
      */
-    public final <T> boolean inBounds(Tuple<Integer, Integer> loc, int height, int width) {
-        return loc.item1 >= 0 && loc.item1 < height && loc.item2 >= 0 && loc.item2 < width;
+    public final <T> boolean inBounds(Coordinate loc, int height, int width) {
+        return loc.getRow() >= 0 && loc.getRow() < height && loc.getColumn() >= 0 && loc.getColumn() < width;
     }
 
     /**
@@ -151,7 +140,7 @@ public class Utils {
      */
     public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
         return (row == 0 && direction == Direction.TOP) || (row == height - 1 && direction == Direction.BOTTOM) ||
-               (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
+                (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
     }
 
 
@@ -182,12 +171,12 @@ public class Utils {
      *
      * @param firstLimit  First item limit
      * @param secondLimit Second item limit
-     * @return Returns The Tuple of items
+     * @return Returns The Coordinate
      * @example Generate Location in Matrix
-     * generateTuple(height, width)
+     * generateCoordinate(height, width)
      */
-    public Tuple<Integer, Integer> generateTuple(int firstLimit, int secondLimit) {
-        return new Tuple<>(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
+    public Coordinate generateCoordinate(int firstLimit, int secondLimit) {
+        return new Coordinate(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
     }
 
     /**
@@ -207,9 +196,42 @@ public class Utils {
         }
 
         return (from.item1 > to.item1 && from.item2.equals(to.item2)) ? Direction.BOTTOM :
-               (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
-               (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
-               (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
+                (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
+                        (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
+                                (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
+    }
+
+    public <T> List<T> reverseList(List<T> list) {
+        LinkedList<T> reversed = new LinkedList<>(list);
+        Collections.reverse(reversed);
+        return reversed;
+    }
+
+
+    public static Map<Direction, Coordinate> createDirectionsMap() {
+        HashMap<Direction, Coordinate> directions = new HashMap<>();
+
+        directions.put(Direction.TOP, new Coordinate(-1, 0));
+        directions.put(Direction.RIGHT, new Coordinate(0, 1));
+        directions.put(Direction.BOTTOM, new Coordinate(1, 0));
+        directions.put(Direction.LEFT, new Coordinate(0, -1));
+
+        return directions;
+    }
+
+    private static Map<Direction, Direction> createOppositeDirectionsMap() {
+        HashMap<Direction, Direction> directions = new HashMap<>();
+
+        directions.put(Direction.TOP, Direction.BOTTOM);
+        directions.put(Direction.RIGHT, Direction.LEFT);
+        directions.put(Direction.BOTTOM, Direction.TOP);
+        directions.put(Direction.LEFT, Direction.RIGHT);
+
+        return directions;
+    }
+
+    public Direction getOppositeDirection(Direction direction) {
+        return Utils.OPPOSITE_DIRECTIONS.get(direction);
     }
 }
 

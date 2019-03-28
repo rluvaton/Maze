@@ -1,7 +1,7 @@
 package player;
 
+import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -11,9 +11,15 @@ import static Helpers.Utils.Instance;
  * Base Player
  * Abstract class for player
  */
-public abstract class BasePlayer {
+public class BasePlayer
+{
 
     // region Variables
+
+    /**
+     * Player name
+     */
+    private String name;
 
     /**
      * Subject for where the player move
@@ -28,12 +34,12 @@ public abstract class BasePlayer {
     /**
      * Current Location
      */
-    private Tuple<Integer, Integer> location;
+    private Coordinate location;
 
     /**
      * Previous Location
      */
-    private Tuple<Integer, Integer> prevLocation;
+    private Coordinate prevLocation;
 
     /**
      * Time left to user
@@ -45,6 +51,8 @@ public abstract class BasePlayer {
      */
     private int points = 0;
 
+    private static int count = 1;
+
     // endregion
 
     /**
@@ -52,7 +60,19 @@ public abstract class BasePlayer {
      *
      * @param location Starting location of the player
      */
-    public BasePlayer(Tuple<Integer, Integer> location) {
+    public BasePlayer(Coordinate location) {
+        this.location = location;
+        this.name = "Player " + count++;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param location Starting location of the player
+     * @param name     Player name
+     */
+    public BasePlayer(Coordinate location, String name) {
+        this.name = name;
         this.location = location;
     }
 
@@ -93,22 +113,30 @@ public abstract class BasePlayer {
     /**
      * Move Top
      */
-    public abstract void top();
+    public void top() {
+        this.notifyMoved(Direction.TOP);
+    }
 
     /**
      * Move Right
      */
-    public abstract void right();
+    public void right() {
+        this.notifyMoved(Direction.RIGHT);
+    }
 
     /**
      * Move Bottom
      */
-    public abstract void bottom();
+    public void bottom() {
+        this.notifyMoved(Direction.BOTTOM);
+    }
 
     /**
      * Move Left
      */
-    public abstract void left();
+    public void left() {
+        this.notifyMoved(Direction.LEFT);
+    }
 
     // region Getter & Setter
 
@@ -130,11 +158,11 @@ public abstract class BasePlayer {
         return this.playerLocationChangedSub;
     }
 
-    public Tuple<Integer, Integer> getLocation() {
+    public Coordinate getLocation() {
         return location;
     }
 
-    public void setLocation(Tuple<Integer, Integer> location) {
+    public void setLocation(Coordinate location) {
         prevLocation = this.location;
 
         // Notify of the location change
@@ -144,7 +172,7 @@ public abstract class BasePlayer {
     }
 
     public void setLocation(Direction direction) {
-        Tuple<Integer, Integer> nextLocation = Instance.getNextCell(this.location, direction);
+        Coordinate nextLocation = Instance.getNextLocation(this.location, direction);
 
         prevLocation = this.location;
 
@@ -154,8 +182,16 @@ public abstract class BasePlayer {
         this.location = nextLocation;
     }
 
-    public Tuple<Integer, Integer> getPrevLocation() {
+    public Coordinate getPrevLocation() {
         return prevLocation;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     // region Points
