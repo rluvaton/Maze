@@ -15,6 +15,7 @@ public class Utils {
     private final Random _random = new Random();
 
     public static Map<Direction, Coordinate> DIRECTIONS = Utils.createDirectionsMap();
+    public static Map<Direction, Direction> OPPOSITE_DIRECTIONS = Utils.createOppositeDirectionsMap();
 
     /**
      * Get Random State
@@ -201,10 +202,8 @@ public class Utils {
     }
 
     public <T> List<T> reverseList(List<T> list) {
-        List<T> reversed = new LinkedList<>();
-
-        list.forEach(((LinkedList<T>) reversed)::add);
-
+        LinkedList<T> reversed = new LinkedList<>(list);
+        Collections.reverse(reversed);
         return reversed;
     }
 
@@ -218,6 +217,21 @@ public class Utils {
         directions.put(Direction.LEFT, new Coordinate(0, -1));
 
         return directions;
+    }
+
+    private static Map<Direction, Direction> createOppositeDirectionsMap() {
+        HashMap<Direction, Direction> directions = new HashMap<>();
+
+        directions.put(Direction.TOP, Direction.BOTTOM);
+        directions.put(Direction.RIGHT, Direction.LEFT);
+        directions.put(Direction.BOTTOM, Direction.TOP);
+        directions.put(Direction.LEFT, Direction.RIGHT);
+
+        return directions;
+    }
+
+    public Direction getOppositeDirection(Direction direction) {
+        return Utils.OPPOSITE_DIRECTIONS.get(direction);
     }
 }
 

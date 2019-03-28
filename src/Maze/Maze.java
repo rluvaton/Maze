@@ -840,6 +840,10 @@ public class Maze {
         return location == null ? null : this.getCell(location.getRow(), location.getColumn());
     }
 
+    public ELocation getExit(Coordinate location) {
+        return location == null ? null : this.exits.stream().filter(exit -> location.equals(exit.getLocation())).findFirst().orElse(null);
+    }
+
     public Cell[][] getMazeData() {
         return mazeData;
     }

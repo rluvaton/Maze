@@ -15,8 +15,8 @@ import java.util.function.Function;
 
 public class BFSSolverAdapter extends SolverAdapter {
 
-    private Coordinate startingCoordination = null;
-    public HashMap<Integer, HashMap<Integer, SearchResult>> results = null;
+    private Coordinate endingCoordination = null;
+    private HashMap<Integer, HashMap<Integer, SearchResult>> endResults = null;
 
     /**
      * Solve Maze
@@ -30,23 +30,22 @@ public class BFSSolverAdapter extends SolverAdapter {
      */
     @Override
     public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+        Cell endingCell = maze.getCell(end);
 
-        Cell startingCell = maze.getCell(start);
-
-        if(this.results == null || !start.equals(startingCoordination)) {
-            this.startingCoordination = start;
-            this.results = this.getAllDistancesAndPathFromStartToMazeCells(maze, startingCell);
+        if (this.endResults == null || !end.equals(endingCoordination)) {
+            this.endingCoordination = end;
+            this.endResults = this.getAllDistancesAndPathFromEverywhereToEnd(maze, endingCell);
         }
 
-        SearchResult result = this.results.get(end.getRow()).get(end.getColumn());
+        SearchResult result = this.endResults.get(start.getRow()).get(start.getColumn());
 
         return result.path.toArray(new Direction[0]);
     }
 
 
-    public HashMap<Integer, HashMap<Integer, SearchResult>> getAllDistancesAndPathFromStartToMazeCells(Maze maze, Cell start) {
+    private HashMap<Integer, HashMap<Integer, SearchResult>> getAllDistancesAndPathFromEverywhereToEnd(Maze maze, Cell end) {
         LinkedList<Cell> queue = new LinkedList<>();
-        queue.add(start);
+        queue.add(end);
 
         HashMap<Integer, HashMap<Integer, SearchResult>> distances = new HashMap<>();
         Cell[][] mazeData = maze.getMazeData();
@@ -62,7 +61,7 @@ public class BFSSolverAdapter extends SolverAdapter {
             }
         }
 
-        Coordinate cellLocation = start.getLocation();
+        Coordinate cellLocation = end.getLocation();
         distances.get(cellLocation.getRow()).get(cellLocation.getColumn()).setDistance(1);
 
 
@@ -84,17 +83,18 @@ public class BFSSolverAdapter extends SolverAdapter {
                 Coordinate neighborLocation = neighborCell.getLocation();
 
                 neighborNodeSearchResult = distances.get(neighborLocation.getRow()).get(neighborLocation.getColumn());
+
                 if (neighborNodeSearchResult.distance == -1) {
                     neighborNodeSearchResult.distance = currentNodeSearchResult.distance + 1;
-                    neighborNodeSearchResult.path = new LinkedList<Direction>(currentNodeSearchResult.path);
-                    neighborNodeSearchResult.path.add(neighborDirection);
+                    neighborNodeSearchResult.path = new LinkedList<>(currentNodeSearchResult.path);
+                    neighborNodeSearchResult.path.add(Utils.Instance.getOppositeDirection(neighborDirection));
 
                     queue.add(neighborCell);
                 }
             }
         }
 
-        distances.forEach(((row, colResults) -> colResults.forEach((col, searchResult) -> searchResult.path = (LinkedList<Direction>)(Utils.Instance.reverseList(searchResult.path)))));
+        distances.forEach(((row, colResults) -> colResults.forEach((col, searchResult) -> searchResult.path = (LinkedList<Direction>) (Utils.Instance.reverseList(searchResult.path)))));
 
         return distances;
     }

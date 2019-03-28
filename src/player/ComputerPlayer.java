@@ -4,6 +4,7 @@ import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Tuple;
 import Maze.Maze;
+import Maze.Solver.BFS.BFSSolverAdapter;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
