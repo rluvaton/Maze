@@ -2,16 +2,14 @@ package Maze.Solver.BFS;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Helpers.Utils;
 import Maze.Cell;
 import Maze.Maze;
 import Maze.Solver.Adapter.SolverAdapter;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class BFSSolverAdapter extends SolverAdapter {
 
@@ -50,7 +48,7 @@ public class BFSSolverAdapter extends SolverAdapter {
         HashMap<Integer, HashMap<Integer, SearchResult>> distances = new HashMap<>();
         Cell[][] mazeData = maze.getMazeData();
 
-        LinkedList<Tuple<Cell, Direction>> neighbors;
+        Set<Map.Entry<Direction, Cell>> neighbors;
 
         for (Cell[] row : mazeData) {
             for (Cell cell : row) {
@@ -64,7 +62,6 @@ public class BFSSolverAdapter extends SolverAdapter {
         Coordinate cellLocation = end.getLocation();
         distances.get(cellLocation.getRow()).get(cellLocation.getColumn()).setDistance(1);
 
-
         SearchResult currentNodeSearchResult;
         SearchResult neighborNodeSearchResult;
         Cell neighborCell;
@@ -75,17 +72,25 @@ public class BFSSolverAdapter extends SolverAdapter {
             cellLocation = currentCell.getLocation();
 
             currentNodeSearchResult = distances.get(cellLocation.getRow()).get(cellLocation.getColumn());
-            neighbors = currentCell.getNeighbors();
+            neighbors = currentCell.getNeighbors().entrySet().stream()
+                    .map(directionNeighborCellEntry -> {
+                        Cell.NeighborCell neighborCellEntryValue = directionNeighborCellEntry.getValue();
+                        return new AbstractMap.SimpleEntry<Direction, Cell>(directionNeighborCellEntry.getKey(),
+                                (neighborCellEntryValue != null && neighborCellEntryValue.getCell() != null)
+                                        ? neighborCellEntryValue.getCell() : null
+                        );
+                    })
+                    .filter(directionCellEntry -> directionCellEntry.getValue() != null).collect(Collectors.toSet());
 
-            for (Tuple<Cell, Direction> neighbor : neighbors) {
-                neighborCell = neighbor.item1;
-                neighborDirection = neighbor.item2;
+            for (Map.Entry<Direction, Cell> neighbor : neighbors) {
+                neighborCell = neighbor.getValue();
+                neighborDirection = neighbor.getKey();
                 Coordinate neighborLocation = neighborCell.getLocation();
 
                 neighborNodeSearchResult = distances.get(neighborLocation.getRow()).get(neighborLocation.getColumn());
 
-                if (neighborNodeSearchResult.distance == -1) {
-                    neighborNodeSearchResult.distance = currentNodeSearchResult.distance + 1;
+                if (neighborNodeSearchResult.getDistance() == -1) {
+                    neighborNodeSearchResult.setDistance(currentNodeSearchResult.getDistance() + 1);
                     neighborNodeSearchResult.path = new LinkedList<>(currentNodeSearchResult.path);
                     neighborNodeSearchResult.path.add(Direction.getOppositeDirection(neighborDirection));
 

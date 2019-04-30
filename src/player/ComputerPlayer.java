@@ -46,6 +46,10 @@ public class ComputerPlayer extends BasePlayer {
             return null;
         }
 
+        if(steps.length == 0) {
+            System.out.println("steps length are 0");
+        }
+
         this.isCurrentlyPlaying = true;
 
         if (this.runnablePlayer != null) {
@@ -88,6 +92,10 @@ public class ComputerPlayer extends BasePlayer {
         } catch (Exception e) {
             e.printStackTrace();
             return;
+        }
+
+        if(steps.length == 0) {
+            System.out.println("steps length are 0");
         }
 
         if (!isNewPathBetter(steps)) {

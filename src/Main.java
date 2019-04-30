@@ -1,5 +1,6 @@
 import Helpers.Coordinate;
 import Helpers.Tuple;
+import Maze.Maze;
 import UI.MazePreviewPanel;
 import UI.PreviewFrame;
 import player.BasePlayer;
@@ -16,7 +17,7 @@ public class Main {
             int height = 20;
             int width = 20;
 
-            int minDistance = 10;
+            int minDistance = 3;
 
             // Wanted frame width
             int screenW = 300;
@@ -25,7 +26,8 @@ public class Main {
             PreviewFrame preview = new PreviewFrame();
             preview.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(new Maze.Maze(height, width, minDistance, 2), new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
+            Maze maze = new Maze(height, width, minDistance, 2, 1);
+            MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);
             mazePreviewPanel.requestFocusInWindow();
 

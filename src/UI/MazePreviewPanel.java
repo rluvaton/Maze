@@ -187,7 +187,7 @@ public class MazePreviewPanel extends JPanel {
                 startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
             } else if (player instanceof ComputerPlayer) {
                 startPlayersCallbacks.add(() -> {
-                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, this.maze.getExits().get(0).getLocation(), 100);
+                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, getExitForComputerPlayer((ComputerPlayer) player), 100);
 
                     if (playerThread == null) {
                         System.out.println("Player " + player.getName() + " can't start running");
@@ -208,6 +208,12 @@ public class MazePreviewPanel extends JPanel {
                 .forEach(candyLoc -> Observable.timer(candyLoc.item1.getTimeToLive(), TimeUnit.MILLISECONDS)
                         .subscribe(finished -> this.maze.getCell(candyLoc.item2)
                                 .removeCandy(candyLoc.item1)));
+    }
+
+    private Coordinate getExitForComputerPlayer(ComputerPlayer player) {
+//        return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get().getLocation();
+        ELocation eLocationCell = this.maze.getExits().get(0);
+        return eLocationCell.getLocation();
     }
 
     /**
@@ -297,22 +303,22 @@ public class MazePreviewPanel extends JPanel {
         }
 
         // Top Wall
-        if (cell.haveTopWall()) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.TOP)) {
             g.drawLine(x, y, x + horLen, y);
         }
 
         // Bottom Wall
-        if (cell.haveBottomWall()) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.BOTTOM)) {
             g.drawLine(x, y + horSpace, x + horLen, y + horSpace);
         }
 
         // Left Wall
-        if (cell.haveLeftWall()) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.LEFT)) {
             g.drawLine(x, y, x, y + verLen);
         }
 
         // Right Wall
-        if (cell.haveRightWall()) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.RIGHT)) {
             g.drawLine(x + verSpace, y, x + verSpace, y + verLen);
         }
 

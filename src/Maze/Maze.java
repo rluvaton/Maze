@@ -225,12 +225,18 @@ public class Maze {
             }
         }
 
-        this.generateRandomCandies((width * height) / 10, false);
+        for(Cell[] cellArr: this.mazeData) {
+            for (Cell cell : cellArr) {
+                if(cell.haveAllWalls()) {
+                    System.out.println("Cell neighbors ");
+                }
+            }
+        }
 
-        // Add candies to the candy list
-        this.addToCandyList(true);
-
-        this.initCellsNeighbors();
+//        this.generateRandomCandies((width * height) / 10, false);
+//
+//        // Add candies to the candy list
+//        this.addToCandyList(true);
 
         // MUST BE AFTER INIT CELL NEIGHBORS BECAUSE THE GENERATION USE THE CELL NEIGHBORS
         this.generateELocations(numberOfEntrance, numberOfExists, minDistance);
@@ -239,14 +245,6 @@ public class Maze {
     }
 
     // endregion
-
-    private void initCellsNeighbors() {
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                this.mazeData[i][j].setNeighbors(this.searchCellNeighbors(i, j));
-            }
-        }
-    }
 
     /**
      * Generate Entrances and Exits
@@ -280,6 +278,7 @@ public class Maze {
 
         this.exits = exits.stream().map(loc -> createELocations(loc, height, width, ELocationType.Exit)).collect(
                 Collectors.toList());
+        System.out.println("entrances " + entrances.size() + ", exits " + exits.size());
     }
 
     /**
@@ -324,28 +323,28 @@ public class Maze {
 
         // If the x value (item 1) in the cell is at the top maze
         if (locationRow == 0) {
-            this.mazeData[locationRow][locationCol].setTopWall(false);
             dir = Direction.TOP;
         }
         // If the x value (item 1) in the cell is at the bottom of the maze
         else if (locationRow == height - 1) {
-            this.mazeData[locationRow][locationCol].setBottomWall(false);
             dir = Direction.BOTTOM;
         }
         // If the y value (item 2) in the cell is at the left maze
         else if (locationCol == 0) {
-            this.mazeData[locationRow][locationCol].setLeftWall(false);
             dir = Direction.LEFT;
         }
         // If the y value (item 2) in the cell is at the right maze
         else if (locationCol == width - 1) {
-            this.mazeData[locationRow][locationCol].setRightWall(false);
             dir = Direction.RIGHT;
         } else {
             System.out.println("The Enter / Exit location is not at the maze's borders");
+            return null;
         }
 
-        return new ELocation(loc, dir, type);
+        ELocation eLocation = new ELocation(loc, dir, type);
+
+        this.getCell(loc).setELocationAsNeighbor(eLocation);
+        return eLocation;
     }
 
     /**
@@ -474,7 +473,7 @@ public class Maze {
             if (Instance.inBounds(nextLoc, height, width) &&
                     this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
                     this.mazeData[loc.getRow()][loc.getColumn()].setCellAtDirection(
-                            this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], selected, force, update)) {
+                            selected, this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], force, update)) {
                 return selected;
             }
 
