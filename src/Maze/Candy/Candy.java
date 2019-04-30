@@ -70,6 +70,10 @@ public abstract class Candy
 
     // endregion
 
+    public String getColor() {
+        return "black";
+    }
+
     // region Getter & Setter
 
     public boolean isGood() {

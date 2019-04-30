@@ -138,6 +138,10 @@ public class BasePlayer
         this.notifyMoved(Direction.LEFT);
     }
 
+    public void onPlayerTeleported() {
+
+    }
+
     // region Getter & Setter
 
     /**

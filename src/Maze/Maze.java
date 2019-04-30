@@ -225,10 +225,10 @@ public class Maze {
             }
         }
 
-//        this.generateRandomCandies((width * height) / 10, false);
+        this.generateRandomCandies((width * height) / 10, false);
 
         // Add candies to the candy list
-//        this.addToCandyList(true);
+        this.addToCandyList(true);
 
         this.initCellsNeighbors();
 

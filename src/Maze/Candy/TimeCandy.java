@@ -19,4 +19,9 @@ public class TimeCandy extends Candy
     public TimeCandy(boolean isGood, int candyStrength, int timeToLive) {
         super(isGood, (isGood ? 1 : -1) * Math.abs(candyStrength), CandyPowerType.Time, timeToLive);
     }
+
+    @Override
+    public String getColor() {
+        return "#6761A8";
+    }
 }

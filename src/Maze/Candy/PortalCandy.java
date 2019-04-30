@@ -101,6 +101,11 @@ public class PortalCandy extends Candy {
         }
     }
 
+    @Override
+    public String getColor() {
+        return "#009B72";
+    }
+
     // region Getter & Setter
 
     public boolean isTwoWayPortal() {

@@ -3,6 +3,7 @@ package UI;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.NoArgsVoidCallbackFunction;
+import Maze.Candy.Candy;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -316,25 +317,17 @@ public class MazePreviewPanel extends JPanel {
 
         Color before = g.getColor();
 
-        if (!cell.getCandies()
-                .isEmpty()) {
-            cell.getCandies()
-                    .forEach(candy -> {
-                        switch (candy.getType()) {
-                            case Time:
-                                g.setColor(Color.decode("#6761A8"));
-                                break;
-                            case Points:
-                                g.setColor(Color.decode("#F26430"));
-                                break;
-                            case Location:
-                                g.setColor(Color.decode("#009B72"));
-                                break;
-                            default:
-                                return;
-                        }
-                        g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
-                    });
+
+        ArrayList<Candy> cellCandies = cell.getCandies();
+        if (!cellCandies.isEmpty()) {
+            for (Candy candy: cellCandies) {
+                if(candy == null) {
+                    continue;
+                }
+
+                g.setColor(Color.decode(candy.getColor()));
+                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+            }
         }
 
         g.setColor(before);
@@ -470,6 +463,7 @@ public class MazePreviewPanel extends JPanel {
 
         if (isTeleported) {
             System.out.println("Teleported");
+            player.onPlayerTeleported();
         } else {
             System.out.println("Changed location");
         }

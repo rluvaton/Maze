@@ -2,14 +2,15 @@ package player;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Maze.Maze;
-import Maze.Solver.BFS.BFSSolverAdapter;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
 
 public class ComputerPlayer extends BasePlayer {
+
+    private Maze maze;
+    private Coordinate endingLocation;
+    private Thread playerThread = null;
+    private RunnableComputerPlayer runnablePlayer = null;
+    private volatile boolean isCurrentlyPlaying = false;
 
     /**
      * Human Player Constructor
@@ -32,6 +33,9 @@ public class ComputerPlayer extends BasePlayer {
         // TODO - IF CANDY DISAPPEARED THEN RECALCULATE
         // TODO - YOU CAN USE LISTENER FOR CANDY COLLECTED OR CANDY DISAPPEARED AND FILTER ONLY TO LOCATION CANDIES
 
+        this.maze = maze;
+        this.endingLocation = endingLocation;
+
         Direction[] steps;
         try {
             steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), endingLocation, true);
@@ -40,20 +44,14 @@ public class ComputerPlayer extends BasePlayer {
             return null;
         }
 
-        Stream<Direction> stepsStream = Arrays.stream(steps);
+        this.isCurrentlyPlaying = true;
 
-        return new Thread(() ->
-                              stepsStream.forEach(direction -> {
-                                  System.out.println("Computer moved " + direction);
-                                  super.move(direction);
-                                  try {
-                                      Thread.sleep(stepSpeedMs);
-                                  } catch (InterruptedException e) {
-                                      System.out.println("Error in thread sleep in computer player move");
-                                      e.printStackTrace();
-                                  }
-                              }));
-
+        if(this.runnablePlayer != null) {
+            this.runnablePlayer.stopRunning();
+        }
+        this.runnablePlayer = new RunnableComputerPlayer(this, steps, stepSpeedMs);
+        this.playerThread = new Thread(runnablePlayer);
+        return this.playerThread;
     }
 
     /**
@@ -64,28 +62,43 @@ public class ComputerPlayer extends BasePlayer {
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
     public Thread createRunningThread(Maze maze, int stepSpeedMs) {
-        // TODO - Find the closest exit from the current location
-        Direction[] steps;
+        return this.createRunningThread(maze, this.findClosestExit(maze), stepSpeedMs);
+    }
 
-        try {
-            steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), null, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+    @Override
+    public void onPlayerTeleported() {
+        if (!this.isCurrentlyPlaying) {
+            return;
         }
 
-        Stream<Direction> stepsStream = Arrays.stream(steps);
+//        this.isCurrentlyPlaying = false;
+        System.out.println("setting new path");
 
-        return new Thread(() ->
-                              stepsStream.forEach(direction -> {
-                                  System.out.println("Computer moved " + direction);
-                                  super.move(direction);
-                                  try {
-                                      Thread.sleep(stepSpeedMs);
-                                  } catch (InterruptedException e) {
-                                      System.out.println("Error in thread sleep in computer player move");
-                                      e.printStackTrace();
-                                  }
-                              }));
+        Direction[] steps;
+
+        if(this.runnablePlayer != null) {
+            this.runnablePlayer.stopRunning();
+        }
+
+        try {
+            steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), endingLocation, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if(this.runnablePlayer != null) {
+            this.runnablePlayer = new RunnableComputerPlayer(this.runnablePlayer, steps);
+        } else {
+            this.runnablePlayer = new RunnableComputerPlayer(this, steps, 1000);
+        }
+
+        this.playerThread = new Thread(runnablePlayer);
+        this.playerThread.start();
+    }
+
+    private Coordinate findClosestExit(Maze maze) {
+        // TODO - Find the closest exit from the current location
+        return null;
     }
 }

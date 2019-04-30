@@ -22,4 +22,9 @@ public class PointsCandy extends Candy
     }
 
     // endregion
+
+    @Override
+    public String getColor() {
+        return "#F26430";
+    }
 }
