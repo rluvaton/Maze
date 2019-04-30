@@ -4,6 +4,7 @@ import Helpers.Coordinate;
 import Helpers.Direction;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import player.exceptions.PlayerNotRunning;
 
 import static Helpers.Utils.Instance;
 
@@ -138,7 +139,7 @@ public class BasePlayer
         this.notifyMoved(Direction.LEFT);
     }
 
-    public void onPlayerTeleported() {
+    public void onPlayerTeleported() throws PlayerNotRunning {
 
     }
 

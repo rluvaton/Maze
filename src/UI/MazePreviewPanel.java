@@ -13,6 +13,7 @@ import player.BasePlayer;
 import player.ComputerPlayer;
 import player.HumanPlayer;
 import player.MoveStatus;
+import player.exceptions.PlayerNotRunning;
 
 import javax.swing.*;
 import java.awt.*;
@@ -463,7 +464,12 @@ public class MazePreviewPanel extends JPanel {
 
         if (isTeleported) {
             System.out.println("Teleported");
-            player.onPlayerTeleported();
+            try {
+                player.onPlayerTeleported();
+            } catch (PlayerNotRunning playerNotRunning) {
+                playerNotRunning.printStackTrace();
+                // TODO - do something
+            }
         } else {
             System.out.println("Changed location");
         }

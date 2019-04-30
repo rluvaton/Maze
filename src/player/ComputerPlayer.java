@@ -3,6 +3,7 @@ package player;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Maze.Maze;
+import player.exceptions.PlayerNotRunning;
 
 public class ComputerPlayer extends BasePlayer {
 
@@ -11,6 +12,7 @@ public class ComputerPlayer extends BasePlayer {
     private Thread playerThread = null;
     private RunnableComputerPlayer runnablePlayer = null;
     private volatile boolean isCurrentlyPlaying = false;
+    private boolean returnAfterTeleport = false;
 
     /**
      * Human Player Constructor
@@ -46,8 +48,8 @@ public class ComputerPlayer extends BasePlayer {
 
         this.isCurrentlyPlaying = true;
 
-        if(this.runnablePlayer != null) {
-            this.runnablePlayer.stopRunning();
+        if (this.runnablePlayer != null) {
+            this.runnablePlayer.stop();
         }
         this.runnablePlayer = new RunnableComputerPlayer(this, steps, stepSpeedMs);
         this.playerThread = new Thread(runnablePlayer);
@@ -66,19 +68,20 @@ public class ComputerPlayer extends BasePlayer {
     }
 
     @Override
-    public void onPlayerTeleported() {
-        if (!this.isCurrentlyPlaying) {
+    public void onPlayerTeleported() throws PlayerNotRunning {
+        if(returnAfterTeleport) {
             return;
         }
 
-//        this.isCurrentlyPlaying = false;
+        if (!this.isCurrentlyPlaying) {
+            throw new PlayerNotRunning();
+        }
+
         System.out.println("setting new path");
 
         Direction[] steps;
 
-        if(this.runnablePlayer != null) {
-            this.runnablePlayer.stopRunning();
-        }
+        this.runnablePlayer.pause();
 
         try {
             steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), endingLocation, true);
@@ -87,13 +90,49 @@ public class ComputerPlayer extends BasePlayer {
             return;
         }
 
-        if(this.runnablePlayer != null) {
-            this.runnablePlayer = new RunnableComputerPlayer(this.runnablePlayer, steps);
+        if (!isNewPathBetter(steps)) {
+            System.out.println("continue with the same path");
+
+            try {
+                this.continueWithOldPathAfterTeleportation();
+            } catch (PlayerNotRunning playerNotRunning) {
+                System.out.println("player on the first step teleported - " + this.runnablePlayer.getCurrentStep() + " finding new path");
+                changePlayerPath(steps);
+            }
         } else {
-            this.runnablePlayer = new RunnableComputerPlayer(this, steps, 1000);
+            changePlayerPath(steps);
         }
 
+        this.runnablePlayer.resume();
+
+    }
+
+
+    private boolean isNewPathBetter(Direction[] steps) {
+        return steps.length < this.runnablePlayer.getTotalStepsLeft();
+    }
+
+    private void continueWithOldPathAfterTeleportation() throws PlayerNotRunning {
+//        if(isThereNearWall()) {
+//            moveToWall();
+//        } else {
+//            moveRight();
+//            moveLeft();
+//        }
+        Direction oppositeStep = Direction.getOppositeDirection(this.runnablePlayer.getLastStep());
+        this.returnAfterTeleport = true;
+        this.runnablePlayer.move(oppositeStep);
+        this.returnAfterTeleport = false;
+    }
+
+    private void changePlayerPath(Direction[] steps) {
+        this.runnablePlayer.stop();
+        this.runnablePlayer = new RunnableComputerPlayer(this.runnablePlayer, steps);
+
         this.playerThread = new Thread(runnablePlayer);
+
+        this.runnablePlayer.restart();
+
         this.playerThread.start();
     }
 

@@ -87,7 +87,7 @@ public class BFSSolverAdapter extends SolverAdapter {
                 if (neighborNodeSearchResult.distance == -1) {
                     neighborNodeSearchResult.distance = currentNodeSearchResult.distance + 1;
                     neighborNodeSearchResult.path = new LinkedList<>(currentNodeSearchResult.path);
-                    neighborNodeSearchResult.path.add(Utils.Instance.getOppositeDirection(neighborDirection));
+                    neighborNodeSearchResult.path.add(Direction.getOppositeDirection(neighborDirection));
 
                     queue.add(neighborCell);
                 }
