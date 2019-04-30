@@ -38,19 +38,19 @@ public class DFSCell extends Cell
         List<PathNeighbourResult> neighbours = new ArrayList<>();
 
         if (top != null && !top.deadEnd && !this.haveTopWall()) {
-            neighbours.add(new PathNeighbourResult(top, Utils.DIRECTIONS.get(Direction.TOP), Direction.TOP));
+            neighbours.add(new PathNeighbourResult(top, Direction.TOP));
         }
 
         if (right != null && !right.deadEnd && !this.haveRightWall()) {
-            neighbours.add(new PathNeighbourResult(right, Utils.DIRECTIONS.get(Direction.RIGHT), Direction.RIGHT));
+            neighbours.add(new PathNeighbourResult(right, Direction.RIGHT));
         }
 
         if (bottom != null && !bottom.deadEnd && !this.haveBottomWall()) {
-            neighbours.add(new PathNeighbourResult(bottom, Utils.DIRECTIONS.get(Direction.BOTTOM), Direction.BOTTOM));
+            neighbours.add(new PathNeighbourResult(bottom, Direction.BOTTOM));
         }
 
         if (left != null && !left.deadEnd && !this.haveLeftWall()) {
-            neighbours.add(new PathNeighbourResult(left, Utils.DIRECTIONS.get(Direction.LEFT), Direction.LEFT));
+            neighbours.add(new PathNeighbourResult(left, Direction.LEFT));
         }
 
         if (neighbours.size() == 0) {

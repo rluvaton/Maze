@@ -24,6 +24,12 @@ public class PathNeighbourResult {
      */
     public Direction direction;
 
+    public PathNeighbourResult(Cell cell, Direction direction) {
+        this.cell = cell;
+        this.direction = direction;
+        this.stepAction = direction.getValue();
+    }
+
     public PathNeighbourResult(Cell cell, Coordinate stepAction, Direction direction) {
         this.cell = cell;
         this.stepAction = stepAction;

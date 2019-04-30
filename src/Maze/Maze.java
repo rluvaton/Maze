@@ -221,7 +221,7 @@ public class Maze {
             } else {
                 visited++;
                 steps.push(currLoc);
-                currLoc = Instance.getNextLocation(currLoc, nextDirection);
+                currLoc = Instance.moveCoordinatesToDirection(currLoc, nextDirection);
             }
         }
 
@@ -438,12 +438,10 @@ public class Maze {
     private LinkedList<Tuple<Cell, Direction>> searchCellNeighbors(int cellRow, int cellCol) {
         Cell cell = this.mazeData[cellRow][cellCol];
         LinkedList<Tuple<Cell, Direction>> neighbors = new LinkedList<>();
-        Direction direction;
 
-        for (Map.Entry<Direction, Coordinate> entry : Utils.DIRECTIONS.entrySet()) {
-            direction = entry.getKey();
+        for (Direction direction : Direction.values()) {
             if (cell.haveCellAtDirection(direction)) {
-                neighbors.add(new Tuple<>(this.getCell(Instance.getNextLocation(cellRow, cellCol, entry.getValue())), direction));
+                neighbors.add(new Tuple<>(this.getCell(Instance.moveCoordinatesToDirection(cellRow, cellCol, direction)), direction));
             }
         }
 
@@ -471,7 +469,7 @@ public class Maze {
         while (size > 0) {
             selected = directionAvailable.get(Instance.getRandomNumber(size));
 
-            nextLoc = Instance.getNextLocation(loc, selected);
+            nextLoc = Instance.moveCoordinatesToDirection(loc, selected);
 
             if (Instance.inBounds(nextLoc, height, width) &&
                     this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
@@ -690,7 +688,7 @@ public class Maze {
         Cell destCell = this.getCell(location);
 
 
-        return (destCell == null || this.getCell(Instance.getNextLocation(location,
+        return (destCell == null || this.getCell(Instance.moveCoordinatesToDirection(location,
                 direction)) == null || !destCell.haveCellAtDirection(
                 direction)) ? null : direction;
     }
@@ -705,7 +703,7 @@ public class Maze {
     public Cell checkIfValidMoveCell(Coordinate location, Direction direction) {
         Cell destCell = this.getCell(location);
 
-        Cell nextCell = destCell != null ? this.getCell(Instance.getNextLocation(location, direction)) : null;
+        Cell nextCell = destCell != null ? this.getCell(Instance.moveCoordinatesToDirection(location, direction)) : null;
 
         return (destCell == null || nextCell == null || !destCell.haveCellAtDirection(
                 direction)) ? null : nextCell;

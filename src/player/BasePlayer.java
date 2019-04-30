@@ -177,7 +177,7 @@ public class BasePlayer
     }
 
     public void setLocation(Direction direction) {
-        Coordinate nextLocation = Instance.getNextLocation(this.location, direction);
+        Coordinate nextLocation = Instance.moveCoordinatesToDirection(this.location, direction);
 
         prevLocation = this.location;
 

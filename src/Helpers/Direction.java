@@ -13,20 +13,21 @@ import java.util.Map;
  * For Horizontal I do (int)(-1 / 2) = 0 -> 4 + 0 = 4
  */
 public enum Direction {
-    TOP(-1),
-    RIGHT(2),
-    BOTTOM(1),
-    LEFT(-2);
+    TOP(new Coordinate(-1, 0)),
+    RIGHT(new Coordinate(0, 1)),
+    BOTTOM(new Coordinate(1, 0)),
+    LEFT(new Coordinate(0, -1));
 
-    private final int value;
+    private final Coordinate value;
     public static Map<Direction, Direction> OPPOSITE_DIRECTIONS = Direction.createOppositeDirectionsMap();
 
-    Direction(final int newValue) {
+    Direction(final Coordinate newValue) {
         value = newValue;
     }
 
-    public int getValue() {
-        return value;
+    public Coordinate getValue() {
+        // We clone because we don't want the value to change somehow
+        return value.clone();
     }
 
     private static Map<Direction, Direction> createOppositeDirectionsMap() {
