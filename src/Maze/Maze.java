@@ -58,7 +58,14 @@ public class Maze {
      * @param mazeData DFS cells
      */
     public Maze(Cell[][] mazeData) {
+        assert mazeData != null;
+
         this.mazeData = mazeData;
+        this.height = mazeData.length;
+
+        if(mazeData.length > 0) {
+            this.width = mazeData[0].length;
+        }
     }
 
     /**

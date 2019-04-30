@@ -1,6 +1,8 @@
 import Helpers.Coordinate;
 import Helpers.Tuple;
 import Maze.Maze;
+import Maze.MazeBuilder.RectangleMaze;
+import Maze.MazeGenerator;
 import UI.MazePreviewPanel;
 import UI.PreviewFrame;
 import player.BasePlayer;
@@ -26,7 +28,11 @@ public class Main {
             PreviewFrame preview = new PreviewFrame();
             preview.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            Maze maze = new Maze(height, width, minDistance, 2, 1);
+            Maze maze;
+
+//            maze = new Maze(height, width, minDistance, 2, 1);
+            maze = new MazeGenerator(new RectangleMaze()).generate(height, width, minDistance, 2, 2);
+
             MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);
             mazePreviewPanel.requestFocusInWindow();
