@@ -211,10 +211,9 @@ public class MazePreviewPanel extends JPanel {
     }
 
     private Coordinate getExitForComputerPlayer(ComputerPlayer player) {
-//        return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get().getLocation();
+        return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get().getLocation();
 //        ELocation eLocationCell = this.maze.getExits().get(0);
 //        return eLocationCell.getLocation();
-        return null;
     }
 
     /**

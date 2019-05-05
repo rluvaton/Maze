@@ -61,20 +61,12 @@ public class MazeGenerator {
 
         this.eLocationOptionsCount = height * 2 + width * 2;
 
-        // Because we don't wanna decrease by 1 every loop cycle
-//        numOfEntrances--;
-//        numOfExits--;
-
-        int entranceIndex = 0;
-        int exitIndex = 0;
-
         while (this.entrances.size() < numOfEntrances || this.exits.size() < numOfExits) {
             if (this.entrances.size() < numOfEntrances) {
                 try {
                     ELocationBaseData entrance = randomizeEntrance(minDistance);
 
                     this.entrances.add(entrance);
-//                    entranceIndex++;
                 } catch (Exception e) {
                     System.out.println("Retry after entrance not founded...");
                     this.removeLastItem(exits);

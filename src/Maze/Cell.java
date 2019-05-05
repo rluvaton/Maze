@@ -166,6 +166,19 @@ public class Cell extends Node<Coordinate> {
     public void removeELocationFromNeighbors(Direction direction) {
         this.neighbors.get(direction).eLocation = null;
     }
+
+    public Map<Direction, ELocation> getELocationNeighbors() {
+        Map<Direction, ELocation> eLocationNeighbors = new HashMap<>();
+
+        neighbors.forEach((direction, neighborCell) -> {
+            if(neighborCell != null && neighborCell.eLocation != null) {
+                eLocationNeighbors.put(direction, neighborCell.eLocation);
+            }
+        });
+
+        return eLocationNeighbors;
+
+    }
     /**
      * If Have all walls
      *

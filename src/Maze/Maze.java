@@ -8,7 +8,6 @@ import Maze.Candy.*;
 import Maze.Solver.Adapter.SolverAdapter;
 import Maze.Solver.BFS.BFSSolverAdapter;
 
-import java.io.Console;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -64,9 +63,23 @@ public class Maze {
         this.mazeData = mazeData;
         this.height = mazeData.length;
 
-        if(mazeData.length > 0) {
+        if (mazeData.length > 0) {
             this.width = mazeData[0].length;
         }
+
+        this.getELocationsFromMazeData();
+    }
+
+    /**
+     * Create Maze from cells
+     *
+     * @param mazeData DFS cells
+     */
+    public Maze(Cell[][] mazeData, List<ELocation> entrances, List<ELocation> exits) {
+        this(mazeData);
+
+        this.entrances = entrances;
+        this.exits = exits;
     }
 
     /**
@@ -128,6 +141,31 @@ public class Maze {
     }
 
     // endregion
+
+    private void getELocationsFromMazeData() {
+        for (Cell[] row : this.mazeData) {
+            for (Cell cell : row) {
+                Map<Direction, ELocation> eLocationNeighbors = cell.getELocationNeighbors();
+                addELocationNeighborsToList(eLocationNeighbors);
+            }
+        }
+    }
+
+    private void addELocationNeighborsToList(Map<Direction, ELocation> eLocationNeighbors) {
+        eLocationNeighbors.forEach((direction, eLocation) -> {
+            ELocationType eLocationType = eLocation.getType();
+            switch (eLocationType) {
+                case Entrance:
+                    this.entrances.add(eLocation);
+                    break;
+                case Exit:
+                    this.exits.add(eLocation);
+                    break;
+                default:
+                    break;
+            }
+        });
+    }
 
     // region Maze Init
 
@@ -233,9 +271,9 @@ public class Maze {
             }
         }
 
-        for(Cell[] cellArr: this.mazeData) {
+        for (Cell[] cellArr : this.mazeData) {
             for (Cell cell : cellArr) {
-                if(cell.haveAllWalls()) {
+                if (cell.haveAllWalls()) {
                     System.out.println("Cell neighbors ");
                 }
             }
