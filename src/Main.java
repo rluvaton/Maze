@@ -1,8 +1,8 @@
 import Helpers.Coordinate;
-import Helpers.Tuple;
 import Maze.Maze;
 import Maze.MazeBuilder.RectangleMaze;
-import Maze.MazeGenerator;
+import Maze.MazeGenerator.MazeGenerator;
+import Maze.Solver.BFS.BFSSolverAdapter;
 import UI.MazePreviewPanel;
 import UI.PreviewFrame;
 import player.BasePlayer;
@@ -31,7 +31,7 @@ public class Main {
             Maze maze;
 
 //            maze = new Maze(height, width, minDistance, 2, 1);
-            maze = new MazeGenerator(new RectangleMaze()).generate(height, width, minDistance, 2, 2);
+            maze = new MazeGenerator(new RectangleMaze(), new BFSSolverAdapter()).generate(height, width, minDistance, 2, 2);
 
             MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);

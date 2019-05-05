@@ -7,9 +7,12 @@ import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Cell;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static Helpers.Utils.Instance;
 
-public class RectangleMaze implements IMazeBuilder {
+public class RectangleMaze extends BaseMazeBuilder {
     private Cell[][] mazeData;
 
     private int height;
@@ -46,19 +49,19 @@ public class RectangleMaze implements IMazeBuilder {
     }
 
     @Override
-    public IMazeBuilder buildDoor(Coordinate cell1Pos, Coordinate cell2Pos) {
+    public IMazeBuilder buildDoor(Coordinate cell1Pos, Coordinate cell2Pos) throws Exception {
         buildDoor(cell1Pos, cell2Pos, Instance.getDirectionOfMove(cell1Pos, cell2Pos));
         return this;
     }
 
     @Override
-    public IMazeBuilder buildDoor(Coordinate cell1Pos, Direction doorDirection) {
+    public IMazeBuilder buildDoor(Coordinate cell1Pos, Direction doorDirection) throws Exception {
         buildDoor(cell1Pos, Instance.moveCoordinatesToDirection(cell1Pos, doorDirection), doorDirection);
 
         return this;
     }
 
-    private void buildDoor(Coordinate cell1Pos, Coordinate cell2Pos, Direction direction) {
+    private void buildDoor(Coordinate cell1Pos, Coordinate cell2Pos, Direction direction) throws Exception {
         Cell cell = this.getCellAtPosition(cell1Pos);
         cell.setCellAtDirection(direction, this.getCellAtPosition(cell2Pos));
     }

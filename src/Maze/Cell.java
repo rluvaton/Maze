@@ -56,15 +56,13 @@ public class Cell extends Node<Coordinate> {
     }
 
     public Cell(int row, int col) {
-        super(new Coordinate(row, col));
-
-        this.location = id;
+        this(new Coordinate(row, col));
     }
 
     public Cell(Coordinate position) {
-        super(position);
+        super(position.clone());
 
-        this.location = position;
+        this.location = id;
     }
 
     // endregion
@@ -103,7 +101,7 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force) {
+    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force) throws Exception {
         return setCellAtDirection(direction, cell, force, false);
     }
 
@@ -116,7 +114,7 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Direction direction, Cell cell) {
+    public boolean setCellAtDirection(Direction direction, Cell cell) throws Exception {
         return setCellAtDirection(direction, cell, false, true);
     }
 
@@ -131,9 +129,14 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force, boolean update) {
+    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force, boolean update) throws Exception {
         if (!update && cell == null) {
             throw new IllegalArgumentException("cell");
+        }
+
+        if(Instance.getDirectionOfMove(this.location, cell.location) != direction) {
+            // TODO - change to NotNeighborException or something
+            throw new Exception("not Near");
         }
 
         if (this.haveCellAtDirection(direction) && !force) {

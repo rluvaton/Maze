@@ -76,27 +76,4 @@ class RectangleMazeTest {
         assertEquals(column, location.getColumn());
     }
 
-    @Test
-    void buildCell() {
-    }
-
-    @Test
-    void buildDoor() {
-    }
-
-    @Test
-    void buildDoor1() {
-    }
-
-    @Test
-    void buildEntrance() {
-    }
-
-    @Test
-    void buildExit() {
-    }
-
-    @Test
-    void getMaze() {
-    }
 }

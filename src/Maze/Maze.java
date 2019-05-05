@@ -8,6 +8,7 @@ import Maze.Candy.*;
 import Maze.Solver.Adapter.SolverAdapter;
 import Maze.Solver.BFS.BFSSolverAdapter;
 
+import java.io.Console;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -477,11 +478,15 @@ public class Maze {
 
             nextLoc = Instance.moveCoordinatesToDirection(loc, selected);
 
-            if (Instance.inBounds(nextLoc, height, width) &&
-                    this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
-                    this.mazeData[loc.getRow()][loc.getColumn()].setCellAtDirection(
-                            selected, this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], force, update)) {
-                return selected;
+            try {
+                if (Instance.inBounds(nextLoc, height, width) &&
+                        this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
+                        this.mazeData[loc.getRow()][loc.getColumn()].setCellAtDirection(
+                                selected, this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], force, update)) {
+                    return selected;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             directionAvailable.remove(selected);

@@ -1,6 +1,8 @@
 package Helpers;
 
 import Maze.Cell;
+import Maze.ELocation;
+import Maze.MazeBuilder.IMazeBuilder;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -57,6 +59,21 @@ public class Utils {
         Coordinate directionMove = dir.getValue();
 
         return new Coordinate(row + directionMove.getRow(), col + directionMove.getColumn());
+    }
+
+    public Direction getDirectionOfMove(Coordinate from, Coordinate to) {
+        assert from != null && to != null;
+
+        Direction[] allDirections = Direction.values();
+        Coordinate directionCoordinates = new Coordinate(to.getRow() - from.getRow(), to.getColumn() - from.getColumn());
+
+        for (Direction direction : allDirections) {
+            if (directionCoordinates.equals(direction.getValue())) {
+                return direction;
+            }
+        }
+
+        throw new IllegalArgumentException("from and not near each other");
     }
 
     /**
@@ -123,6 +140,27 @@ public class Utils {
                 (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
     }
 
+    public final boolean inLimits(Coordinate coordinate, Direction direction, int width, int height) {
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), direction, width, height);
+    }
+
+    public final boolean inLimits(ELocation eLocation, int width, int height) {
+        assert eLocation != null;
+        Coordinate coordinate = eLocation.getLocation();
+
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), eLocation.getDirection(), width, height);
+    }
+
+    public final boolean inLimits(IMazeBuilder.ELocationBaseData eLocation, int width, int height) {
+        assert eLocation != null;
+        Coordinate coordinate = eLocation.getPos();
+
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), eLocation.getDirection(), width, height);
+    }
+
 
     /**
      * Convert Array to stream
@@ -157,21 +195,6 @@ public class Utils {
      */
     public Coordinate generateCoordinate(int firstLimit, int secondLimit) {
         return new Coordinate(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
-    }
-
-    public Direction getDirectionOfMove(Coordinate from, Coordinate to) {
-        assert from != null && to != null;
-
-        Direction[] allDirections = Direction.values();
-        Coordinate directionCoordinates = new Coordinate(from.getRow() - to.getRow(), from.getColumn() - to.getColumn());
-
-        for (Direction direction : allDirections) {
-            if (directionCoordinates.equals(direction.getValue())) {
-                return direction;
-            }
-        }
-
-        throw new IllegalArgumentException("from and not near each other");
     }
 
     public <T> List<T> reverseList(List<T> list) {
