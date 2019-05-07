@@ -2,6 +2,7 @@ package Maze.MazeBuilder;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Maze.Candy.Candy;
 import Maze.Maze;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -43,7 +44,22 @@ public class RectangleMaze extends BaseMazeBuilder {
 
     @Override
     public IMazeBuilder buildCell(Coordinate position) {
+        assert position != null;
         this.mazeData[position.getRow()][position.getColumn()] = new Cell(position);
+
+        return this;
+    }
+
+    @Override
+    public IMazeBuilder buildCell(Coordinate position, Candy[] candies) {
+        assert position != null;
+        int row = position.getRow();
+        int col = position.getColumn();
+
+        assert row >= 0 && col >= 0;
+
+        this.mazeData[row][col] = new Cell(position);
+        this.mazeData[row][col].addCandies(candies);
 
         return this;
     }
@@ -91,7 +107,9 @@ public class RectangleMaze extends BaseMazeBuilder {
         return new Maze(this.mazeData);
     }
 
-    private Cell getCellAtPosition(Coordinate pos) {
+    @Override
+    public Cell getCellAtPosition(Coordinate pos) {
+        assert pos != null;
         return this.mazeData[pos.getRow()][pos.getColumn()];
     }
 }

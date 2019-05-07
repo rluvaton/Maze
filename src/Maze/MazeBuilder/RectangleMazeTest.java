@@ -4,6 +4,7 @@ import Helpers.Coordinate;
 import Maze.Cell;
 import Maze.Maze;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +18,17 @@ class RectangleMazeTest {
         int height = 5;
         int width = 5;
         assertEquals(rectangleMaze, rectangleMaze.buildMazeSkeleton(height, width));
+
+        assertNotNull(rectangleMaze);
+
+        try {
+            rectangleMaze.getMaze();
+
+            //noinspection ObviousNullCheck
+            assertNotNull("Shouldn't arrive here (show throw in get maze)");
+        } catch (Exception e) {
+            assertNotNull(e);
+        }
 
         Maze maze = rectangleMaze.getMaze();
         assertNotNull(maze);

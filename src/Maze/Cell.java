@@ -194,6 +194,10 @@ public class Cell extends Node<Coordinate> {
         this.candies.add(candy);
     }
 
+    public void addCandies(Candy[] candies) {
+        this.candies.addAll(List.of(candies));
+    }
+
     public void removeCandy(Candy candy) {
         this.candies.remove(candy);
     }
@@ -258,17 +262,18 @@ public class Cell extends Node<Coordinate> {
                 .map(candy -> (TimeCandy) candy)
                 .collect(Collectors.toList());
         if (!removeFoundedCandies) {
-            return timeCandies.stream()
-                    .mapToInt(Candy::getCandyStrength)
-                    .reduce((candy1, candy2) -> candy1 + candy2)
-                    .orElse(0);
+            return calculateCandiesTotalStrength(timeCandies);
         }
 
         timeCandies.forEach(timeCandy -> this.candies.remove(timeCandy));
 
+        return calculateCandiesTotalStrength(timeCandies);
+    }
+
+    private int calculateCandiesTotalStrength(List<TimeCandy> timeCandies) {
         return timeCandies.stream()
                 .mapToInt(Candy::getCandyStrength)
-                .reduce((candy1, candy2) -> candy1 + candy2)
+                .reduce(Integer::sum)
                 .orElse(0);
     }
 

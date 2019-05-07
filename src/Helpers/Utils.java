@@ -13,41 +13,6 @@ public class Utils {
      */
     public static final Utils Instance = new Utils();
 
-    /**
-     * Random Instance for random numbers one after another
-     */
-    private final Random _random = new Random();
-
-    /**
-     * Get Random State
-     *
-     * @return The random state (true or false)
-     */
-    public final boolean getRandomState() {
-        return _random.nextBoolean();
-    }
-
-    /**
-     * Get Random Number
-     *
-     * @param from  From Number (Included)
-     * @param until Until Number (Not included)
-     * @return The random number
-     */
-    public final int getRandomNumber(int from, int until) {
-        return _random.nextInt(until) + from;
-    }
-
-    /**
-     * Get Random Number from 0 to the until variable
-     *
-     * @param until Until Number (Not included)
-     * @return The random number
-     */
-    public final int getRandomNumber(int until) {
-        return _random.nextInt(until);
-    }
-
     public final Coordinate moveCoordinatesToDirection(Coordinate pos, Direction dir) {
         assert pos != null && dir != null;
         return this.moveCoordinatesToDirection(pos.getRow(), pos.getColumn(), dir);
@@ -182,19 +147,6 @@ public class Utils {
      */
     public <T> Stream<Stream<T>> convertMatrixToStream(T[][] mat) {
         return Arrays.stream(mat).map(Arrays::stream);
-    }
-
-    /**
-     * Generate Tuple
-     *
-     * @param firstLimit  First item limit
-     * @param secondLimit Second item limit
-     * @return Returns The Coordinate
-     * @example Generate Location in Matrix
-     * generateCoordinate(height, width)
-     */
-    public Coordinate generateCoordinate(int firstLimit, int secondLimit) {
-        return new Coordinate(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
     }
 
     public <T> List<T> reverseList(List<T> list) {

@@ -8,20 +8,37 @@ package Maze.Candy;
  */
 public class TimeCandy extends Candy
 {
-    public TimeCandy(boolean isGood, int candyStrength) {
-        super(isGood, (isGood ? 1 : -1) * Math.abs(candyStrength), CandyPowerType.Time);
+    /**
+     * Constructor
+     * @param candyStrength How much in milliseconds to add / subtract
+     * @param timeToLive Time until Expire
+     */
+    public TimeCandy(int candyStrength, int timeToLive) {
+        super(CandyPowerType.Time, candyStrength, timeToLive);
     }
 
     public TimeCandy(int candyStrength) {
-        super(candyStrength >= 0, candyStrength, CandyPowerType.Time);
-    }
-
-    public TimeCandy(boolean isGood, int candyStrength, int timeToLive) {
-        super(isGood, (isGood ? 1 : -1) * Math.abs(candyStrength), CandyPowerType.Time, timeToLive);
+        super(CandyPowerType.Time, candyStrength);
     }
 
     @Override
     public String getColor() {
         return "#6761A8";
+    }
+
+    public static class Builder extends Candy.Builder {
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        private Builder() {
+            super();
+        }
+
+        @Override
+        public TimeCandy build() {
+            return new TimeCandy(candyStrength, timeToLive);
+        }
     }
 }

@@ -1,9 +1,6 @@
 package Maze.Solver.DFS;
 
-import Helpers.Coordinate;
-import Helpers.Direction;
-import Helpers.Tuple;
-import Helpers.Utils;
+import Helpers.*;
 import Maze.Cell;
 
 import java.util.ArrayList;
@@ -61,7 +58,7 @@ public class DFSCell extends Cell
             return neighbours.get(0);
         }
 
-        return neighbours.get(Utils.Instance.getRandomNumber(neighbours.size()));
+        return neighbours.get(RandomHelper.getRandomNumber(neighbours.size()));
     }
 
     public static DFSCell createFromCell(Cell cell) {

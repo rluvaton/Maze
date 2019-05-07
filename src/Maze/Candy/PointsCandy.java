@@ -5,26 +5,31 @@ package Maze.Candy;
  *
  * @description Add / Subtract points when collect this candy
  */
-public class PointsCandy extends Candy
-{
-    // region Constructors
+public class PointsCandy extends Candy {
+    private final String CANDY_COLOR = "#F26430";
 
-    public PointsCandy(boolean isGood) {
-        super(isGood, CandyPowerType.Points);
+    public PointsCandy(int candyStrength) {
+        super(CandyPowerType.Points, candyStrength);
     }
 
-    public PointsCandy(boolean isGood, int candyStrength) {
-        super(isGood, candyStrength, CandyPowerType.Points);
+    public PointsCandy(int candyStrength, int timeToLive) {
+        super(CandyPowerType.Points, candyStrength, timeToLive);
     }
-
-    public PointsCandy(boolean isGood, int candyStrength, int timeToLive) {
-        super(isGood, candyStrength, CandyPowerType.Points, timeToLive);
-    }
-
-    // endregion
 
     @Override
     public String getColor() {
-        return "#F26430";
+        return CANDY_COLOR;
+    }
+
+    public static class Builder extends Candy.Builder {
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        @Override
+        public PointsCandy build() {
+            return new PointsCandy(this.candyStrength, this.timeToLive);
+        }
     }
 }

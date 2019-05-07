@@ -2,7 +2,9 @@ package Maze.MazeBuilder;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Maze.Candy.Candy;
 import Maze.Maze;
+import Maze.Cell;
 
 import java.util.Collection;
 
@@ -13,6 +15,8 @@ public interface IMazeBuilder {
     IMazeBuilder buildAllCellsAsEmpty();
 
     IMazeBuilder buildCell(Coordinate position);
+
+    IMazeBuilder buildCell(Coordinate position, Candy[] candies);
 
     IMazeBuilder buildDoor(Coordinate cell1Pos, Coordinate cell2Pos) throws Exception;
 
@@ -35,6 +39,8 @@ public interface IMazeBuilder {
     IMazeBuilder buildManyExits(Collection<ELocationBaseData> exits);
 
     Maze getMaze();
+
+    Cell getCellAtPosition(Coordinate position);
 
     class ELocationBaseData {
         private Coordinate pos;

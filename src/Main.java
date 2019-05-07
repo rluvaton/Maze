@@ -31,7 +31,10 @@ public class Main {
             Maze maze;
 
 //            maze = new Maze(height, width, minDistance, 2, 1);
-            maze = new MazeGenerator(new RectangleMaze(), new BFSSolverAdapter()).generate(height, width, minDistance, 2, 2);
+            maze = new MazeGenerator(new RectangleMaze(), new BFSSolverAdapter())
+                    .generateMaze(height, width, minDistance, 2, 2)
+                    .generateRandomCandies((int) (height * width * 0.1))
+                    .create();
 
             MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);

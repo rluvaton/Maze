@@ -2,7 +2,12 @@ package Maze.MazeGenerator;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.RandomHelper;
 import Helpers.Utils;
+import Maze.Candy.Candy;
+import Maze.Candy.CandyPowerType;
+import Maze.Candy.PortalCandy;
+import Maze.Cell;
 import Maze.ELocationType;
 import Maze.Maze;
 import Maze.MazeBuilder.IMazeBuilder;
@@ -34,11 +39,11 @@ public class MazeGenerator {
         this.solverAdapter = solverAdapter;
     }
 
-    public Maze generate(int height,
-                         int width,
-                         int minDistance,
-                         int numOfEntrance,
-                         int numOfExits) {
+    public MazeGenerator generateMaze(int height,
+                                      int width,
+                                      int minDistance,
+                                      int numOfEntrance,
+                                      int numOfExits) {
         this.height = height;
         this.width = width;
 
@@ -47,13 +52,14 @@ public class MazeGenerator {
                 .buildAllCellsAsEmpty();
 
         new DFSMazeGenerator(this.mazeBuilder, height, width)
-                .randomizeMaze(Utils.Instance.generateCoordinate(height, width));
+                .randomizeMaze(RandomHelper.generateCoordinate(height, width));
 
         this.createRandomEntrancesAndExists(numOfEntrance, numOfExits, minDistance);
 
-        return this.mazeBuilder.getMaze();
+        return this;
     }
 
+    // region Random Entrances & Exists
     private void createRandomEntrancesAndExists(int numOfEntrances, int numOfExits, int minDistance) {
         assert numOfEntrances > 0 && numOfExits > 0;
 
@@ -131,7 +137,7 @@ public class MazeGenerator {
     }
 
     private ELocationBaseData generateRandomELocationAtBorder() {
-        return Instance.getRandomState()
+        return RandomHelper.getRandomState()
                 ? this.generateRandomCoordinateAtHorizontalBorder()
                 : this.generateRandomCoordinateAtVerticalBorder();
     }
@@ -140,7 +146,7 @@ public class MazeGenerator {
         int column;
         Direction direction;
 
-        if (Instance.getRandomState()) {
+        if (RandomHelper.getRandomState()) {
             column = 0;
             direction = Direction.LEFT;
         } else {
@@ -148,14 +154,14 @@ public class MazeGenerator {
             direction = Direction.RIGHT;
         }
 
-        return new ELocationBaseData(new Coordinate(Instance.getRandomNumber(height), column), direction);
+        return new ELocationBaseData(new Coordinate(RandomHelper.getRandomNumber(height), column), direction);
     }
 
     private ELocationBaseData generateRandomCoordinateAtVerticalBorder() {
         int row;
         Direction direction;
 
-        if (Instance.getRandomState()) {
+        if (RandomHelper.getRandomState()) {
             row = 0;
             direction = Direction.TOP;
         } else {
@@ -163,7 +169,7 @@ public class MazeGenerator {
             direction = Direction.BOTTOM;
         }
 
-        return new ELocationBaseData(new Coordinate(row, Instance.getRandomNumber(width)), direction);
+        return new ELocationBaseData(new Coordinate(row, RandomHelper.getRandomNumber(width)), direction);
     }
 
     private boolean isValidELocation(ELocationBaseData optionalELocation, int minDistance, ELocationType type) {
@@ -192,13 +198,12 @@ public class MazeGenerator {
         }
 
         return sameELocationTypes.stream().noneMatch(optionalELocation::equals) &&
-                diffELocationTypes.stream().allMatch((diffELocationType) -> checkELocation(diffELocationType, optionalELocation, minDistance, eLocationPos, maze));
+                diffELocationTypes.stream().allMatch((diffELocationType) -> !optionalELocation.equals(diffELocationType) && validateELocationHasMinDistance(maze, diffELocationType, eLocationPos, minDistance));
     }
 
-    private boolean checkELocation(ELocationBaseData diffELocationType, ELocationBaseData optionalELocation, int minDistance, Coordinate eLocationPos, Maze maze) {
+    private boolean validateELocationHasMinDistance(Maze maze, ELocationBaseData diffELocationType, Coordinate eLocationPos, int minDistance) {
         try {
-            boolean isPositionsEquals = optionalELocation.equals(diffELocationType);
-            return !isPositionsEquals && diffELocationType != null && this.solverAdapter.solveMaze(maze, diffELocationType.getPos(), eLocationPos, false).length >= minDistance;
+            return diffELocationType != null && this.solverAdapter.solveMaze(maze, diffELocationType.getPos(), eLocationPos, false).length >= minDistance;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -209,6 +214,76 @@ public class MazeGenerator {
         assert optionalELocation != null;
         return entrances.stream().noneMatch(optionalELocation::equals) &&
                 exits.stream().noneMatch(optionalELocation::equals);
+    }
+
+    // endregion
+
+    // region Generate Random Candies
+
+    public MazeGenerator generateRandomCandies(int count) {
+        return generateRandomCandies(count, false);
+    }
+
+    public MazeGenerator generateRandomCandies(int count, boolean generateOnlyGood) {
+        Coordinate cellLoc;
+        Cell cell;
+
+        GenerateCandyConfig config = new GenerateCandyConfig();
+
+        if (generateOnlyGood) {
+            config.setStrengthPower(new IntegerConfiguration(1, 1000));
+        }
+
+        for (int i = 0; i < count; i++) {
+            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
+            cell = this.mazeBuilder.getCellAtPosition(cellLoc);
+
+            config.setCellLoc(cellLoc);
+            cell.addCandy(this.generateSingleCandy(config));
+        }
+
+        return this;
+    }
+
+    private Candy generateSingleCandy(GenerateCandyConfig config) {
+        assert config != null;
+
+        // The type of the candy that gonna be generated
+        CandyPowerType type = getRandomType(config.getTypes());
+
+        Candy.Builder builder = Candy.Builder.createForType(type)
+                .setTimeToLive(config.getTimeToLive().getValue())
+                .setCandyStrength(config.getStrengthPower().getValue());
+
+        if (type == CandyPowerType.Location) {
+            buildForPortalCandy(config, builder);
+        }
+
+        return builder.build();
+    }
+
+    private void buildForPortalCandy(GenerateCandyConfig config, Candy.Builder builder) {
+        Coordinate otherCellLocation = config.getOtherCellLocation();
+
+        if (otherCellLocation == null || !Instance.inBounds(otherCellLocation, height, width)) {
+            otherCellLocation = RandomHelper.generateCoordinate(height, width);
+            config.setOtherCellLocation(otherCellLocation);
+        }
+
+        ((PortalCandy.Builder) (builder))
+                .setOtherSideLocation(otherCellLocation)
+                .setOtherSideCell(mazeBuilder.getCellAtPosition(otherCellLocation))
+                .setMyLocation(config.getCellLoc());
+    }
+
+    private CandyPowerType getRandomType(CandyPowerType[] types) {
+        return types[RandomHelper.getRandomNumber(types.length)];
+    }
+
+    // endregion
+
+    public Maze create() {
+        return this.mazeBuilder.getMaze();
     }
 
     class DFSMazeGenerator {
@@ -274,7 +349,7 @@ public class MazeGenerator {
             if (size == 0) {
                 return null;
             }
-            int index = size == 1 ? 0 : Utils.Instance.getRandomNumber(size);
+            int index = size == 1 ? 0 : RandomHelper.getRandomNumber(size);
             return coordinates[index];
         }
 
@@ -284,6 +359,28 @@ public class MazeGenerator {
 
         private boolean isCoordinatesVisited(Coordinate position) {
             return this.visited[position.getRow()][position.getColumn()];
+        }
+    }
+
+    static class IntegerConfiguration {
+        private int value;
+        private int from;
+        private int to;
+        private boolean randomize;
+
+        public IntegerConfiguration(int value) {
+            this.value = value;
+            this.randomize = false;
+        }
+
+        public IntegerConfiguration(int from, int to) {
+            this.from = from;
+            this.to = to;
+            this.randomize = true;
+        }
+
+        int getValue() {
+            return randomize ? RandomHelper.getRandomNumber(from, to) : value;
         }
     }
 }
