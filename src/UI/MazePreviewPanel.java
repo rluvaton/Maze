@@ -303,12 +303,12 @@ public class MazePreviewPanel extends JPanel {
         }
 
         // Top Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.TOP)) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.UP)) {
             g.drawLine(x, y, x + horLen, y);
         }
 
         // Bottom Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.BOTTOM)) {
+        if (!cell.haveCellOrELocationAtDirection(Direction.DOWN)) {
             g.drawLine(x, y + horSpace, x + horLen, y + horSpace);
         }
 

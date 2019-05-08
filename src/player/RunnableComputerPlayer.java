@@ -1,6 +1,7 @@
 package player;
 
 import Helpers.Direction;
+import player.exceptions.InvalidDirection;
 import player.exceptions.PlayerNotRunning;
 
 public class RunnableComputerPlayer implements Runnable {
@@ -67,7 +68,11 @@ public class RunnableComputerPlayer implements Runnable {
     public void move(Direction direction) {
         System.out.println("Computer moved " + direction);
         synchronized (player) {
-            player.move(direction);
+            try {
+                player.move(direction);
+            } catch (InvalidDirection invalidDirection) {
+                System.out.println("Invalid computer move " + direction);
+            }
 
             this.lastStep = direction;
         }

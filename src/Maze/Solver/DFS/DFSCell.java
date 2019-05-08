@@ -34,16 +34,16 @@ public class DFSCell extends Cell
     public PathNeighbourResult getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
         List<PathNeighbourResult> neighbours = new ArrayList<>();
 
-        if (top != null && !top.deadEnd && this.haveCellAtDirection(Direction.TOP)) {
-            neighbours.add(new PathNeighbourResult(top, Direction.TOP));
+        if (top != null && !top.deadEnd && this.haveCellAtDirection(Direction.UP)) {
+            neighbours.add(new PathNeighbourResult(top, Direction.UP));
         }
 
         if (right != null && !right.deadEnd && this.haveCellAtDirection(Direction.RIGHT)) {
             neighbours.add(new PathNeighbourResult(right, Direction.RIGHT));
         }
 
-        if (bottom != null && !bottom.deadEnd && this.haveCellAtDirection(Direction.BOTTOM)) {
-            neighbours.add(new PathNeighbourResult(bottom, Direction.BOTTOM));
+        if (bottom != null && !bottom.deadEnd && this.haveCellAtDirection(Direction.DOWN)) {
+            neighbours.add(new PathNeighbourResult(bottom, Direction.DOWN));
         }
 
         if (left != null && !left.deadEnd && this.haveCellAtDirection(Direction.LEFT)) {

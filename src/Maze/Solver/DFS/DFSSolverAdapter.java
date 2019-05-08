@@ -3,7 +3,6 @@ package Maze.Solver.DFS;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -49,9 +48,9 @@ public class DFSSolverAdapter extends SolverAdapter {
             tempCell.setDeadEnd(true);
 
             pathNeighbourResult = tempCell.getPathNeighbour(
-                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.TOP)),
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.UP)),
                     this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.RIGHT)),
-                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.BOTTOM)),
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.DOWN)),
                     this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.LEFT)));
 
             if (pathNeighbourResult != null) {

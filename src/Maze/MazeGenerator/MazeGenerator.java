@@ -163,10 +163,10 @@ public class MazeGenerator {
 
         if (RandomHelper.getRandomState()) {
             row = 0;
-            direction = Direction.TOP;
+            direction = Direction.UP;
         } else {
             row = height;
-            direction = Direction.BOTTOM;
+            direction = Direction.DOWN;
         }
 
         return new ELocationBaseData(new Coordinate(row, RandomHelper.getRandomNumber(width)), direction);

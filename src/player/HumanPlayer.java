@@ -4,6 +4,8 @@ import Helpers.Coordinate;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Human Player
@@ -11,23 +13,48 @@ import java.awt.event.KeyListener;
  * @implNote Implement {@link KeyListener} for moving with the keyboard
  */
 public class HumanPlayer extends BasePlayer implements KeyListener {
-    /**
-     * Human Player Constructor
-     *
-     * @param location Starting location of the player
-     */
-    public HumanPlayer(Coordinate location) {
-        super(location);
+
+    private Map<Integer, Runnable> directionKeys = this.getDefaultKeyAssignment();
+
+    public HumanPlayer(Coordinate startingLocation) {
+        super(startingLocation);
     }
 
-    /**
-     * Human Player Constructor
-     *
-     * @param location Starting location of the player
-     * @param name     Player name
-     */
-    public HumanPlayer(Coordinate location, String name) {
-        super(location, name);
+    public HumanPlayer(Coordinate startingLocation, String name) {
+        super(startingLocation, name);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name, DirectionKeys directionKeys) {
+        super(startingLocation, name);
+
+        assert directionKeys != null;
+        this.directionKeys = createKeyAssignmentActions(directionKeys);
+    }
+
+
+    private Map<Integer, Runnable> getDefaultKeyAssignment() {
+        return this.createKeyAssignmentActions(KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT);
+    }
+
+    private Map<Integer, Runnable> createKeyAssignmentActions(DirectionKeys directionKeys) {
+        assert directionKeys != null;
+        return createKeyAssignmentActions(
+                directionKeys.getUpKeyCode(),
+                directionKeys.getDownKeyCode(),
+                directionKeys.getRightKeyCode(),
+                directionKeys.getLeftKeyCode()
+        );
+    }
+
+    private Map<Integer, Runnable> createKeyAssignmentActions(int upKeyCode, int downKeyCode, int rightKeyCode, int leftKeyCode) {
+        Map<Integer, Runnable> keyAssignment = new HashMap<>();
+
+        keyAssignment.put(upKeyCode, this::up);
+        keyAssignment.put(downKeyCode, this::down);
+        keyAssignment.put(rightKeyCode, this::right);
+        keyAssignment.put(leftKeyCode, this::left);
+
+        return keyAssignment;
     }
 
     // region KeyListener functions
@@ -39,22 +66,11 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        switch (keyCode) {
-            case KeyEvent.VK_UP:
-                this.top();
-                break;
-            case KeyEvent.VK_DOWN:
-                this.bottom();
-                break;
-            case KeyEvent.VK_LEFT:
-                this.left();
-                break;
-            case KeyEvent.VK_RIGHT:
-                this.right();
-                break;
-            default:
-                break;
+        if (!directionKeys.containsKey(keyCode)) {
+            return;
         }
+
+        directionKeys.get(keyCode).run();
     }
 
     @Override

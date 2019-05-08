@@ -1,6 +1,5 @@
 package Helpers;
 
-import Maze.Cell;
 import Maze.ELocation;
 import Maze.MazeBuilder.IMazeBuilder;
 
@@ -101,7 +100,7 @@ public class Utils {
      * @return Returns if in limit
      */
     public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
-        return (row == 0 && direction == Direction.TOP) || (row == height - 1 && direction == Direction.BOTTOM) ||
+        return (row == 0 && direction == Direction.UP) || (row == height - 1 && direction == Direction.DOWN) ||
                 (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
     }
 

@@ -33,9 +33,9 @@ public class Cell extends Node<Coordinate> {
     private static Map<Direction, NeighborCell> createEmptyNeighborsMap() {
         Map<Direction, NeighborCell> neighbors = new HashMap<>();
 
-        neighbors.put(Direction.TOP, null);
+        neighbors.put(Direction.UP, null);
         neighbors.put(Direction.RIGHT, null);
-        neighbors.put(Direction.BOTTOM, null);
+        neighbors.put(Direction.DOWN, null);
         neighbors.put(Direction.LEFT, null);
 
         return neighbors;
@@ -446,6 +446,8 @@ public class Cell extends Node<Coordinate> {
         public Cell getCell() {
             return cell;
         }
+
+
     }
 
     // endregion

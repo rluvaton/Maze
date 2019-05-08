@@ -22,14 +22,14 @@ class UtilsTest {
         assertMoveCoordinatesWorks(
                 new Coordinate(7, 3),
                 new Coordinate(6, 3),
-                Direction.TOP,
+                Direction.UP,
                 moveCoordinatesFn
         );
 
         assertMoveCoordinatesWorks(
                 new Coordinate(7, 3),
                 new Coordinate(8, 3),
-                Direction.BOTTOM,
+                Direction.DOWN,
                 moveCoordinatesFn
         );
 
@@ -79,13 +79,13 @@ class UtilsTest {
         assertDirectionOfMoveWorks(
                 new Coordinate(7, 3),
                 new Coordinate(6, 3),
-                Direction.TOP
+                Direction.UP
         );
 
         assertDirectionOfMoveWorks(
                 new Coordinate(7, 3),
                 new Coordinate(8, 3),
-                Direction.BOTTOM
+                Direction.DOWN
         );
 
         assertDirectionOfMoveWorks(

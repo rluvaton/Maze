@@ -368,13 +368,13 @@ public class Maze {
 
         int locationRow = loc.getRow(), locationCol = loc.getColumn();
 
-        // If the x value (item 1) in the cell is at the top maze
+        // If the x value (item 1) in the cell is at the top of the maze
         if (locationRow == 0) {
-            dir = Direction.TOP;
+            dir = Direction.UP;
         }
         // If the x value (item 1) in the cell is at the bottom of the maze
         else if (locationRow == height - 1) {
-            dir = Direction.BOTTOM;
+            dir = Direction.DOWN;
         }
         // If the y value (item 2) in the cell is at the left maze
         else if (locationCol == 0) {

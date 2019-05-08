@@ -5,17 +5,13 @@ import java.util.Map;
 
 /**
  * Directions To Move
- * The Values are those because if I wanna know where to go in matrix I would kno
- *
- * @example I Wanna Go to top and I at 3, 4
- * So I get -1
- * For Vertical I do -1 / 1 = -1 -> 3 + (-1) = 2
- * For Horizontal I do (int)(-1 / 2) = 0 -> 4 + 0 = 4
+ * The values are the number to add when you go to that direction
+ * You can use {@link Utils#moveCoordinatesToDirection(Coordinate, Direction)} for moving in direction
  */
 public enum Direction {
-    TOP(new Coordinate(-1, 0)),
+    UP(new Coordinate(-1, 0)),
     RIGHT(new Coordinate(0, 1)),
-    BOTTOM(new Coordinate(1, 0)),
+    DOWN(new Coordinate(1, 0)),
     LEFT(new Coordinate(0, -1));
 
     private final Coordinate value;
@@ -33,9 +29,9 @@ public enum Direction {
     private static Map<Direction, Direction> createOppositeDirectionsMap() {
         HashMap<Direction, Direction> directions = new HashMap<>();
 
-        directions.put(Direction.TOP, Direction.BOTTOM);
+        directions.put(Direction.UP, Direction.DOWN);
         directions.put(Direction.RIGHT, Direction.LEFT);
-        directions.put(Direction.BOTTOM, Direction.TOP);
+        directions.put(Direction.DOWN, Direction.UP);
         directions.put(Direction.LEFT, Direction.RIGHT);
 
         return directions;

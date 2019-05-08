@@ -27,7 +27,7 @@ class CellTest {
         Cell nCell = new Cell(nCellPos);
 
         try {
-            cell.setCellAtDirection(Direction.TOP, nCell);
+            cell.setCellAtDirection(Direction.UP, nCell);
             assertNull("shouldn't arrive until here", "");
         } catch (Exception e) {
             assertNotNull(e);
