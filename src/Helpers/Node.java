@@ -8,14 +8,14 @@ public abstract class Node<T> {
     protected LinkedList<Node<T>> adjacent = new LinkedList<>();
 
     protected Node(T id) {
-        if(id == null) {
+        if (id == null) {
             throw new IllegalArgumentException("id Cant be null");
         }
         this.id = id;
     }
 
     public Node(T id, LinkedList<Node<T>> adjacent) {
-        if(id == null) {
+        if (id == null) {
             throw new IllegalArgumentException("id Cant be null");
         }
         this.id = id;

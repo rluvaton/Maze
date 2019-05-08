@@ -1,5 +1,8 @@
 package Helpers;
 
+import Maze.ELocation;
+import Maze.MazeBuilder.IMazeBuilder;
+
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -9,74 +12,32 @@ public class Utils {
      */
     public static final Utils Instance = new Utils();
 
-    /**
-     * Random Instance for random numbers one after another
-     */
-    private final Random _random = new Random();
-
-    public static Map<Direction, Coordinate> DIRECTIONS = Utils.createDirectionsMap();
-    public static Map<Direction, Direction> OPPOSITE_DIRECTIONS = Utils.createOppositeDirectionsMap();
-
-    /**
-     * Get Random State
-     *
-     * @return The random state (true or false)
-     */
-    public final boolean getRandomState() {
-        return _random.nextBoolean();
+    public final Coordinate moveCoordinatesToDirection(Coordinate pos, Direction dir) {
+        assert pos != null && dir != null;
+        return this.moveCoordinatesToDirection(pos.getRow(), pos.getColumn(), dir);
     }
 
-    /**
-     * Get Random Number
-     *
-     * @param from  From Number (Included)
-     * @param until Until Number (Not included)
-     * @return The random number
-     */
-    public final int getRandomNumber(int from, int until) {
-        return _random.nextInt(until) + from;
+    public final Coordinate moveCoordinatesToDirection(int row, int col, Direction dir) {
+        assert dir != null;
+
+        Coordinate directionMove = dir.getValue();
+
+        return new Coordinate(row + directionMove.getRow(), col + directionMove.getColumn());
     }
 
-    /**
-     * Get Random Number from 0 to the until variable
-     *
-     * @param until Until Number (Not included)
-     * @return The random number
-     */
-    public final int getRandomNumber(int until) {
-        return _random.nextInt(until);
-    }
+    public Direction getDirectionOfMove(Coordinate from, Coordinate to) {
+        assert from != null && to != null;
 
-    /**
-     * Get next cell of of direction and current location
-     *
-     * @param loc           Location
-     * @param nextDirection The direction to go
-     * @return Returns new Tuple of the next cell location
-     * @throws IllegalArgumentException in case of loc variable is null or nextDirection value is not recognized
-     */
-    public final Coordinate getNextLocation(Coordinate loc, Direction nextDirection) {
-        if (loc == null) {
-            throw new IllegalArgumentException("Location can't be null");
+        Direction[] allDirections = Direction.values();
+        Coordinate directionCoordinates = new Coordinate(to.getRow() - from.getRow(), to.getColumn() - from.getColumn());
+
+        for (Direction direction : allDirections) {
+            if (directionCoordinates.equals(direction.getValue())) {
+                return direction;
+            }
         }
 
-        return this.getNextLocation(loc, DIRECTIONS.get(nextDirection));
-    }
-
-    public final Coordinate getNextLocation(Coordinate loc, Coordinate dirToAdd) {
-        if (loc == null) {
-            throw new IllegalArgumentException("Location can't be null");
-        }
-
-        return this.getNextLocation(loc.getRow(), loc.getColumn(), dirToAdd);
-    }
-
-    public final Coordinate getNextLocation(int currRow, int currCol, Coordinate dirToAdd) {
-        if (dirToAdd == null) {
-            throw new IllegalArgumentException("Next direction didn't recognized");
-        }
-
-        return new Coordinate(currRow + dirToAdd.getRow(), currCol + dirToAdd.getColumn());
+        throw new IllegalArgumentException("from and not near each other");
     }
 
     /**
@@ -139,8 +100,29 @@ public class Utils {
      * @return Returns if in limit
      */
     public final boolean inLimits(int row, int col, Direction direction, int width, int height) {
-        return (row == 0 && direction == Direction.TOP) || (row == height - 1 && direction == Direction.BOTTOM) ||
+        return (row == 0 && direction == Direction.UP) || (row == height - 1 && direction == Direction.DOWN) ||
                 (col == 0 && direction == Direction.LEFT) || (col == width - 1 && direction == Direction.RIGHT);
+    }
+
+    public final boolean inLimits(Coordinate coordinate, Direction direction, int width, int height) {
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), direction, width, height);
+    }
+
+    public final boolean inLimits(ELocation eLocation, int width, int height) {
+        assert eLocation != null;
+        Coordinate coordinate = eLocation.getLocation();
+
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), eLocation.getDirection(), width, height);
+    }
+
+    public final boolean inLimits(IMazeBuilder.ELocationBaseData eLocation, int width, int height) {
+        assert eLocation != null;
+        Coordinate coordinate = eLocation.getPos();
+
+        assert coordinate != null;
+        return this.inLimits(coordinate.getRow(), coordinate.getColumn(), eLocation.getDirection(), width, height);
     }
 
 
@@ -166,72 +148,15 @@ public class Utils {
         return Arrays.stream(mat).map(Arrays::stream);
     }
 
-    /**
-     * Generate Tuple
-     *
-     * @param firstLimit  First item limit
-     * @param secondLimit Second item limit
-     * @return Returns The Coordinate
-     * @example Generate Location in Matrix
-     * generateCoordinate(height, width)
-     */
-    public Coordinate generateCoordinate(int firstLimit, int secondLimit) {
-        return new Coordinate(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
-    }
-
-    /**
-     * Get Direction of the move
-     *
-     * @param from From location
-     * @param to   To location
-     * @return Direction of move
-     * @throws IllegalArgumentException If from or to or there values are null
-     */
-    public Direction getDirection(Tuple<Integer, Integer> from, Tuple<Integer, Integer> to) {
-        if (from == null || from.item1 == null || from.item2 == null) {
-            throw new IllegalArgumentException("from or it's values is null");
-        }
-        if (to == null || to.item1 == null || to.item2 == null) {
-            throw new IllegalArgumentException("to or it's values is null");
-        }
-
-        return (from.item1 > to.item1 && from.item2.equals(to.item2)) ? Direction.BOTTOM :
-                (from.item1 < to.item1 && from.item2.equals(to.item2)) ? Direction.TOP :
-                        (from.item1.equals(to.item1) && from.item2 > to.item2) ? Direction.LEFT :
-                                (from.item1.equals(to.item1) && from.item2 < to.item2) ? Direction.RIGHT : null;
-    }
-
     public <T> List<T> reverseList(List<T> list) {
         LinkedList<T> reversed = new LinkedList<>(list);
         Collections.reverse(reversed);
         return reversed;
     }
 
-
-    public static Map<Direction, Coordinate> createDirectionsMap() {
-        HashMap<Direction, Coordinate> directions = new HashMap<>();
-
-        directions.put(Direction.TOP, new Coordinate(-1, 0));
-        directions.put(Direction.RIGHT, new Coordinate(0, 1));
-        directions.put(Direction.BOTTOM, new Coordinate(1, 0));
-        directions.put(Direction.LEFT, new Coordinate(0, -1));
-
-        return directions;
-    }
-
-    private static Map<Direction, Direction> createOppositeDirectionsMap() {
-        HashMap<Direction, Direction> directions = new HashMap<>();
-
-        directions.put(Direction.TOP, Direction.BOTTOM);
-        directions.put(Direction.RIGHT, Direction.LEFT);
-        directions.put(Direction.BOTTOM, Direction.TOP);
-        directions.put(Direction.LEFT, Direction.RIGHT);
-
-        return directions;
-    }
-
-    public Direction getOppositeDirection(Direction direction) {
-        return Utils.OPPOSITE_DIRECTIONS.get(direction);
+    public <K, V> Map<K, V> cloneMap(Map<K, V> source, Map<K, V> cloneTo) {
+        source.forEach(cloneTo::put);
+        return cloneTo;
     }
 }
 

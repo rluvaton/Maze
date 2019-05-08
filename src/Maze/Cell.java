@@ -3,13 +3,12 @@ package Maze;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Node;
-import Helpers.Tuple;
 import Maze.Candy.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static Helpers.Utils.Instance;
 
 
 /**
@@ -20,30 +19,6 @@ public class Cell extends Node<Coordinate> {
     // region Variables
 
     /**
-     * If have wall at the top or not
-     * If can't move top then it will be true
-     */
-    private boolean topWall = true;
-
-    /**
-     * If have wall at the right or not
-     * If can't move right then it will be true
-     */
-    private boolean rightWall = true;
-
-    /**
-     * If have wall at the bottom or not
-     * If can't move bottom then it will be true
-     */
-    private boolean bottomWall = true;
-
-    /**
-     * If have wall at the left or not
-     * If can't move left then it will be true
-     */
-    private boolean leftWall = true;
-
-    /**
      * If the cell contain candy
      */
     private ArrayList<Candy> candies = new ArrayList<>();
@@ -51,10 +26,20 @@ public class Cell extends Node<Coordinate> {
     /**
      * The location is also the ID
      */
-    private Coordinate location;
+    protected Coordinate location;
 
+    private Map<Direction, NeighborCell> neighbors = Cell.createEmptyNeighborsMap();
 
-    private LinkedList<Tuple<Cell, Direction>> neighbors = new LinkedList<>();
+    private static Map<Direction, NeighborCell> createEmptyNeighborsMap() {
+        Map<Direction, NeighborCell> neighbors = new HashMap<>();
+
+        neighbors.put(Direction.UP, null);
+        neighbors.put(Direction.RIGHT, null);
+        neighbors.put(Direction.DOWN, null);
+        neighbors.put(Direction.LEFT, null);
+
+        return neighbors;
+    }
 
     // endregion
 
@@ -66,15 +51,16 @@ public class Cell extends Node<Coordinate> {
         // TODO - WHEN CELL PROPERTIES UPDATED DON'T FORGET TO UPDATE THIS TOO
 
         this.location = this.id;
-        this.topWall = cell.topWall;
-        this.bottomWall = cell.bottomWall;
-        this.rightWall = cell.rightWall;
-        this.leftWall = cell.leftWall;
+        this.neighbors = Instance.cloneMap(cell.neighbors, new HashMap<>());
         this.candies = cell.candies;
     }
 
     public Cell(int row, int col) {
-        super(new Coordinate(row, col));
+        this(new Coordinate(row, col));
+    }
+
+    public Cell(Coordinate position) {
+        super(position.clone());
 
         this.location = id;
     }
@@ -86,6 +72,11 @@ public class Cell extends Node<Coordinate> {
         return cell != null && this.id.equals(cell.id);
     }
 
+    public boolean haveCellOrELocationAtDirection(Direction direction) {
+        assert direction != null;
+        return this.getCellAtDirection(direction) != null || this.ELocationAtDirection(direction) != null;
+   }
+
     /**
      * Get Cell at direction
      *
@@ -94,18 +85,8 @@ public class Cell extends Node<Coordinate> {
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
     public boolean haveCellAtDirection(Direction direction) {
-        switch (direction) {
-            case TOP:
-                return !haveTopWall();
-            case RIGHT:
-                return !haveRightWall();
-            case BOTTOM:
-                return !haveBottomWall();
-            case LEFT:
-                return !haveLeftWall();
-            default:
-                throw new IndexOutOfBoundsException();
-        }
+        assert direction != null;
+        return this.getCellAtDirection(direction) != null;
     }
 
     // region Set Cell At Direction
@@ -120,8 +101,8 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force) {
-        return setCellAtDirection(cell, direction, force, false);
+    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force) throws Exception {
+        return setCellAtDirection(direction, cell, force, false);
     }
 
     /**
@@ -133,8 +114,8 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction) {
-        return setCellAtDirection(cell, direction, false, false);
+    public boolean setCellAtDirection(Direction direction, Cell cell) throws Exception {
+        return setCellAtDirection(direction, cell, false, true);
     }
 
     /**
@@ -148,79 +129,73 @@ public class Cell extends Node<Coordinate> {
      * @throws IllegalArgumentException  Throw if cell is null and update is false
      * @throws IndexOutOfBoundsException Throw if direction is not recognized
      */
-    public boolean setCellAtDirection(Cell cell, Direction direction, boolean force, boolean update) {
+    public boolean setCellAtDirection(Direction direction, Cell cell, boolean force, boolean update) throws Exception {
         if (!update && cell == null) {
             throw new IllegalArgumentException("cell");
         }
 
-        switch (direction) {
-            case TOP:
-                if (!haveTopWall() && !force) {
-                    return false;
-                }
-
-                setTopWall(false);
-                if (update) {
-                    cell.setBottomWall(false);
-                }
-
-                return true;
-            case RIGHT:
-                if (!haveRightWall() && !force) {
-                    return false;
-                }
-
-                setRightWall(false);
-
-                if (update) {
-                    cell.setLeftWall(false);
-                }
-
-                return true;
-            case BOTTOM:
-                if (!haveBottomWall() && !force) {
-                    return false;
-                }
-
-                setBottomWall(false);
-
-                if (update) {
-                    cell.setTopWall(false);
-                }
-
-                return true;
-            case LEFT:
-                if (!haveLeftWall() && !force) {
-                    return false;
-                }
-
-                setLeftWall(false);
-
-                if (update) {
-                    cell.setRightWall(false);
-                }
-
-                return true;
-            default:
-                throw new IndexOutOfBoundsException();
+        if(Instance.getDirectionOfMove(this.location, cell.location) != direction) {
+            // TODO - change to NotNeighborException or something
+            throw new Exception("not Near");
         }
+
+        if (this.haveCellAtDirection(direction) && !force) {
+            return false;
+        }
+
+        this._setCellAtDirection(direction, cell);
+
+        if (update) {
+            cell._setCellAtDirection(Direction.getOppositeDirection(direction), this);
+        }
+
+        return true;
     }
 
     // endregion
 
+    public void setELocationAsNeighbor(ELocation elocation) {
+
+        NeighborCell neighborCell = this.neighbors.get(elocation.getDirection());
+        if(neighborCell == null) {
+            neighborCell = new NeighborCell(null, elocation);
+        }
+        this.neighbors.put(elocation.getDirection(), neighborCell);
+    }
+
+    public void removeELocationFromNeighbors(Direction direction) {
+        this.neighbors.get(direction).eLocation = null;
+    }
+
+    public Map<Direction, ELocation> getELocationNeighbors() {
+        Map<Direction, ELocation> eLocationNeighbors = new HashMap<>();
+
+        neighbors.forEach((direction, neighborCell) -> {
+            if(neighborCell != null && neighborCell.eLocation != null) {
+                eLocationNeighbors.put(direction, neighborCell.eLocation);
+            }
+        });
+
+        return eLocationNeighbors;
+
+    }
     /**
      * If Have all walls
      *
      * @return Returns if have all walls
      */
     public boolean haveAllWalls() {
-        return this.topWall && this.bottomWall && this.leftWall && this.rightWall;
+        return this.neighbors.values().stream().allMatch(Objects::isNull);
     }
 
     // region Candies
 
     public void addCandy(Candy candy) {
         this.candies.add(candy);
+    }
+
+    public void addCandies(Candy[] candies) {
+        this.candies.addAll(List.of(candies));
     }
 
     public void removeCandy(Candy candy) {
@@ -287,17 +262,18 @@ public class Cell extends Node<Coordinate> {
                 .map(candy -> (TimeCandy) candy)
                 .collect(Collectors.toList());
         if (!removeFoundedCandies) {
-            return timeCandies.stream()
-                    .mapToInt(Candy::getCandyStrength)
-                    .reduce((candy1, candy2) -> candy1 + candy2)
-                    .orElse(0);
+            return calculateCandiesTotalStrength(timeCandies);
         }
 
         timeCandies.forEach(timeCandy -> this.candies.remove(timeCandy));
 
+        return calculateCandiesTotalStrength(timeCandies);
+    }
+
+    private int calculateCandiesTotalStrength(List<TimeCandy> timeCandies) {
         return timeCandies.stream()
                 .mapToInt(Candy::getCandyStrength)
-                .reduce((candy1, candy2) -> candy1 + candy2)
+                .reduce(Integer::sum)
                 .orElse(0);
     }
 
@@ -413,39 +389,25 @@ public class Cell extends Node<Coordinate> {
 
     // endregion
 
+    public Cell getCellAtDirection(Direction dir) {
+        NeighborCell neighborCell = this.neighbors.getOrDefault(dir, null);
+        return neighborCell == null ? null : neighborCell.getCell();
+    }
+
+    public ELocation ELocationAtDirection(Direction dir) {
+        NeighborCell neighborCell = this.neighbors.getOrDefault(dir, null);
+        return neighborCell == null ? null : neighborCell.eLocation;
+    }
+
+    private void _setCellAtDirection(Direction dir, Cell cell) {
+        Cell currentNeighbor = this.getCellAtDirection(dir);
+        if(currentNeighbor != null && currentNeighbor != cell) {
+            currentNeighbor._setCellAtDirection(Direction.getOppositeDirection(dir), null);
+        }
+        this.neighbors.put(dir, new NeighborCell(cell));
+    }
+
     // region Getter & Setter
-
-    public boolean haveTopWall() {
-        return topWall;
-    }
-
-    public void setTopWall(boolean topWall) {
-        this.topWall = topWall;
-    }
-
-    public boolean haveRightWall() {
-        return rightWall;
-    }
-
-    public void setRightWall(boolean rightWall) {
-        this.rightWall = rightWall;
-    }
-
-    public boolean haveBottomWall() {
-        return bottomWall;
-    }
-
-    public void setBottomWall(boolean bottomWall) {
-        this.bottomWall = bottomWall;
-    }
-
-    public boolean haveLeftWall() {
-        return leftWall;
-    }
-
-    public void setLeftWall(boolean leftWall) {
-        this.leftWall = leftWall;
-    }
 
     public ArrayList<Candy> getCandies() {
         return this.candies;
@@ -464,12 +426,28 @@ public class Cell extends Node<Coordinate> {
         this.id = this.location;
     }
 
-    public LinkedList<Tuple<Cell, Direction>> getNeighbors() {
+    public Map<Direction, NeighborCell> getNeighbors() {
         return neighbors;
     }
 
-    public void setNeighbors(LinkedList<Tuple<Cell, Direction>> neighbors) {
-        this.neighbors = neighbors;
+    public static class NeighborCell {
+        private Cell cell;
+        private ELocation eLocation;
+
+        public NeighborCell(Cell cell) {
+            this.cell = cell;
+        }
+
+        public NeighborCell(Cell cell, ELocation eLocation) {
+            this.cell = cell;
+            this.eLocation = eLocation;
+        }
+
+        public Cell getCell() {
+            return cell;
+        }
+
+
     }
 
     // endregion

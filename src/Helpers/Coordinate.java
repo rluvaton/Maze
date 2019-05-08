@@ -42,4 +42,12 @@ public class Coordinate {
     protected static Coordinate clone(Coordinate coordinate) {
         return coordinate == null ? null : new Coordinate(coordinate.row, coordinate.column);
     }
+
+    @Override
+    public String toString() {
+        return "Coordinate{" +
+                "row=" + row +
+                ", column=" + column +
+                '}';
+    }
 }

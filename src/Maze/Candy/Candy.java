@@ -1,19 +1,17 @@
 package Maze.Candy;
 
+
 /**
  * Candy in cell
  */
-public abstract class Candy
-{
-    /**
-     * This mean that if the candy gonna help you or reduce points
-     */
-    protected boolean isGood;
+public abstract class Candy {
+    public static int WITHOUT_TIMEOUT = -1;
 
     /**
      * How much the candy help you
+     * (Negetive number is bad points
      */
-    protected int CandyStrength = 0;
+    protected int candyStrength = 0;
 
     /**
      * What the candy change
@@ -28,43 +26,16 @@ public abstract class Candy
 
     // region Constructors
 
-    protected Candy(CandyPowerType type) {
+
+    public Candy(CandyPowerType type, int candyStrength) {
         this.type = type;
+        this.candyStrength = candyStrength;
+        this.timeToLive = Candy.WITHOUT_TIMEOUT;
     }
 
-    public Candy(boolean isGood, CandyPowerType type) {
-        this.isGood = isGood;
+    public Candy(CandyPowerType type, int candyStrength, int timeToLive) {
         this.type = type;
-    }
-
-    protected Candy(CandyPowerType type, int timeToLive) {
-        this.type = type;
-        this.timeToLive = timeToLive;
-    }
-
-    public Candy(boolean isGood, CandyPowerType type, int timeToLive) {
-        this.isGood = isGood;
-        this.type = type;
-        this.timeToLive = timeToLive;
-    }
-
-    public Candy(boolean isGood, int candyStrength, CandyPowerType type) {
-        this.isGood = isGood;
-        CandyStrength = candyStrength;
-        this.type = type;
-    }
-
-
-    public Candy(boolean isGood, int candyStrength, CandyPowerType type, int timeToLive) {
-        this.isGood = isGood;
-        CandyStrength = candyStrength;
-        this.type = type;
-        this.timeToLive = timeToLive;
-    }
-
-    protected Candy(int candyStrength, CandyPowerType type, int timeToLive) {
-        CandyStrength = candyStrength;
-        this.type = type;
+        this.candyStrength = candyStrength;
         this.timeToLive = timeToLive;
     }
 
@@ -76,20 +47,12 @@ public abstract class Candy
 
     // region Getter & Setter
 
-    public boolean isGood() {
-        return isGood;
-    }
-
-    public void setGood(boolean good) {
-        isGood = good;
-    }
-
     public int getCandyStrength() {
-        return CandyStrength;
+        return candyStrength;
     }
 
     public void setCandyStrength(int candyStrength) {
-        CandyStrength = candyStrength;
+        this.candyStrength = candyStrength;
     }
 
     public CandyPowerType getType() {
@@ -104,5 +67,58 @@ public abstract class Candy
         this.timeToLive = timeToLive;
     }
 
+    // endregion
+
+    public boolean equals(Object candy) {
+        return candy instanceof Candy &&
+                this.timeToLive == ((Candy) candy).timeToLive &&
+                this.type == ((Candy) candy).type &&
+                this.candyStrength == ((Candy) candy).candyStrength;
+    }
+
+    // region Builder
+
+    public abstract static class Builder {
+
+        /// instance fields
+        protected CandyPowerType type;
+        protected int candyStrength = 0;
+        protected int timeToLive = -1;
+
+        public static Candy.Builder createForType(CandyPowerType type) {
+            assert type != null;
+
+            switch (type) {
+                case Time:
+                    return TimeCandy.Builder.create();
+                case Points:
+                    return PointsCandy.Builder.create();
+                case Location:
+                    return PortalCandy.Builder.create();
+                default:
+                    throw new IllegalStateException("Unexpected CandyPowerType value: " + type);
+            }
+        }
+
+        protected Builder() {
+        }
+
+        // region Setter Methods
+
+        public Builder setCandyStrength(int candyStrength) {
+            this.candyStrength = candyStrength;
+            return this;
+        }
+
+        public Builder setTimeToLive(int timeToLive) {
+            this.timeToLive = timeToLive;
+            return this;
+        }
+
+        // endregion
+
+        public abstract Candy build();
+
+    }
     // endregion
 }

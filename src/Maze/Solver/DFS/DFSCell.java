@@ -1,9 +1,6 @@
 package Maze.Solver.DFS;
 
-import Helpers.Coordinate;
-import Helpers.Direction;
-import Helpers.Tuple;
-import Helpers.Utils;
+import Helpers.*;
 import Maze.Cell;
 
 import java.util.ArrayList;
@@ -37,20 +34,20 @@ public class DFSCell extends Cell
     public PathNeighbourResult getPathNeighbour(DFSCell top, DFSCell right, DFSCell bottom, DFSCell left) {
         List<PathNeighbourResult> neighbours = new ArrayList<>();
 
-        if (top != null && !top.deadEnd && !this.haveTopWall()) {
-            neighbours.add(new PathNeighbourResult(top, Utils.DIRECTIONS.get(Direction.TOP), Direction.TOP));
+        if (top != null && !top.deadEnd && this.haveCellAtDirection(Direction.UP)) {
+            neighbours.add(new PathNeighbourResult(top, Direction.UP));
         }
 
-        if (right != null && !right.deadEnd && !this.haveRightWall()) {
-            neighbours.add(new PathNeighbourResult(right, Utils.DIRECTIONS.get(Direction.RIGHT), Direction.RIGHT));
+        if (right != null && !right.deadEnd && this.haveCellAtDirection(Direction.RIGHT)) {
+            neighbours.add(new PathNeighbourResult(right, Direction.RIGHT));
         }
 
-        if (bottom != null && !bottom.deadEnd && !this.haveBottomWall()) {
-            neighbours.add(new PathNeighbourResult(bottom, Utils.DIRECTIONS.get(Direction.BOTTOM), Direction.BOTTOM));
+        if (bottom != null && !bottom.deadEnd && this.haveCellAtDirection(Direction.DOWN)) {
+            neighbours.add(new PathNeighbourResult(bottom, Direction.DOWN));
         }
 
-        if (left != null && !left.deadEnd && !this.haveLeftWall()) {
-            neighbours.add(new PathNeighbourResult(left, Utils.DIRECTIONS.get(Direction.LEFT), Direction.LEFT));
+        if (left != null && !left.deadEnd && this.haveCellAtDirection(Direction.LEFT)) {
+            neighbours.add(new PathNeighbourResult(left, Direction.LEFT));
         }
 
         if (neighbours.size() == 0) {
@@ -61,7 +58,7 @@ public class DFSCell extends Cell
             return neighbours.get(0);
         }
 
-        return neighbours.get(Utils.Instance.getRandomNumber(neighbours.size()));
+        return neighbours.get(RandomHelper.getRandomNumber(neighbours.size()));
     }
 
     public static DFSCell createFromCell(Cell cell) {

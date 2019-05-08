@@ -3,12 +3,12 @@ package Maze.Solver.DFS;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Maze;
 import Maze.Solver.Adapter.SolverAdapter;
+import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,10 +48,10 @@ public class DFSSolverAdapter extends SolverAdapter {
             tempCell.setDeadEnd(true);
 
             pathNeighbourResult = tempCell.getPathNeighbour(
-                this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.TOP)),
-                this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.RIGHT)),
-                this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.BOTTOM)),
-                this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.LEFT)));
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.UP)),
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.RIGHT)),
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.DOWN)),
+                    this.getDFSCellFromCell(dfsCells, maze.checkIfValidMoveCell(current, Direction.LEFT)));
 
             if (pathNeighbourResult != null) {
                 iterations++;
@@ -88,6 +88,20 @@ public class DFSSolverAdapter extends SolverAdapter {
 
         // TODO - CHECK IF THE STEPS ARRAY IS REALLY THE PATH STEPS WITHOUT USELESS STEPS
         return (iterations >= maxTries) ? null : steps.toArray(new Direction[0]);
+    }
+    /**
+     * Solve Maze
+     *
+     * @param maze        Maze to solve
+     * @param start       Starting location to solve from
+     * @param end         Ending Location to solve from
+     * @param withCandies Solve maze with candies
+     * @return Steps (Direction) of the path that solved the maze
+     * @throws Exception When the maze can't be solved
+     */
+    @Override
+    public Direction[] solveMaze(Cell[][] maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+        throw new NotImplementedException("solveMaze with cell matrix");
     }
 
     /**

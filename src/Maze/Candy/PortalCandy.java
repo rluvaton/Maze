@@ -1,8 +1,6 @@
 package Maze.Candy;
 
 import Helpers.Coordinate;
-import Helpers.NoArgsCallbackFunction;
-import Helpers.Tuple;
 import Maze.Cell;
 
 /**
@@ -11,13 +9,6 @@ import Maze.Cell;
  * @description When enter to cell the candy portal the player to a new place
  */
 public class PortalCandy extends Candy {
-    /**
-     * Is the Portal work 2 way
-     *
-     * @example twoWayPortal is true
-     * I enter a portal and I can return to the same place that I enter the portal before
-     */
-    private boolean twoWayPortal = true;
 
     /**
      * Where the portal is moving you
@@ -26,79 +17,26 @@ public class PortalCandy extends Candy {
 
     // region Constructors
 
-    /**
-     * Portal Candy Constructor
-     *
-     * @param location location of where the candy is teleporting you
-     *
-     * Private function because we don't want for now 1 Way portal candy
-     *
-     * @see #PortalCandy(Coordinate, Cell, Coordinate) for creating portal candy
-     */
-    private PortalCandy(Coordinate location) {
-        super(CandyPowerType.Location);
+    public PortalCandy(Coordinate location) {
+        super(CandyPowerType.Location, 0);
         this.location = location;
     }
 
-    public PortalCandy(Coordinate location, Cell otherCell, Coordinate myLocation) {
-        super(CandyPowerType.Location);
-        this.location = location;
-
-        this.addOtherCellTeleportCandy(otherCell, myLocation, () -> new PortalCandy(myLocation));
+    public PortalCandy(int timeToLive, Coordinate location) {
+        this(0, timeToLive, location);
     }
 
-    /**
-     * Portal Candy Constructor
-     *
-     * @param location   location of where the candy is teleporting you
-     * @param timeToLive Time until the candy expired
-     *
-     * Private function because we don't want for now 1 Way portal candy
-     *
-     * @see #PortalCandy(int, Coordinate, Cell, Coordinate) for creating portal candy
-     */
-    private PortalCandy(Coordinate location, int timeToLive) {
-        super(CandyPowerType.Location, timeToLive);
+    public PortalCandy(int candyStrength, int timeToLive, Coordinate location) {
+        super(CandyPowerType.Location, candyStrength, timeToLive);
         this.location = location;
-    }
-
-    public PortalCandy(int timeToLive, Coordinate location, Cell otherCell, Coordinate myLocation) {
-        super(CandyPowerType.Location, timeToLive);
-        this.location = location;
-
-        this.addOtherCellTeleportCandy(otherCell, myLocation, () -> new PortalCandy(myLocation, timeToLive));
     }
 
     // endregion
 
-    private void addOtherCellTeleportCandy(Cell cell, Coordinate myLocation, NoArgsCallbackFunction<PortalCandy> createCandy) {
-
-        if (cell == null) {
-            throw new IllegalArgumentException("cell can't be null");
-        }
-
-        if (myLocation == null) {
-            throw new IllegalArgumentException("myLocation can't be null");
-        }
-
-        if (myLocation.getRow() < 0) {
-            throw new IllegalArgumentException("myLocation row can't be negative");
-        }
-
-        if (myLocation.getColumn() < 0) {
-            throw new IllegalArgumentException("myLocation column can't be negative");
-        }
-
-        if (cell.getCandies().stream().noneMatch(candy ->
-                candy instanceof PortalCandy &&
-                        candy.isGood == isGood &&
-                        candy.timeToLive == timeToLive &&
-                        ((PortalCandy) candy).twoWayPortal &&
-                        ((PortalCandy) candy).location != null &&
-                        (((PortalCandy) candy).location == myLocation ||
-                                (((PortalCandy) candy).location.equals(myLocation))))) {
-            cell.addCandy(createCandy.run());
-        }
+    private boolean equalsWithCustomLocation(Candy candy) {
+        return this.equalsWithoutLocation(candy) &&
+                this.location != null &&
+                this.location.equals(((PortalCandy) candy).location);
     }
 
     @Override
@@ -108,16 +46,119 @@ public class PortalCandy extends Candy {
 
     // region Getter & Setter
 
-    public boolean isTwoWayPortal() {
-        return twoWayPortal;
-    }
-
     public Coordinate getLocation() {
         return location;
     }
 
     public void setLocation(Coordinate location) {
         this.location = location;
+    }
+
+    // endregion
+
+    public boolean equalsWithoutLocation(Object candy) {
+        return super.equals(candy) && candy instanceof PortalCandy;
+    }
+
+    @Override
+    public boolean equals(Object candy) {
+        return super.equals(candy) &&
+                candy instanceof PortalCandy &&
+                Coordinate.equals(this.location, ((PortalCandy) candy).location);
+    }
+
+    // region Builder
+
+    public static class Builder extends Candy.Builder {
+        /**
+         * Current Candy location
+         * Used for create the candy in the other side cell
+         */
+        private Coordinate myLocation;
+        private Cell otherSideCell;
+
+        /**
+         * Where the candy will portal
+         */
+        private Coordinate otherSideLocation;
+
+        public static Builder create() {
+            return new Builder();
+        }
+
+        private Builder() {
+            super();
+
+            this.type = CandyPowerType.Location;
+        }
+
+        // region Setters
+
+        public Builder setMyLocation(Coordinate myLocation) {
+            this.myLocation = myLocation;
+            return this;
+        }
+
+        public Builder setOtherSideCell(Cell otherSideCell) {
+            this.otherSideCell = otherSideCell;
+            return this;
+        }
+
+        public Builder setOtherSideLocation(Coordinate otherSideLocation) {
+            this.otherSideLocation = otherSideLocation;
+            return this;
+        }
+
+        // endregion
+
+        @Override
+        public PortalCandy build() {
+            PortalCandy thisCandy = new PortalCandy(candyStrength, timeToLive, this.otherSideLocation);
+
+            if (otherSideCell != null && this.myLocation != null) {
+                this.addOtherCellTeleportCandy(thisCandy);
+            }
+
+            return thisCandy;
+        }
+
+
+        private void addOtherCellTeleportCandy(PortalCandy currentCandy) {
+            assert otherSideCell != null && this.myLocation != null;
+
+            if (!isThereAlreadyPortalCandyToMyLocation(currentCandy)) {
+                otherSideCell.addCandy(cloneBuilderToOtherSideCandy());
+            }
+        }
+
+        private boolean isThereAlreadyPortalCandyToMyLocation(PortalCandy currentCandy) {
+            return otherSideCell
+                    .getCandies()
+                    .stream()
+                    .anyMatch(candy ->
+                            candy.getType() == currentCandy.getType() &&
+                                    candy instanceof PortalCandy &&
+                                    myLocation.equals(((PortalCandy) candy).getLocation()));
+        }
+
+        private PortalCandy cloneBuilderToOtherSideCandy() {
+            return this.clone()
+                    .setMyLocation(null)
+                    .setOtherSideCell(null)
+                    .setOtherSideLocation(myLocation)
+                    .build();
+        }
+
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
+        @Override
+        public Builder clone() {
+            return (Builder) Builder.create()
+                    .setOtherSideLocation(otherSideLocation == null ? null : otherSideLocation.clone())
+                    .setOtherSideCell(otherSideCell)
+                    .setMyLocation(myLocation == null ? null : myLocation.clone())
+                    .setCandyStrength(candyStrength)
+                    .setTimeToLive(timeToLive);
+        }
     }
 
     // endregion

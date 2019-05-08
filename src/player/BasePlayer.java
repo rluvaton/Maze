@@ -4,6 +4,13 @@ import Helpers.Coordinate;
 import Helpers.Direction;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import player.exceptions.InvalidDirectionException;
+import player.exceptions.PlayerNotRunning;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static Helpers.Utils.Instance;
 
@@ -13,13 +20,14 @@ import static Helpers.Utils.Instance;
  */
 public class BasePlayer
 {
-
     // region Variables
 
     /**
      * Player name
      */
     private String name;
+
+    Subject<Boolean> onFinish = PublishSubject.create();
 
     /**
      * Subject for where the player move
@@ -53,6 +61,8 @@ public class BasePlayer
 
     private static int count = 1;
 
+    private final Map<Direction, Runnable> directionActions = this.createDirectionActions();
+
     // endregion
 
     /**
@@ -76,29 +86,33 @@ public class BasePlayer
         this.location = location;
     }
 
+
+    /**
+     * Create Action for each direction
+     * @return Map with all the directions and the actions
+     */
+    private Map<Direction, Runnable> createDirectionActions() {
+        Map<Direction, Runnable> keyAssignment = new HashMap<>();
+
+        keyAssignment.put(Direction.UP, this::up);
+        keyAssignment.put(Direction.DOWN, this::down);
+        keyAssignment.put(Direction.RIGHT, this::right);
+        keyAssignment.put(Direction.LEFT, this::left);
+
+        return keyAssignment;
+    }
+
     /**
      * Move at direction
      *
      * @param direction direction to move
      */
-    public void move(Direction direction) {
-        switch (direction) {
-            case TOP:
-                this.top();
-                break;
-            case RIGHT:
-                this.right();
-                break;
-            case BOTTOM:
-                this.bottom();
-                break;
-            case LEFT:
-                this.left();
-                break;
-            default:
-                System.out.println("Direction not recognized: " + direction);
-                break;
+    public void move(Direction direction) throws InvalidDirectionException {
+        if(!this.directionActions.containsKey(direction)) {
+            throw new InvalidDirectionException(direction);
         }
+
+        this.directionActions.get(direction).run();
     }
 
     /**
@@ -113,8 +127,8 @@ public class BasePlayer
     /**
      * Move Top
      */
-    public void top() {
-        this.notifyMoved(Direction.TOP);
+    public void up() {
+        this.notifyMoved(Direction.UP);
     }
 
     /**
@@ -127,8 +141,8 @@ public class BasePlayer
     /**
      * Move Bottom
      */
-    public void bottom() {
-        this.notifyMoved(Direction.BOTTOM);
+    public void down() {
+        this.notifyMoved(Direction.DOWN);
     }
 
     /**
@@ -138,8 +152,12 @@ public class BasePlayer
         this.notifyMoved(Direction.LEFT);
     }
 
-    public void onPlayerTeleported() {
+    public void onPlayerTeleported() throws PlayerNotRunning {
 
+    }
+
+    public void onPlayerFinished() {
+        this.onFinish.onNext(true);
     }
 
     // region Getter & Setter
@@ -176,7 +194,7 @@ public class BasePlayer
     }
 
     public void setLocation(Direction direction) {
-        Coordinate nextLocation = Instance.getNextLocation(this.location, direction);
+        Coordinate nextLocation = Instance.moveCoordinatesToDirection(this.location, direction);
 
         prevLocation = this.location;
 

@@ -1,9 +1,6 @@
 package Maze;
 
-import Helpers.Coordinate;
-import Helpers.Direction;
-import Helpers.Tuple;
-import Helpers.Utils;
+import Helpers.*;
 import Maze.Candy.*;
 import Maze.Solver.Adapter.SolverAdapter;
 import Maze.Solver.BFS.BFSSolverAdapter;
@@ -58,7 +55,28 @@ public class Maze {
      * @param mazeData DFS cells
      */
     public Maze(Cell[][] mazeData) {
+        assert mazeData != null;
+
         this.mazeData = mazeData;
+        this.height = mazeData.length;
+
+        if (mazeData.length > 0) {
+            this.width = mazeData[0].length;
+        }
+
+        this.getELocationsFromMazeData();
+    }
+
+    /**
+     * Create Maze from cells
+     *
+     * @param mazeData DFS cells
+     */
+    public Maze(Cell[][] mazeData, List<ELocation> entrances, List<ELocation> exits) {
+        this(mazeData);
+
+        this.entrances = entrances;
+        this.exits = exits;
     }
 
     /**
@@ -120,6 +138,35 @@ public class Maze {
     }
 
     // endregion
+
+    private void getELocationsFromMazeData() {
+        for (Cell[] row : this.mazeData) {
+            for (Cell cell : row) {
+                if(cell == null) {
+                    continue;
+                }
+
+                Map<Direction, ELocation> eLocationNeighbors = cell.getELocationNeighbors();
+                addELocationNeighborsToList(eLocationNeighbors);
+            }
+        }
+    }
+
+    private void addELocationNeighborsToList(Map<Direction, ELocation> eLocationNeighbors) {
+        eLocationNeighbors.forEach((direction, eLocation) -> {
+            ELocationType eLocationType = eLocation.getType();
+            switch (eLocationType) {
+                case Entrance:
+                    this.entrances.add(eLocation);
+                    break;
+                case Exit:
+                    this.exits.add(eLocation);
+                    break;
+                default:
+                    break;
+            }
+        });
+    }
 
     // region Maze Init
 
@@ -204,7 +251,7 @@ public class Maze {
         Direction[] directions = Direction.values();
 
         // Create Coordinate of the current location
-        Coordinate currLoc = new Coordinate(Instance.getRandomNumber(height), Instance.getRandomNumber(width));
+        Coordinate currLoc = RandomHelper.generateCoordinate(height, width);
 
         // Push to the createRunningThread of the steps
         steps.push(currLoc);
@@ -221,16 +268,22 @@ public class Maze {
             } else {
                 visited++;
                 steps.push(currLoc);
-                currLoc = Instance.getNextLocation(currLoc, nextDirection);
+                currLoc = Instance.moveCoordinatesToDirection(currLoc, nextDirection);
+            }
+        }
+
+        for (Cell[] cellArr : this.mazeData) {
+            for (Cell cell : cellArr) {
+                if (cell.haveAllWalls()) {
+                    System.out.println("Cell neighbors ");
+                }
             }
         }
 
         this.generateRandomCandies((width * height) / 10, false);
-
-        // Add candies to the candy list
-        this.addToCandyList(true);
-
-        this.initCellsNeighbors();
+//
+//        // Add candies to the candy list
+//        this.addToCandyList(true);
 
         // MUST BE AFTER INIT CELL NEIGHBORS BECAUSE THE GENERATION USE THE CELL NEIGHBORS
         this.generateELocations(numberOfEntrance, numberOfExists, minDistance);
@@ -239,14 +292,6 @@ public class Maze {
     }
 
     // endregion
-
-    private void initCellsNeighbors() {
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                this.mazeData[i][j].setNeighbors(this.searchCellNeighbors(i, j));
-            }
-        }
-    }
 
     /**
      * Generate Entrances and Exits
@@ -280,6 +325,7 @@ public class Maze {
 
         this.exits = exits.stream().map(loc -> createELocations(loc, height, width, ELocationType.Exit)).collect(
                 Collectors.toList());
+        System.out.println("entrances " + entrances.size() + ", exits " + exits.size());
     }
 
     /**
@@ -322,30 +368,30 @@ public class Maze {
 
         int locationRow = loc.getRow(), locationCol = loc.getColumn();
 
-        // If the x value (item 1) in the cell is at the top maze
+        // If the x value (item 1) in the cell is at the top of the maze
         if (locationRow == 0) {
-            this.mazeData[locationRow][locationCol].setTopWall(false);
-            dir = Direction.TOP;
+            dir = Direction.UP;
         }
         // If the x value (item 1) in the cell is at the bottom of the maze
         else if (locationRow == height - 1) {
-            this.mazeData[locationRow][locationCol].setBottomWall(false);
-            dir = Direction.BOTTOM;
+            dir = Direction.DOWN;
         }
         // If the y value (item 2) in the cell is at the left maze
         else if (locationCol == 0) {
-            this.mazeData[locationRow][locationCol].setLeftWall(false);
             dir = Direction.LEFT;
         }
         // If the y value (item 2) in the cell is at the right maze
         else if (locationCol == width - 1) {
-            this.mazeData[locationRow][locationCol].setRightWall(false);
             dir = Direction.RIGHT;
         } else {
             System.out.println("The Enter / Exit location is not at the maze's borders");
+            return null;
         }
 
-        return new ELocation(loc, dir, type);
+        ELocation eLocation = new ELocation(loc, dir, type);
+
+        this.getCell(loc).setELocationAsNeighbor(eLocation);
+        return eLocation;
     }
 
     /**
@@ -379,19 +425,19 @@ public class Maze {
     }
 
     private Coordinate generateRandomCoordinateAtBorder() {
-        return (Instance.getRandomState())
+        return (RandomHelper.getRandomState())
                 ? this.generateRandomCoordinateAtHorizontalBorder()
                 : this.generateRandomCoordinateAtVerticalBorder();
     }
 
     private Coordinate generateRandomCoordinateAtHorizontalBorder() {
         // Random coordinate that is either in the left or the right border
-        return new Coordinate(Instance.getRandomNumber(height), Instance.getRandomNumber(2) * (width - 1));
+        return new Coordinate(RandomHelper.getRandomNumber(height), RandomHelper.getRandomNumber(2) * (width - 1));
     }
 
     private Coordinate generateRandomCoordinateAtVerticalBorder() {
         // Random coordinate that is either in the top or the bottom border
-        return new Coordinate(Instance.getRandomNumber(2) * (height - 1), Instance.getRandomNumber(width));
+        return new Coordinate(RandomHelper.getRandomNumber(2) * (height - 1), RandomHelper.getRandomNumber(width));
     }
 
     private boolean coordinateExistInList(List<Coordinate> coordinates, Coordinate coordinate) {
@@ -438,12 +484,10 @@ public class Maze {
     private LinkedList<Tuple<Cell, Direction>> searchCellNeighbors(int cellRow, int cellCol) {
         Cell cell = this.mazeData[cellRow][cellCol];
         LinkedList<Tuple<Cell, Direction>> neighbors = new LinkedList<>();
-        Direction direction;
 
-        for (Map.Entry<Direction, Coordinate> entry : Utils.DIRECTIONS.entrySet()) {
-            direction = entry.getKey();
+        for (Direction direction : Direction.values()) {
             if (cell.haveCellAtDirection(direction)) {
-                neighbors.add(new Tuple<>(this.getCell(Instance.getNextLocation(cellRow, cellCol, entry.getValue())), direction));
+                neighbors.add(new Tuple<>(this.getCell(Instance.moveCoordinatesToDirection(cellRow, cellCol, direction)), direction));
             }
         }
 
@@ -469,15 +513,19 @@ public class Maze {
         int size = directionAvailable.size();
 
         while (size > 0) {
-            selected = directionAvailable.get(Instance.getRandomNumber(size));
+            selected = directionAvailable.get(RandomHelper.getRandomNumber(size));
 
-            nextLoc = Instance.getNextLocation(loc, selected);
+            nextLoc = Instance.moveCoordinatesToDirection(loc, selected);
 
-            if (Instance.inBounds(nextLoc, height, width) &&
-                    this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
-                    this.mazeData[loc.getRow()][loc.getColumn()].setCellAtDirection(
-                            this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], selected, force, update)) {
-                return selected;
+            try {
+                if (Instance.inBounds(nextLoc, height, width) &&
+                        this.mazeData[nextLoc.getRow()][nextLoc.getColumn()].haveAllWalls() &&
+                        this.mazeData[loc.getRow()][loc.getColumn()].setCellAtDirection(
+                                selected, this.mazeData[nextLoc.getRow()][nextLoc.getColumn()], force, update)) {
+                    return selected;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
             directionAvailable.remove(selected);
@@ -494,7 +542,7 @@ public class Maze {
     /**
      * Generate Random candies that all of them are good
      *
-     * @param count count of candies to generate
+     * @param count count of candies to generateMaze
      */
     private void generateRandomCandies(int count) {
         this.generateRandomCandies(count, true);
@@ -503,7 +551,7 @@ public class Maze {
     /**
      * Generate random candies that if isAllGood property is false can be some bad candies too
      *
-     * @param count            Count of candies to generate
+     * @param count            Count of candies to generateMaze
      * @param generateOnlyGood Is all the candies that gonna be generated will be only good or to random
      */
     private void generateRandomCandies(int count, boolean generateOnlyGood) {
@@ -511,12 +559,12 @@ public class Maze {
         Cell cell;
 
         for (int i = 0; i < count; i++) {
-            cellLoc = Utils.Instance.generateCoordinate(this.height, this.width);
+            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(null,
                     new Tuple<>(!generateOnlyGood, true),
-                    new Tuple<>(Instance.getRandomState(), null),
+                    new Tuple<>(RandomHelper.getRandomState(), null),
                     null,
                     null,
                     cellLoc));
@@ -547,7 +595,7 @@ public class Maze {
         Cell cell;
 
         for (int i = 0; i < pointsCount; i++) {
-            cellLoc = Utils.Instance.generateCoordinate(this.height, this.width);
+            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Points},
@@ -559,7 +607,7 @@ public class Maze {
         }
 
         for (int i = 0; i < timeCount; i++) {
-            cellLoc = Utils.Instance.generateCoordinate(this.height, this.width);
+            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Time},
@@ -571,7 +619,7 @@ public class Maze {
         }
 
         for (int i = 0; i < portalCount; i++) {
-            cellLoc = Utils.Instance.generateCoordinate(this.height, this.width);
+            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
             cell = this.getCell(cellLoc);
 
             cell.addCandy(this.generateSingleCandy(new CandyPowerType[]{CandyPowerType.Location},
@@ -600,7 +648,7 @@ public class Maze {
      * (for parameters that the second item is a tuple too than his first item is the value)
      * <p>
      * If the first value is false and the type of the second item is tuple than the tuple values will be the range for this property
-     * @example I want to generate a candy that:
+     * @example I want to generateMaze a candy that:
      * - isGood is true
      * - time to live is randomize between 1 to 5 seconds
      * - strengthPower is 5
@@ -623,18 +671,19 @@ public class Maze {
 
         types = types != null ? types : CandyPowerType.values();
 
-        type = types[Utils.Instance.getRandomNumber(types.length)];
+        type = types[RandomHelper.getRandomNumber(types.length)];
 
-        boolean isGoodVal = isGood == null || (isGood.item1 ? Utils.Instance.getRandomState() : isGood.item2);
+        boolean isGoodVal = isGood == null || (isGood.item1 ? RandomHelper.getRandomState() : isGood.item2);
 
         // In case of timeToLive is null then it will set no time to live,
         int timeToLiveVal;
-        if (timeToLive == null) timeToLiveVal = -1;
-        else timeToLiveVal = timeToLive.item1
+        if (timeToLive == null) {
+            timeToLiveVal = -1;
+        } else timeToLiveVal = timeToLive.item1
                 ? ((timeToLive.item2 == null)
-                ? (Utils.Instance.getRandomNumber(1,
+                ? (RandomHelper.getRandomNumber(1,
                 20) * 1000)
-                : (Utils.Instance.getRandomNumber(timeToLive.item2.item1 == null
+                : (RandomHelper.getRandomNumber(timeToLive.item2.item1 == null
                         ? 1
                         : timeToLive.item2.item1,
                 timeToLive.item2.item2 == null
@@ -645,31 +694,33 @@ public class Maze {
         int strengthPowerVal = strengthPower == null
                 ? 1000
                 : strengthPower.item1
-                ? Utils.Instance.getRandomNumber(strengthPower.item2.item1,
+                ? RandomHelper.getRandomNumber(strengthPower.item2.item1,
                 strengthPower.item2.item2)
                 : strengthPower.item2 != null ? strengthPower.item2.item1 : 1000;
 
+        strengthPowerVal = (isGoodVal ? 1 : -1) * Math.abs(strengthPowerVal);
+
         switch (type) {
             case Time:
-                return new TimeCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
+                return new TimeCandy(strengthPowerVal, timeToLiveVal);
             case Points:
-                return new PointsCandy(isGoodVal, strengthPowerVal, timeToLiveVal);
+                return new PointsCandy(strengthPowerVal, timeToLiveVal);
             case Location:
-
                 Coordinate otherCellLocationVal = otherCellLocation == null
-                        ? Utils.Instance.generateCoordinate(height,
+                        ? RandomHelper.generateCoordinate(height,
                         width)
                         : otherCellLocation.item1
                         ? otherCellLocation.item2.clone()
                         : otherCellLocation.item2 != null
                         ? otherCellLocation.item2
-                        : Utils.Instance.generateCoordinate(height, width);
+                        : RandomHelper.generateCoordinate(height, width);
 
-                return new PortalCandy(timeToLiveVal,
-                        otherCellLocationVal,
-                        this.getCell(otherCellLocationVal),
-                        cellLoc);
-
+                return PortalCandy.Builder.create()
+                        .setOtherSideLocation(otherCellLocationVal)
+                        .setOtherSideCell(this.getCell(otherCellLocationVal))
+                        .setMyLocation(cellLoc)
+                        .setTimeToLive(timeToLiveVal)
+                        .build();
             default:
                 return null;
         }
@@ -690,7 +741,7 @@ public class Maze {
         Cell destCell = this.getCell(location);
 
 
-        return (destCell == null || this.getCell(Instance.getNextLocation(location,
+        return (destCell == null || this.getCell(Instance.moveCoordinatesToDirection(location,
                 direction)) == null || !destCell.haveCellAtDirection(
                 direction)) ? null : direction;
     }
@@ -705,7 +756,7 @@ public class Maze {
     public Cell checkIfValidMoveCell(Coordinate location, Direction direction) {
         Cell destCell = this.getCell(location);
 
-        Cell nextCell = destCell != null ? this.getCell(Instance.getNextLocation(location, direction)) : null;
+        Cell nextCell = destCell != null ? this.getCell(Instance.moveCoordinatesToDirection(location, direction)) : null;
 
         return (destCell == null || nextCell == null || !destCell.haveCellAtDirection(
                 direction)) ? null : nextCell;
@@ -796,7 +847,7 @@ public class Maze {
     public ELocation getRandomEntrance() {
         return entrances == null || entrances.size() == 0
                 ? null
-                : entrances.get(Instance.getRandomNumber(entrances.size()));
+                : entrances.get(RandomHelper.getRandomNumber(entrances.size()));
     }
 
     public List<ELocation> getEntrances() {
