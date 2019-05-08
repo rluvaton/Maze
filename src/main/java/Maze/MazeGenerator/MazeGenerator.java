@@ -10,6 +10,7 @@ import Maze.Candy.PortalCandy;
 import Maze.Cell;
 import Maze.ELocationType;
 import Maze.Maze;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.IMazeBuilder;
 import Maze.MazeBuilder.IMazeBuilder.ELocationBaseData;
 import Maze.MazeGenerator.Exceptions.CandyBuilderException;
@@ -186,7 +187,12 @@ public class MazeGenerator {
         }
 
         Coordinate eLocationPos = optionalELocation.getPos();
-        Maze maze = this.mazeBuilder.getMaze();
+        Maze maze = null;
+        try {
+            maze = this.mazeBuilder.getMaze();
+        } catch (MazeBuilderException e) {
+            e.printStackTrace();
+        }
 
         ArrayList<ELocationBaseData> sameELocationTypes;
         ArrayList<ELocationBaseData> diffELocationTypes;
@@ -199,8 +205,9 @@ public class MazeGenerator {
             diffELocationTypes = entrances;
         }
 
+        Maze finalMaze = maze;
         return sameELocationTypes.stream().noneMatch(optionalELocation::equals) &&
-                diffELocationTypes.stream().allMatch((diffELocationType) -> !optionalELocation.equals(diffELocationType) && validateELocationHasMinDistance(maze, diffELocationType, eLocationPos, minDistance));
+                diffELocationTypes.stream().allMatch((diffELocationType) -> !optionalELocation.equals(diffELocationType) && validateELocationHasMinDistance(finalMaze, diffELocationType, eLocationPos, minDistance));
     }
 
     private boolean validateELocationHasMinDistance(Maze maze, ELocationBaseData diffELocationType, Coordinate eLocationPos, int minDistance) {
@@ -319,7 +326,7 @@ public class MazeGenerator {
 
     // endregion
 
-    public Maze create() {
+    public Maze create() throws MazeBuilderException {
         return this.mazeBuilder.getMaze();
     }
 

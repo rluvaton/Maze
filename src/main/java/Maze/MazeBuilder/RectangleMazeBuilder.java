@@ -7,13 +7,14 @@ import Maze.Maze;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Cell;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 
 import java.util.Arrays;
 import java.util.Collection;
 
 import static Helpers.Utils.Instance;
 
-public class RectangleMaze extends BaseMazeBuilder {
+public class RectangleMazeBuilder extends BaseMazeBuilder {
     private Cell[][] mazeData;
 
     private int height;
@@ -109,7 +110,10 @@ public class RectangleMaze extends BaseMazeBuilder {
     }
 
     @Override
-    public Maze getMaze() {
+    public Maze getMaze() throws MazeBuilderException {
+        if(totalBuiltCell < height * width) {
+            throw new MazeBuilderException(this, "Not all cells have been built");
+        }
         return new Maze(this.mazeData);
     }
 

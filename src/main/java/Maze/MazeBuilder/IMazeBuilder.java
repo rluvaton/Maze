@@ -5,6 +5,7 @@ import Helpers.Direction;
 import Maze.Candy.Candy;
 import Maze.Maze;
 import Maze.Cell;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 
 import java.util.Collection;
 
@@ -38,7 +39,7 @@ public interface IMazeBuilder {
 
     IMazeBuilder buildManyExits(Collection<ELocationBaseData> exits);
 
-    Maze getMaze();
+    Maze getMaze() throws MazeBuilderException;
 
     Cell getCellAtPosition(Coordinate position);
 

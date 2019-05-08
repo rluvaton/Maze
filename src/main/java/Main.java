@@ -1,8 +1,8 @@
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
-import Maze.Candy.CandyPowerType;
 import Maze.Maze;
-import Maze.MazeBuilder.RectangleMaze;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
+import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import UI.MazePreviewPanel;
@@ -37,11 +37,15 @@ public class Main {
 
             Maze maze;
 
-//            maze = new Maze(height, width, minDistance, 2, 1);
-            maze = new MazeGenerator(new RectangleMaze(), new BFSSolverAdapter())
-                    .generateMaze(height, width, minDistance, 2, 2)
-                    .generateRandomCandies((int) getTotalCandiesCountForMaze(height, width))
-                    .create();
+            try {
+                maze = new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
+                        .generateMaze(height, width, minDistance, 2, 2)
+                        .generateRandomCandies((int) getTotalCandiesCountForMaze(height, width), true)
+                        .create();
+            } catch (MazeBuilderException e) {
+                e.printStackTrace();
+                return;
+            }
 
             MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, new BasePlayer[]{new HumanPlayer(new Coordinate(0, 0)), new ComputerPlayer(new Coordinate(0, 0))}, true);
             mazePreviewPanel.setFocusable(true);
