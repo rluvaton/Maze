@@ -3,64 +3,53 @@ package Maze.MazeBuilder;
 import Helpers.Coordinate;
 import Maze.Cell;
 import Maze.Maze;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class RectangleMazeTest {
+class RectangleMazeBuilderTest {
 
     @Test
     void buildMazeSkeleton() {
-        RectangleMaze rectangleMaze = new RectangleMaze();
+        RectangleMazeBuilder rectangleMazeBuilder = new RectangleMazeBuilder();
 
-        assertNotNull(rectangleMaze);
+        assertNotNull(rectangleMazeBuilder);
         int height = 5;
         int width = 5;
-        assertEquals(rectangleMaze, rectangleMaze.buildMazeSkeleton(height, width));
+        assertEquals(rectangleMazeBuilder, rectangleMazeBuilder.buildMazeSkeleton(height, width));
 
-        assertNotNull(rectangleMaze);
+        assertNotNull(rectangleMazeBuilder);
 
-        try {
-            rectangleMaze.getMaze();
+        assertThrows(MazeBuilderException.class, rectangleMazeBuilder::getMaze);
 
-            //noinspection ObviousNullCheck
-            assertNotNull("Shouldn't arrive here (show throw in get maze)");
-        } catch (Exception e) {
-            assertNotNull(e);
-        }
-
-        Maze maze = rectangleMaze.getMaze();
-        assertNotNull(maze);
-
-        assertEquals(height, maze.getHeight());
-        assertEquals(width, maze.getWidth());
-
-        Cell[][] mazeData = maze.getMazeData();
-
-        assertEquals(height, mazeData.length);
-
-        for (Cell[] row : mazeData) {
-            assertEquals(width, row.length);
-
-            for (Cell cell : row) {
-                assertNull(cell);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                assertNull(rectangleMazeBuilder.getCellAtPosition(new Coordinate(i, j)));
             }
         }
     }
 
     @Test
     void buildAllCellsAsEmpty() {
-        RectangleMaze rectangleMaze = new RectangleMaze();
+        RectangleMazeBuilder rectangleMazeBuilder = new RectangleMazeBuilder();
 
-        assertNotNull(rectangleMaze);
+        assertNotNull(rectangleMazeBuilder);
         int height = 5;
         int width = 5;
-        rectangleMaze
+        rectangleMazeBuilder
                 .buildMazeSkeleton(height, width)
                 .buildAllCellsAsEmpty();
 
-        Maze maze = rectangleMaze.getMaze();
+        assertDoesNotThrow(rectangleMazeBuilder::getMaze);
+
+        Maze maze = null;
+        try {
+            maze = rectangleMazeBuilder.getMaze();
+        } catch (MazeBuilderException e) {
+            e.printStackTrace();
+        }
+
         assertNotNull(maze);
 
         assertEquals(height, maze.getHeight());
