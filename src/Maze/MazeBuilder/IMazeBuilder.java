@@ -42,6 +42,8 @@ public interface IMazeBuilder {
 
     Cell getCellAtPosition(Coordinate position);
 
+    int getTotalBuiltCells();
+
     class ELocationBaseData {
         private Coordinate pos;
         private Direction direction;

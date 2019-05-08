@@ -19,6 +19,8 @@ public class RectangleMaze extends BaseMazeBuilder {
     private int height;
     private int width;
 
+    private int totalBuiltCell = 0;
+
     @Override
     public IMazeBuilder buildMazeSkeleton(int height, int width) {
         this.mazeData = new Cell[height][width];
@@ -36,6 +38,7 @@ public class RectangleMaze extends BaseMazeBuilder {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 this.mazeData[i][j] = new Cell(i, j);
+                totalBuiltCell++;
             }
         }
 
@@ -46,6 +49,8 @@ public class RectangleMaze extends BaseMazeBuilder {
     public IMazeBuilder buildCell(Coordinate position) {
         assert position != null;
         this.mazeData[position.getRow()][position.getColumn()] = new Cell(position);
+
+        totalBuiltCell++;
 
         return this;
     }
@@ -60,6 +65,8 @@ public class RectangleMaze extends BaseMazeBuilder {
 
         this.mazeData[row][col] = new Cell(position);
         this.mazeData[row][col].addCandies(candies);
+
+        totalBuiltCell++;
 
         return this;
     }
@@ -103,7 +110,6 @@ public class RectangleMaze extends BaseMazeBuilder {
 
     @Override
     public Maze getMaze() {
-        // TODO - add ELocations and more
         return new Maze(this.mazeData);
     }
 
@@ -111,5 +117,10 @@ public class RectangleMaze extends BaseMazeBuilder {
     public Cell getCellAtPosition(Coordinate pos) {
         assert pos != null;
         return this.mazeData[pos.getRow()][pos.getColumn()];
+    }
+
+    @Override
+    public int getTotalBuiltCells() {
+        return totalBuiltCell;
     }
 }

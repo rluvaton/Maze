@@ -12,6 +12,8 @@ import Maze.ELocationType;
 import Maze.Maze;
 import Maze.MazeBuilder.IMazeBuilder;
 import Maze.MazeBuilder.IMazeBuilder.ELocationBaseData;
+import Maze.MazeGenerator.Exceptions.CandyBuilderException;
+import Maze.MazeGenerator.Exceptions.PortalCandyBuilderException;
 import Maze.Solver.Adapter.SolverAdapter;
 
 import java.util.ArrayList;
@@ -221,14 +223,23 @@ public class MazeGenerator {
     // region Generate Random Candies
 
     public MazeGenerator generateRandomCandies(int count) {
-        return generateRandomCandies(count, false);
+        return generateRandomCandies(CandyPowerType.values(), count, false);
+    }
+
+    public MazeGenerator generateRandomCandies(CandyPowerType type, int count) {
+        return generateRandomCandies(new CandyPowerType[]{type}, count, false);
     }
 
     public MazeGenerator generateRandomCandies(int count, boolean generateOnlyGood) {
+        return generateRandomCandies(CandyPowerType.values(), count, generateOnlyGood);
+    }
+
+    public MazeGenerator generateRandomCandies(CandyPowerType[] types, int count, boolean generateOnlyGood) {
         Coordinate cellLoc;
         Cell cell;
 
-        GenerateCandyConfig config = new GenerateCandyConfig();
+        GenerateCandyConfig config = new GenerateCandyConfig()
+                .setTypes(types);
 
         if (generateOnlyGood) {
             config.setStrengthPower(new IntegerConfiguration(1, 1000));
@@ -239,13 +250,24 @@ public class MazeGenerator {
             cell = this.mazeBuilder.getCellAtPosition(cellLoc);
 
             config.setCellLoc(cellLoc);
-            cell.addCandy(this.generateSingleCandy(config));
+            Candy candy = null;
+
+            try {
+                candy = this.generateSingleCandy(config);
+            } catch (CandyBuilderException e) {
+                i--;
+                continue;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            cell.addCandy(candy);
         }
 
         return this;
     }
 
-    private Candy generateSingleCandy(GenerateCandyConfig config) {
+    private Candy generateSingleCandy(GenerateCandyConfig config) throws CandyBuilderException {
         assert config != null;
 
         // The type of the candy that gonna be generated
@@ -262,18 +284,33 @@ public class MazeGenerator {
         return builder.build();
     }
 
-    private void buildForPortalCandy(GenerateCandyConfig config, Candy.Builder builder) {
+    private void buildForPortalCandy(GenerateCandyConfig config, Candy.Builder builder) throws PortalCandyBuilderException {
         Coordinate otherCellLocation = config.getOtherCellLocation();
 
-        if (otherCellLocation == null || !Instance.inBounds(otherCellLocation, height, width)) {
+        int totalBuiltCells = mazeBuilder.getTotalBuiltCells() * 2;
+        int i = 0;
+
+        while (!isPortalCandyCoordinatesValid(otherCellLocation) && totalBuiltCells > i) {
             otherCellLocation = RandomHelper.generateCoordinate(height, width);
-            config.setOtherCellLocation(otherCellLocation);
+            i++;
         }
+
+        if (totalBuiltCells <= i) {
+            throw new PortalCandyBuilderException("Couldn't generate good coordinates for portal candy", (PortalCandy.Builder) builder);
+        }
+
+        config.setOtherCellLocation(otherCellLocation);
 
         ((PortalCandy.Builder) (builder))
                 .setOtherSideLocation(otherCellLocation)
                 .setOtherSideCell(mazeBuilder.getCellAtPosition(otherCellLocation))
                 .setMyLocation(config.getCellLoc());
+    }
+
+    private boolean isPortalCandyCoordinatesValid(Coordinate otherCellLocation) {
+        return otherCellLocation != null &&
+                Instance.inBounds(otherCellLocation, height, width) &&
+                mazeBuilder.getCellAtPosition(otherCellLocation).getCandies().stream().noneMatch(candy -> candy.getType() == CandyPowerType.Location);
     }
 
     private CandyPowerType getRandomType(CandyPowerType[] types) {

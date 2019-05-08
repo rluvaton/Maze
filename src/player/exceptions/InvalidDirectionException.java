@@ -2,10 +2,10 @@ package player.exceptions;
 
 import Helpers.Direction;
 
-public class InvalidDirection extends Exception {
+public class InvalidDirectionException extends Exception {
     private Direction direction;
 
-    public InvalidDirection(Direction direction) {
+    public InvalidDirectionException(Direction direction) {
         super("Invalid direction , " + (direction == null ? "null" : direction.toString()));
         this.direction = direction;
     }

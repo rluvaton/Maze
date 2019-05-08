@@ -6,7 +6,7 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import player.exceptions.InvalidDirection;
+import player.exceptions.InvalidDirectionException;
 import player.exceptions.PlayerNotRunning;
 
 import java.util.HashMap;
@@ -107,9 +107,9 @@ public class BasePlayer
      *
      * @param direction direction to move
      */
-    public void move(Direction direction) throws InvalidDirection {
+    public void move(Direction direction) throws InvalidDirectionException {
         if(!this.directionActions.containsKey(direction)) {
-            throw new InvalidDirection(direction);
+            throw new InvalidDirectionException(direction);
         }
 
         this.directionActions.get(direction).run();

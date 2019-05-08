@@ -126,9 +126,19 @@ public class PortalCandy extends Candy {
         private void addOtherCellTeleportCandy(PortalCandy currentCandy) {
             assert otherSideCell != null && this.myLocation != null;
 
-            if (otherSideCell.getCandies().stream().noneMatch(currentCandy::equalsWithCustomLocation)) {
+            if (!isThereAlreadyPortalCandyToMyLocation(currentCandy)) {
                 otherSideCell.addCandy(cloneBuilderToOtherSideCandy());
             }
+        }
+
+        private boolean isThereAlreadyPortalCandyToMyLocation(PortalCandy currentCandy) {
+            return otherSideCell
+                    .getCandies()
+                    .stream()
+                    .anyMatch(candy ->
+                            candy.getType() == currentCandy.getType() &&
+                                    candy instanceof PortalCandy &&
+                                    myLocation.equals(((PortalCandy) candy).getLocation()));
         }
 
         private PortalCandy cloneBuilderToOtherSideCandy() {

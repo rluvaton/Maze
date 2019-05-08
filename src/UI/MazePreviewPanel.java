@@ -1,6 +1,7 @@
 package UI;
 
 import Helpers.Coordinate;
+import Helpers.DebuggerHelper;
 import Helpers.Direction;
 import Helpers.NoArgsVoidCallbackFunction;
 import Maze.Candy.Candy;
@@ -74,6 +75,7 @@ public class MazePreviewPanel extends JPanel {
      * Maze Preview Panel Base Constructor
      */
     public MazePreviewPanel() {
+        init();
         initGame();
     }
 
@@ -84,8 +86,9 @@ public class MazePreviewPanel extends JPanel {
      * @param players Players of the maze
      */
     public MazePreviewPanel(Maze maze, BasePlayer[] players) {
-        this.maze = maze;
-        this.players = players;
+        this(maze, players, true);
+
+        init();
         initGame();
     }
 
@@ -100,33 +103,38 @@ public class MazePreviewPanel extends JPanel {
         this.maze = maze;
         this.players = players;
 
-        if (atEntrances) {
-            List<Coordinate> locations = maze.getEntrances().stream().map(eLocation ->
-                    eLocation.getLocation()).collect(Collectors.toList());
-
-            if (locations.size() == 0) {
-                initGame();
-                return;
-            }
-
-            int defaultIndex = 0;
-
-            Coordinate defaultEntrance = locations.get(defaultIndex);
-            locations.remove(defaultIndex);
-
-            Coordinate playerLoc;
-
-            for (BasePlayer player : this.players) {
-                playerLoc = defaultEntrance;
-
-                if (!locations.isEmpty()) {
-                    playerLoc = locations.get(0);
-                    locations.remove(0);
-                }
-                player.setLocation(playerLoc);
-            }
+        if (!atEntrances) {
+            setPlayerLocationAtEntrances(maze);
         }
+
+        init();
         initGame();
+    }
+
+    private void setPlayerLocationAtEntrances(Maze maze) {
+        List<Coordinate> locations = maze.getEntrances().stream().map(eLocation ->
+                eLocation.getLocation()).collect(Collectors.toList());
+
+        if (locations.size() == 0) {
+            return;
+        }
+
+        int defaultIndex = 0;
+
+        Coordinate defaultEntrance = locations.get(defaultIndex);
+        locations.remove(defaultIndex);
+
+        Coordinate playerLoc;
+
+        for (BasePlayer player : this.players) {
+            playerLoc = defaultEntrance;
+
+            if (!locations.isEmpty()) {
+                playerLoc = locations.get(0);
+                locations.remove(0);
+            }
+            player.setLocation(playerLoc);
+        }
     }
 
     /**
@@ -138,10 +146,22 @@ public class MazePreviewPanel extends JPanel {
     public MazePreviewPanel(Cell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
         this.players = players;
+
+        init();
         initGame();
     }
 
+    private void init() {
+        if (DebuggerHelper.isInDebugMode()) {
+            this.initDebugging();
+        }
+    }
+
     // endregion
+
+    private void initDebugging() {
+        this.addKeyListener(DebuggerHelper.getInstance());
+    }
 
     /**
      * Init Game
@@ -182,12 +202,13 @@ public class MazePreviewPanel extends JPanel {
                         }
                     });
 
+            // TODO - MOVE TO SINGLE FUNCTION CALL THAT WILL START START THE PLAYERS
             // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
                 startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
             } else if (player instanceof ComputerPlayer) {
                 startPlayersCallbacks.add(() -> {
-                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, getExitForComputerPlayer((ComputerPlayer) player), 100);
+                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, getExitForComputerPlayer((ComputerPlayer) player));
 
                     if (playerThread == null) {
                         System.out.println("Player " + player.getName() + " can't start running");
@@ -212,8 +233,6 @@ public class MazePreviewPanel extends JPanel {
 
     private Coordinate getExitForComputerPlayer(ComputerPlayer player) {
         return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get().getLocation();
-//        ELocation eLocationCell = this.maze.getExits().get(0);
-//        return eLocationCell.getLocation();
     }
 
     /**
@@ -276,8 +295,8 @@ public class MazePreviewPanel extends JPanel {
      * @param len   Length of each line
      * @param space Space between each lines (space between horizontal lines and space between vertical lines)
      * @param cell  Cell to pain, if null then it will paint all the walls
-     * @param row      Cell row at maze
-     * @param col      Cell column at maze
+     * @param row   Cell row at maze
+     * @param col   Cell column at maze
      */
     private void paintCell(Graphics g, int x, int y, int len, int space, Cell cell, int row, int col) {
         this.paintCell(g, x, y, len, len, space, space, cell, row, col);
@@ -326,14 +345,17 @@ public class MazePreviewPanel extends JPanel {
 
 
         ArrayList<Candy> cellCandies = cell.getCandies();
-        if (!cellCandies.isEmpty()) {
-            for (Candy candy: cellCandies) {
-                if(candy == null) {
-                    continue;
-                }
 
-                g.setColor(Color.decode(candy.getColor()));
-                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+        synchronized (cellCandies) {
+            if (!cellCandies.isEmpty()) {
+                for (Candy candy : cellCandies) {
+                    if (candy == null) {
+                        continue;
+                    }
+
+                    g.setColor(Color.decode(candy.getColor()));
+                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+                }
             }
         }
 
