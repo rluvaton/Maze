@@ -1,4 +1,4 @@
-package UI;
+package GUI;
 
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
@@ -76,7 +76,6 @@ public class MazePreviewPanel extends JPanel {
      */
     public MazePreviewPanel() {
         init();
-        initGame();
     }
 
     /**
@@ -89,7 +88,6 @@ public class MazePreviewPanel extends JPanel {
         this(maze, players, true);
 
         init();
-        initGame();
     }
 
     /**
@@ -108,7 +106,6 @@ public class MazePreviewPanel extends JPanel {
         }
 
         init();
-        initGame();
     }
 
     private void setPlayerLocationAtEntrances(Maze maze) {
@@ -148,7 +145,6 @@ public class MazePreviewPanel extends JPanel {
         this.players = players;
 
         init();
-        initGame();
     }
 
     private void init() {
@@ -168,7 +164,7 @@ public class MazePreviewPanel extends JPanel {
      *
      * @description Start listening for players movements
      */
-    private void initGame() {
+    public void initGame() {
         setBackground(Color.WHITE);
 
         ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
