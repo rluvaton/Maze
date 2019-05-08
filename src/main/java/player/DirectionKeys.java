@@ -1,7 +1,12 @@
 package player;
 
+import java.awt.event.KeyEvent;
+
 public class DirectionKeys {
     public static int NO_KEY = -1;
+
+    public static DirectionKeys DEFAULT_AS_ARROWS = new DirectionKeys(KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT);
+    public static DirectionKeys DEFAULT_AS_WASD = new DirectionKeys(KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_D, KeyEvent.VK_A);
 
     private int upKeyCode = NO_KEY;
     private int downKeyCode = NO_KEY;

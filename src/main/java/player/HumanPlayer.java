@@ -33,7 +33,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
 
     private Map<Integer, Runnable> getDefaultKeyAssignment() {
-        return this.createKeyAssignmentActions(KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT, KeyEvent.VK_LEFT);
+        return this.createKeyAssignmentActions(DirectionKeys.DEFAULT_AS_ARROWS);
     }
 
     private Map<Integer, Runnable> createKeyAssignmentActions(DirectionKeys directionKeys) {
