@@ -1,5 +1,6 @@
 package GUI.Welcome;
 
+import GUI.GuiHelper;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -44,7 +45,7 @@ public class WelcomePanel extends JPanel {
     private void initGenerateBtn() {
         generateBtn = new JButton();
 
-        Font generateBtnFont = this.getFont("Fira Code", -1, -1, generateBtn.getFont());
+        Font generateBtnFont = GuiHelper.getFont("Fira Code", -1, -1, generateBtn.getFont());
         if (generateBtnFont != null) {
             generateBtn.setFont(generateBtnFont);
         }
@@ -61,7 +62,7 @@ public class WelcomePanel extends JPanel {
     private void createStatsBtn() {
         statsBtn = new JButton();
 
-        Font statsBtnFont = this.getFont("Fira Code", -1, -1, statsBtn.getFont());
+        Font statsBtnFont = GuiHelper.getFont("Fira Code", -1, -1, statsBtn.getFont());
         if (statsBtnFont != null) {
             statsBtn.setFont(statsBtnFont);
         }
@@ -75,7 +76,7 @@ public class WelcomePanel extends JPanel {
     private void createPlayBtn(CellConstraints cc) {
         playBtn = new JButton();
 
-        Font playBtnFont = this.getFont("Fira Code", -1, -1, playBtn.getFont());
+        Font playBtnFont = GuiHelper.getFont("Fira Code", -1, -1, playBtn.getFont());
         if (playBtnFont != null) {
             playBtn.setFont(playBtnFont);
         }
@@ -90,7 +91,7 @@ public class WelcomePanel extends JPanel {
     private void createTitle(CellConstraints cc) {
         title = new JLabel();
 
-        Font titleFont = this.getFont("Source Code Pro", Font.BOLD, 18, title.getFont());
+        Font titleFont = GuiHelper.getFont("Source Code Pro", Font.BOLD, 18, title.getFont());
         if (titleFont != null) {
             title.setFont(titleFont);
         }
@@ -105,7 +106,7 @@ public class WelcomePanel extends JPanel {
     private void createMadeBy(CellConstraints cc) {
         madeBy = new JLabel();
 
-        Font madeByFont = this.getFont("Fira Code", -1, -1, madeBy.getFont());
+        Font madeByFont = GuiHelper.getFont("Fira Code", -1, -1, madeBy.getFont());
         if (madeByFont != null) {
             madeBy.setFont(madeByFont);
         }
@@ -115,24 +116,6 @@ public class WelcomePanel extends JPanel {
         madeBy.setText("Made by Raz Luvaton");
 
         this.add(madeBy, cc.xy(3, 3));
-    }
-
-    private Font getFont(String fontName, int style, int size, Font currentFont) {
-        if (currentFont == null) {
-            return null;
-        }
-        String resultName;
-        if (fontName == null) {
-            resultName = currentFont.getName();
-        } else {
-            Font testFont = new Font(fontName, Font.PLAIN, 10);
-            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
-                resultName = fontName;
-            } else {
-                resultName = currentFont.getName();
-            }
-        }
-        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
 }

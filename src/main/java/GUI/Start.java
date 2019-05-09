@@ -1,7 +1,6 @@
-package GUI.Welcome;
+package GUI;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
+import GUI.Welcome.WelcomePanel;
 
 import javax.swing.*;
 import java.awt.*;
