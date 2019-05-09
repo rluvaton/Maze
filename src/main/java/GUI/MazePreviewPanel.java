@@ -340,18 +340,16 @@ public class MazePreviewPanel extends JPanel {
         Color before = g.getColor();
 
 
-        ArrayList<Candy> cellCandies = cell.getCandies();
+        ArrayList<Candy> cellCandies = (ArrayList<Candy>) cell.getCandies().clone();
 
-        synchronized (cellCandies) {
-            if (!cellCandies.isEmpty()) {
-                for (Candy candy : cellCandies) {
-                    if (candy == null) {
-                        continue;
-                    }
-
-                    g.setColor(Color.decode(candy.getColor()));
-                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+        if (!cellCandies.isEmpty()) {
+            for (Candy candy : cellCandies) {
+                if (candy == null) {
+                    continue;
                 }
+
+                g.setColor(Color.decode(candy.getColor()));
+                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
             }
         }
 
