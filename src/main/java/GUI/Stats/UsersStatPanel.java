@@ -53,7 +53,15 @@ public class UsersStatPanel extends JPanel {
 
     private void initSingleUserStatPanel(CellConstraints cc) {
         singleUserStatPanel = new SingleUserStatPanel();
+
+        // TODO - REMOVE
+        singleUserStatPanel.init();
+
         this.add(singleUserStatPanel, cc.xywh(1, 7, 10, 3));
+
+        // TODO - REMOVE
+        singleUserStatPanel.initComponents();
+
     }
 
     private void initTotalUsersPlayed(CellConstraints cc) {
