@@ -76,7 +76,6 @@ public class MazePreviewPanel extends JPanel {
      */
     public MazePreviewPanel() {
         init();
-        initGame();
     }
 
     /**
@@ -89,7 +88,6 @@ public class MazePreviewPanel extends JPanel {
         this(maze, players, true);
 
         init();
-        initGame();
     }
 
     /**
@@ -108,7 +106,6 @@ public class MazePreviewPanel extends JPanel {
         }
 
         init();
-        initGame();
     }
 
     private void setPlayerLocationAtEntrances(Maze maze) {
@@ -148,7 +145,6 @@ public class MazePreviewPanel extends JPanel {
         this.players = players;
 
         init();
-        initGame();
     }
 
     private void init() {
@@ -168,7 +164,7 @@ public class MazePreviewPanel extends JPanel {
      *
      * @description Start listening for players movements
      */
-    private void initGame() {
+    public void initGame() {
         setBackground(Color.WHITE);
 
         ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
@@ -344,18 +340,16 @@ public class MazePreviewPanel extends JPanel {
         Color before = g.getColor();
 
 
-        ArrayList<Candy> cellCandies = cell.getCandies();
+        ArrayList<Candy> cellCandies = (ArrayList<Candy>) cell.getCandies().clone();
 
-        synchronized (cellCandies) {
-            if (!cellCandies.isEmpty()) {
-                for (Candy candy : cellCandies) {
-                    if (candy == null) {
-                        continue;
-                    }
-
-                    g.setColor(Color.decode(candy.getColor()));
-                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+        if (!cellCandies.isEmpty()) {
+            for (Candy candy : cellCandies) {
+                if (candy == null) {
+                    continue;
                 }
+
+                g.setColor(Color.decode(candy.getColor()));
+                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
             }
         }
 
