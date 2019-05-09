@@ -7,7 +7,7 @@ import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
-import UI.MazePreviewPanel;
+import GUI.MazePreviewPanel;
 import player.BasePlayer;
 import player.ComputerPlayer;
 import player.DirectionKeys;
