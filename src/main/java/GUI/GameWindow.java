@@ -21,9 +21,6 @@ import java.util.Objects;
 
 public class GameWindow {
     private JPanel wrapper;
-    private JButton logSizeBtn;
-    private JSpinner heightSpinner;
-    private JSpinner widthSpinner;
     private MazePreviewPanel previewPanel;
 
     public GameWindow() {
@@ -67,7 +64,6 @@ public class GameWindow {
         // TODO: place custom component creation code here
 
         this.createWrapper();
-        this.createGetSizeBtn();
 
         // TODO - clean this
         int height = 50;
@@ -76,8 +72,6 @@ public class GameWindow {
         // TODO - add scroller to the game JPanel
 
         Dimension previewPanel = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
-        this.createWidthSpinner(previewPanel.width);
-        this.createHeightSpinner(previewPanel.height);
 
         GridBagConstraints c = new GridBagConstraints();
 
@@ -95,19 +89,19 @@ public class GameWindow {
 
 
         this.wrapper.setPreferredSize(wrapperSize);
-
-        c.gridx = 0;
-        c.gridy = 0;
-        this.wrapper.add(this.logSizeBtn, c);
-
-        c.gridx = 1;
-        c.gridy = 0;
-        c.weightx = 20;
-        this.wrapper.add(this.widthSpinner, c);
-
-        c.gridx = 2;
-        c.gridy = 0;
-        this.wrapper.add(this.heightSpinner, c);
+//
+//        c.gridx = 0;
+//        c.gridy = 0;
+//        this.wrapper.add(this.logSizeBtn, c);
+//
+//        c.gridx = 1;
+//        c.gridy = 0;
+//        c.weightx = 20;
+//        this.wrapper.add(this.widthSpinner, c);
+//
+//        c.gridx = 2;
+//        c.gridy = 0;
+//        this.wrapper.add(this.heightSpinner, c);
 
         c.ipady = previewPanel.height;      // make this component tall
         c.weightx = previewPanel.width;
@@ -122,35 +116,6 @@ public class GameWindow {
         this.previewPanel.initGame();
     }
 
-    private void createHeightSpinner(int value) {
-        heightSpinner = new JSpinner();
-        heightSpinner.setToolTipText("Height");
-
-        this.heightSpinner.setValue(value);
-
-        heightSpinner.addChangeListener(e -> previewPanel.setSize(previewPanel.getWidth(), (Integer) heightSpinner.getValue()));
-    }
-
-    private void createWidthSpinner(int value) {
-        widthSpinner = new JSpinner();
-        widthSpinner.setToolTipText("Width");
-
-        this.widthSpinner.setValue(value);
-
-        widthSpinner.addChangeListener(e -> previewPanel.setSize((Integer) widthSpinner.getValue(), previewPanel.getHeight()));
-    }
-
-    private void createGetSizeBtn() {
-        logSizeBtn = new JButton("Get Size");
-        logSizeBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                System.out.println(" ------------------------------ ");
-                System.out.println("[Wrapper][Size]      " + wrapper.getSize());
-                System.out.println("[PreviewPanel][Size] " + previewPanel.getSize());
-            }
-        });
-    }
 
     private Dimension getWrapperDimensionForMazeDim(Dimension mazeDim) {
         int width = mazeDim.width * 25;
