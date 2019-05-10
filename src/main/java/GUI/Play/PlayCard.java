@@ -1,6 +1,5 @@
 package GUI.Play;
 
-import GUI.CardName;
 import GUI.GuiHelper;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -54,17 +53,19 @@ public class PlayCard extends JPanel {
         nextButton.addActionListener(e -> {
             IPlayConfigStep currentStep = this.steps[stepIndex];
 
-            if(currentStep == null || !currentStep.canContinue()) {
+            if (currentStep == null || !currentStep.canContinue()) {
                 System.out.println("Please Finish Step before");
                 return;
             }
 
             stepIndex++;
 
-            if(this.stepIndex >= this.steps.length) {
+            if (this.stepIndex >= this.steps.length) {
                 this.onFinish();
                 return;
             }
+
+            this.setProgressData((int) (((double) this.stepIndex / (double) this.steps.length) * 100.0));
 
             this.showCard(this.steps[stepIndex].getPlayStep());
         });
