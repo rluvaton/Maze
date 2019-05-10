@@ -35,7 +35,6 @@ public class UsersStatPanel extends JPanel {
 
     public void init() {
         this.setLayout(new FormLayout("fill:43px:noGrow,left:4dlu:noGrow,left:4dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:42px:noGrow,left:4dlu:noGrow,fill:109px:noGrow,left:4dlu:noGrow,fill:65px:grow", "center:d:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:8dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:106px:noGrow"));
-//        container.add(statPanel, "Card1");
     }
 
     public void initComponents() {

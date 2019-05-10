@@ -2,48 +2,71 @@ package GUI;
 
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Start {
     private JPanel containerPanel;
+    private JPanel cardsContainer;
+    private JButton backBtn;
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
     private CardLayout cl;
 
+    private CardName currentCardName = null;
+    private CardName prevCardName = null;
+
+    public Start(Frame frame) {
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("Start");
 
-        Start start = new Start();
+        Start start = new Start(frame);
         start.createUIComponents();
 
         frame.setContentPane(start.containerPanel);
+        setFrameIcon(frame);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
+    private static void setFrameIcon(JFrame frame) {
+        ImageIcon img = new ImageIcon("C:\\Users\\rluva\\Programming\\FrontEnd\\Desktop\\Java\\Maze\\src\\main\\resources\\icons\\maze-game-icon-white.png");
+        frame.setIconImage(img.getImage());
+    }
 
+    private void createUIComponents() {
         createAndAttachWelcomeCard();
         createAndAttachStatsCard();
 
-        cl = (CardLayout) (this.containerPanel.getLayout());
+        cl = (CardLayout) (this.cardsContainer.getLayout());
 
         showCard(CardName.WELCOME);
 
+        backBtn.addActionListener(e -> {
+            this.cl.previous(this.cardsContainer);
+
+            currentCardName = prevCardName;
+            prevCardName = null;
+
+            if (currentCardName == CardName.WELCOME) {
+                backBtn.setVisible(false);
+            }
+        });
     }
 
     private void createAndAttachWelcomeCard() {
         welcomeCard = new WelcomePanel(this::generatedClicked, this::playClicked, this::statsClicked);
         welcomeCard.init();
 
-        containerPanel.add(welcomeCard, CardName.WELCOME.getValue());
+        addCard(welcomeCard, CardName.WELCOME);
         welcomeCard.initComponents();
     }
-
 
     private void generatedClicked() {
         System.out.println("Not Supported Yet");
@@ -59,10 +82,6 @@ public class Start {
         showCard(CardName.STATS);
     }
 
-    private void showCard(CardName cardName) {
-        cl.show(this.containerPanel, cardName.getValue());
-    }
-
     private void createAndAttachStatsCard() {
         if (statCard == null) {
             statCard = new UsersStatPanel();
@@ -70,8 +89,21 @@ public class Start {
 
         statCard.init();
 
-        containerPanel.add(statCard, CardName.STATS.getValue());
+        addCard(statCard, CardName.STATS);
         statCard.initComponents();
+    }
+
+    private void showCard(CardName cardName) {
+        prevCardName = currentCardName;
+        currentCardName = cardName;
+
+        cl.show(this.cardsContainer, cardName.getValue());
+
+        this.backBtn.setVisible(currentCardName != CardName.WELCOME);
+    }
+
+    private void addCard(JPanel panel, CardName cardName) {
+        cardsContainer.add(panel, cardName.getValue());
     }
 
     {
@@ -90,10 +122,18 @@ public class Start {
      */
     private void $$$setupUI$$$() {
         containerPanel = new JPanel();
-        containerPanel.setLayout(new CardLayout(0, 0));
-        containerPanel.setMaximumSize(new Dimension(313, 133));
-        containerPanel.setMinimumSize(new Dimension(313, 133));
-        containerPanel.setPreferredSize(new Dimension(313, 133));
+        containerPanel.setLayout(new FormLayout("fill:529px:noGrow", "center:9px:noGrow,top:4dlu:noGrow,center:196px:noGrow"));
+        containerPanel.setMaximumSize(new Dimension(530, 133));
+        containerPanel.setMinimumSize(new Dimension(530, 133));
+        containerPanel.setPreferredSize(new Dimension(530, 133));
+        backBtn = new JButton();
+        backBtn.setText("Back");
+        backBtn.setVisible(false);
+        CellConstraints cc = new CellConstraints();
+        containerPanel.add(backBtn, cc.xywh(1, 1, 1, 2, CellConstraints.LEFT, CellConstraints.DEFAULT));
+        cardsContainer = new JPanel();
+        cardsContainer.setLayout(new CardLayout(0, 0));
+        containerPanel.add(cardsContainer, cc.xy(1, 3));
     }
 
     /**
