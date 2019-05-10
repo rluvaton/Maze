@@ -1,6 +1,7 @@
 package GUI.Welcome;
 
 import GUI.GuiHelper;
+import Helpers.NoArgsVoidCallbackFunction;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -8,13 +9,27 @@ import javax.swing.*;
 import java.awt.*;
 
 public class WelcomePanel extends JPanel {
+    public static String DEFAULT_CARD_NAME = "WelcomeCard";
+
     private JLabel title;
     private JLabel madeBy;
     private JButton generateBtn;
     private JButton statsBtn;
     private JButton playBtn;
 
+    private NoArgsVoidCallbackFunction generatedClicked = () -> {};
+    private NoArgsVoidCallbackFunction playClicked = () -> {};
+    private NoArgsVoidCallbackFunction statsClicked = () -> {};
+
     public WelcomePanel() {
+    }
+
+    public WelcomePanel(NoArgsVoidCallbackFunction generatedClicked,
+                         NoArgsVoidCallbackFunction playClicked,
+                         NoArgsVoidCallbackFunction statsClicked) {
+        this.generatedClicked = generatedClicked;
+        this.playClicked = playClicked;
+        this.statsClicked = statsClicked;
     }
 
     public void init() {
@@ -57,7 +72,7 @@ public class WelcomePanel extends JPanel {
         generateBtn.putClientProperty("html.disable", Boolean.FALSE);
 
         this.generateBtn.addActionListener(e -> {
-
+            generatedClicked.run();
         });
 
         this.add(generateBtn, new CellConstraints(1, 5, 1, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
@@ -74,6 +89,10 @@ public class WelcomePanel extends JPanel {
         statsBtn.setText("Stats");
         statsBtn.setToolTipText("User Statics");
 
+        statsBtn.addActionListener(e -> {
+            statsClicked.run();
+        });
+
         this.add(statsBtn, new CellConstraints(5, 5, 1, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 0, 0, 10)));
     }
 
@@ -88,6 +107,10 @@ public class WelcomePanel extends JPanel {
         playBtn.setText("Play");
         playBtn.setToolTipText("Start Playing");
         playBtn.putClientProperty("hideActionText", Boolean.FALSE);
+
+        playBtn.addActionListener(e -> {
+            playClicked.run();
+        });
 
         this.add(playBtn, cc.xy(3, 5));
     }

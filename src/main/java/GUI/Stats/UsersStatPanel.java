@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Vector;
 
 public class UsersStatPanel extends JPanel {
+    public static String DEFAULT_CARD_NAME = "StatsCard";
+
     private JLabel header;
 
     private JLabel totalUsersPlayedValueLabel;

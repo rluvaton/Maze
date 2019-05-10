@@ -10,6 +10,7 @@ public class Start {
     private JPanel containerPanel;
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
+    private CardLayout cl;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Start");
@@ -27,21 +28,49 @@ public class Start {
         // TODO: place custom component creation code here
 
         createAndAttachWelcomeCard();
+        createAndAttachStatsCard();
+
+        cl = (CardLayout) (this.containerPanel.getLayout());
+
+        showCard(CardName.WELCOME);
+
     }
 
     private void createAndAttachWelcomeCard() {
-        welcomeCard = new WelcomePanel();
+        welcomeCard = new WelcomePanel(this::generatedClicked, this::playClicked, this::statsClicked);
         welcomeCard.init();
 
-        containerPanel.add(welcomeCard, "Card1");
+        containerPanel.add(welcomeCard, CardName.WELCOME.getValue());
         welcomeCard.initComponents();
     }
 
+
+    private void generatedClicked() {
+        System.out.println("Not Supported Yet");
+        showCard(CardName.GENERATOR);
+    }
+
+    private void playClicked() {
+        System.out.println("Not Supported Yet");
+        showCard(CardName.PLAY);
+    }
+
+    private void statsClicked() {
+        showCard(CardName.STATS);
+    }
+
+    private void showCard(CardName cardName) {
+        cl.show(this.containerPanel, cardName.getValue());
+    }
+
     private void createAndAttachStatsCard() {
-        statCard = new UsersStatPanel();
+        if (statCard == null) {
+            statCard = new UsersStatPanel();
+        }
+
         statCard.init();
 
-        containerPanel.add(statCard, "Card2");
+        containerPanel.add(statCard, CardName.STATS.getValue());
         statCard.initComponents();
     }
 
