@@ -47,6 +47,23 @@ public class GameWindow {
         frame.setVisible(true);
     }
 
+    public static void main(String[] args, MazePreviewPanel previewPanel) {
+        if (isInDebugMode(args)) {
+            turnOnDebugEnv();
+        }
+        JFrame frame = new JFrame("GameWindow");
+
+        GameWindow gameWindow = new GameWindow();
+        gameWindow.createUIComponents(previewPanel);
+        frame.setContentPane(gameWindow.wrapper);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setFrameIcon(frame);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+
     private static void setFrameIcon(JFrame frame) {
         ImageIcon img = new ImageIcon("C:\\Users\\rluva\\Programming\\FrontEnd\\Desktop\\Java\\Maze\\src\\main\\resources\\icons\\maze-game-icon-white.png");
         frame.setIconImage(img.getImage());
@@ -111,6 +128,62 @@ public class GameWindow {
         c.weightx = previewPanel.width;
         c.weighty = previewPanel.height;
         c.gridwidth = previewPanel.width;
+        c.gridx = 0;
+        c.gridy = 1;
+        this.wrapper.add(this.previewPanel, c);
+
+        this.wrapper.updateUI();
+
+        this.previewPanel.initGame();
+    }
+
+    private void createUIComponents(MazePreviewPanel previewPanel) {
+        // TODO: place custom component creation code here
+
+        this.createWrapper();
+
+        // TODO - clean this
+        int height = previewPanel.getMaze().getHeight();
+        int width = previewPanel.getMaze().getWidth();
+
+        // TODO - add scroller to the game JPanel
+
+        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
+
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+
+        int minDistance = 0;
+
+        this.previewPanel = previewPanel;
+
+
+        Dimension wrapperSize = (Dimension) previewPanelDim.clone();
+        int buttonHeight = 20;
+        wrapperSize.setSize(previewPanelDim.width, previewPanelDim.height + buttonHeight);
+
+
+        this.wrapper.setPreferredSize(wrapperSize);
+//
+//        c.gridx = 0;
+//        c.gridy = 0;
+//        this.wrapper.add(this.logSizeBtn, c);
+//
+//        c.gridx = 1;
+//        c.gridy = 0;
+//        c.weightx = 20;
+//        this.wrapper.add(this.widthSpinner, c);
+//
+//        c.gridx = 2;
+//        c.gridy = 0;
+//        this.wrapper.add(this.heightSpinner, c);
+
+        c.ipady = previewPanelDim.height;      // make this component tall
+        c.weightx = previewPanelDim.width;
+        c.weighty = previewPanelDim.height;
+        c.gridwidth = previewPanelDim.width;
         c.gridx = 0;
         c.gridy = 1;
         this.wrapper.add(this.previewPanel, c);

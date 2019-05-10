@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.awt.Color;
 
 public class MazePreviewPanel extends JPanel {
 
@@ -363,11 +364,13 @@ public class MazePreviewPanel extends JPanel {
      */
     private void showPlayers(Graphics g) {
 
+        Color before = g.getColor();
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
         for (BasePlayer player : this.players) {
 
+            g.setColor(player.getColor().getColor());
             Coordinate coordinates = this.calculateLocation(player.getLocation());
 
             int horSpace = fullW / this.maze.getWidth();
@@ -384,6 +387,8 @@ public class MazePreviewPanel extends JPanel {
                     verSpace - this.cellVerMargin);
             repaint();
         }
+
+        g.setColor(before);
     }
 
     // endregion
@@ -497,5 +502,9 @@ public class MazePreviewPanel extends JPanel {
         }
 
         return true;
+    }
+
+    public Maze getMaze() {
+        return maze;
     }
 }

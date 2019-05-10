@@ -1,5 +1,9 @@
 package GUI.Play;
 
+import GUI.Play.Exceptions.NotFinishedStepException;
+import Maze.MazeBuilder.RectangleMazeBuilder;
+import Maze.MazeGenerator.MazeGenerator;
+import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -75,5 +79,25 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     @Override
     public PlayStep getPlayStep() {
         return PlayStep.SELECT_MAZE_SHAPE;
+    }
+
+    @Override
+    public MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException {
+        if (!canContinue()) {
+            throw new NotFinishedStepException(this);
+        }
+
+        if (builder == null) {
+            builder = new MazeGenerator.Builder()
+                    .setSolverAdapter(new BFSSolverAdapter());
+        }
+
+        if (this.selectMazeShapeComboBox.getSelectedItem() == "Rectangular") {
+            builder.setMazeBuilder(new RectangleMazeBuilder());
+        }
+
+        return builder
+                .setHeight((Integer) this.heightValue.getValue())
+                .setWidth((Integer) this.widthValue.getValue());
     }
 }

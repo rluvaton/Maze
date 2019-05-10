@@ -1,8 +1,18 @@
 package GUI.Play;
 
+import GUI.GameWindow;
 import GUI.GuiHelper;
+import GUI.MazePreviewPanel;
+import GUI.Play.Exceptions.NotFinishedStepException;
+import Maze.Maze;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
+import Maze.MazeBuilder.RectangleMazeBuilder;
+import Maze.MazeGenerator.MazeGenerator;
+import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import player.BasePlayer;
+import player.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,17 +27,24 @@ public class PlayCard extends JPanel {
     // region Steps
 
     private SelectShapeStep selectMazeShape;
+    private SelectExitEntranceMinDistanceStep selectExitEntranceMinDistanceStep;
+    private CandiesStep candiesStep;
+    private CreatePlayersStep createPlayersStep;
 
     // endregion
 
     private int stepIndex = 0;
-    private IPlayConfigStep[] steps = new IPlayConfigStep[6];
+    private IPlayConfigStep[] steps = new IPlayConfigStep[4];
+
+    MazeGenerator.Builder builder = new MazeGenerator.Builder()
+            .setSolverAdapter(new BFSSolverAdapter());
 
 
     public PlayCard() {
     }
 
     public void init() {
+
         this.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
     }
 
@@ -58,6 +75,13 @@ public class PlayCard extends JPanel {
                 return;
             }
 
+            try {
+                builder = currentStep.appendData(builder);
+            } catch (NotFinishedStepException ex) {
+                // Shouldn't happen because check before id can continue
+                ex.printStackTrace();
+            }
+
             stepIndex++;
 
             if (this.stepIndex >= this.steps.length) {
@@ -65,35 +89,86 @@ public class PlayCard extends JPanel {
                 return;
             }
 
-            this.setProgressData((int) (((double) this.stepIndex / (double) this.steps.length) * 100.0));
-
-            this.showCard(this.steps[stepIndex].getPlayStep());
+            updateSteps();
         });
+    }
+
+    private void updateSteps() {
+        this.setProgressData((int) (((double) this.stepIndex / (double) this.steps.length) * 100.0));
+
+        this.showCard(this.steps[stepIndex].getPlayStep());
     }
 
     private void onFinish() {
         // TODO - FINISH THIS
-        throw new UnsupportedOperationException();
+        // TODO - BUILD THE MAZE
+
+        Maze maze;
+
+        try {
+            maze = this.builder.build();
+        } catch (MazeBuilderException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        BasePlayer[] players = this.createPlayersStep.playerList.toArray(new HumanPlayer[0]);
+
+        MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, players, false);
+        GameWindow.main(new String[0], mazePreviewPanel);
+
+//        throw new UnsupportedOperationException();
     }
 
     private void initSteps() {
         initSelectMazeShape();
+        initSelectExitEntranceMinDistanceStep();
+        initCandiesSelectionStep();
+        this.initCreatePlayerStep();
 
         this.initStepsArr();
     }
 
+    private void initCreatePlayerStep() {
+        createPlayersStep = new CreatePlayersStep();
+        initMazeStep(createPlayersStep);
+    }
+
+    private void initCandiesSelectionStep() {
+        candiesStep = new CandiesStep();
+        initMazeStep(candiesStep);
+    }
+
     private void initStepsArr() {
         this.steps[0] = this.selectMazeShape;
+        this.steps[1] = this.selectExitEntranceMinDistanceStep;
+        this.steps[2] = this.candiesStep;
+        this.steps[3] = this.createPlayersStep;
 
-        // TODO - ADD other steps
+        // TODO - ADD all the steps
     }
 
     private void initSelectMazeShape() {
         this.selectMazeShape = new SelectShapeStep();
-        selectMazeShape.init();
+        initMazeStep(this.selectMazeShape);
+    }
 
-        stepPanel.add(selectMazeShape, PlayStep.SELECT_MAZE_SHAPE.getValue());
-        selectMazeShape.initComponents();
+    private <T extends JPanel & IPlayConfigStep> void initMazeStep(T step) {
+        step.init();
+
+        this.addCard(step);
+        step.initComponents();
+    }
+
+    private void initSelectExitEntranceMinDistanceStep() {
+        this.selectExitEntranceMinDistanceStep = new SelectExitEntranceMinDistanceStep(this.builder);
+
+        initMazeStep(this.selectExitEntranceMinDistanceStep);
+
+    }
+
+    private <T extends JPanel & IPlayConfigStep> void addCard(T step) {
+        stepPanel.add(step, step.getPlayStep().getValue());
     }
 
     public void start() {
@@ -139,5 +214,15 @@ public class PlayCard extends JPanel {
     private void setProgressData(int progressData) {
         stepsProgress.setString(progressData + "%");
         stepsProgress.setValue(progressData);
+    }
+
+    public boolean back() {
+        if (this.stepIndex == 0) {
+            return false;
+        }
+
+        this.stepIndex--;
+        updateSteps();
+        return true;
     }
 }

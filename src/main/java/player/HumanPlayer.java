@@ -1,5 +1,6 @@
 package player;
 
+import GUI.Color;
 import Helpers.Coordinate;
 
 import java.awt.event.KeyEvent;
@@ -31,6 +32,10 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         this.directionKeys = createKeyAssignmentActions(directionKeys);
     }
 
+    public HumanPlayer(Coordinate startingLocation, String name, Color color, DirectionKeys  directionKeys) {
+        super(startingLocation, name, color);
+        this.directionKeys = createKeyAssignmentActions(directionKeys);
+    }
 
     private Map<Integer, Runnable> getDefaultKeyAssignment() {
         return this.createKeyAssignmentActions(DirectionKeys.DEFAULT_AS_ARROWS);

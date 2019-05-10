@@ -67,8 +67,14 @@ public class Start {
 
     private void initClickBackListener() {
         backBtn.addActionListener(e -> {
+
+            if (this.currentCardName == CardName.PLAY && this.playCard.back()) {
+                return;
+            }
+
             this.showCard(CardName.WELCOME);
 
+            this.currentCardName = CardName.WELCOME;
             backBtn.setVisible(false);
         });
     }
@@ -144,7 +150,7 @@ public class Start {
      */
     private void $$$setupUI$$$() {
         containerPanel = new JPanel();
-        containerPanel.setLayout(new FormLayout("fill:529px:noGrow", "center:9px:noGrow,top:4dlu:noGrow,center:196px:noGrow"));
+        containerPanel.setLayout(new FormLayout("fill:529px:noGrow", "center:9px:noGrow,top:4dlu:noGrow,center:318px:noGrow"));
         containerPanel.setMaximumSize(new Dimension(530, 133));
         containerPanel.setMinimumSize(new Dimension(530, 133));
         containerPanel.setPreferredSize(new Dimension(530, 133));
@@ -155,7 +161,7 @@ public class Start {
         containerPanel.add(backBtn, cc.xywh(1, 1, 1, 2, CellConstraints.LEFT, CellConstraints.DEFAULT));
         cardsContainer = new JPanel();
         cardsContainer.setLayout(new CardLayout(0, 0));
-        containerPanel.add(cardsContainer, cc.xy(1, 3));
+        containerPanel.add(cardsContainer, cc.xy(1, 3, CellConstraints.DEFAULT, CellConstraints.TOP));
     }
 
     /**
