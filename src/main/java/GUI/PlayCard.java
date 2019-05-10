@@ -8,21 +8,23 @@ import java.awt.*;
 
 public class PlayCard {
     private JPanel panel1;
-    private JPanel gameCard;
-    private JPanel stepPanel;
-    private JPanel selectMazeShape;
-    private JComboBox selectMazeShapeComboBox;
-    private JSpinner heightValue;
-    private JProgressBar stepsProgress;
-    private JSpinner widthValue;
-    private JButton nextButton;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("PlayCard");
-        frame.setContentPane(new PlayCard().panel1);
+        PlayCard playCard = new PlayCard();
+        playCard.start();
+        frame.setContentPane(playCard.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    private void start() {
+        GUI.Play.PlayCard playCard = new GUI.Play.PlayCard();
+        playCard.init();
+        this.panel1.add(playCard);
+        playCard.initComponents();
+        playCard.start();
     }
 
     {
@@ -42,71 +44,6 @@ public class PlayCard {
     private void $$$setupUI$$$() {
         panel1 = new JPanel();
         panel1.setLayout(new CardLayout(0, 0));
-        gameCard = new JPanel();
-        gameCard.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-        panel1.add(gameCard, "Card1");
-        final JLabel label1 = new JLabel();
-        Font label1Font = this.$$$getFont$$$("Source Code Pro", Font.BOLD, 18, label1.getFont());
-        if (label1Font != null) {
-            label1.setFont(label1Font);
-        }
-        label1.setText("Play");
-        CellConstraints cc = new CellConstraints();
-        gameCard.add(label1, cc.xy(1, 1, CellConstraints.CENTER, CellConstraints.DEFAULT));
-        stepPanel = new JPanel();
-        stepPanel.setLayout(new CardLayout(0, 0));
-        gameCard.add(stepPanel, cc.xy(1, 3));
-        selectMazeShape = new JPanel();
-        selectMazeShape.setLayout(new FormLayout("fill:p:noGrow,left:59dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:52px:grow,left:4dlu:noGrow,fill:d:grow,left:5dlu:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-        stepPanel.add(selectMazeShape, "Card1");
-        selectMazeShapeComboBox = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("Rectangular");
-        selectMazeShapeComboBox.setModel(defaultComboBoxModel1);
-        selectMazeShape.add(selectMazeShapeComboBox, new CellConstraints(5, 1, 4, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 0, 0, 10)));
-        heightValue = new JSpinner();
-        selectMazeShape.add(heightValue, cc.xy(5, 3, CellConstraints.FILL, CellConstraints.DEFAULT));
-        final JLabel label2 = new JLabel();
-        label2.setText("Height");
-        selectMazeShape.add(label2, new CellConstraints(1, 3, 3, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
-        widthValue = new JSpinner();
-        selectMazeShape.add(widthValue, cc.xy(5, 5, CellConstraints.FILL, CellConstraints.DEFAULT));
-        final JLabel label3 = new JLabel();
-        label3.setText("Width");
-        selectMazeShape.add(label3, new CellConstraints(1, 5, 3, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
-        final JLabel label4 = new JLabel();
-        label4.setText("Select Maze Shape");
-        selectMazeShape.add(label4, new CellConstraints(1, 1, 3, 1, CellConstraints.RIGHT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
-        nextButton = new JButton();
-        nextButton.setText("Next");
-        gameCard.add(nextButton, new CellConstraints(1, 5, 1, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 40, 0, 40)));
-        stepsProgress = new JProgressBar();
-        stepsProgress.setString("0%");
-        stepsProgress.setStringPainted(true);
-        stepsProgress.setValue(0);
-        gameCard.add(stepsProgress, cc.xy(1, 2));
-        label4.setLabelFor(selectMazeShapeComboBox);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
-        if (currentFont == null) {
-            return null;
-        }
-        String resultName;
-        if (fontName == null) {
-            resultName = currentFont.getName();
-        } else {
-            Font testFont = new Font(fontName, Font.PLAIN, 10);
-            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
-                resultName = fontName;
-            } else {
-                resultName = currentFont.getName();
-            }
-        }
-        return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
     /**

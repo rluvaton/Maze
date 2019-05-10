@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.Play.PlayCard;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -12,8 +13,15 @@ public class Start {
     private JPanel containerPanel;
     private JPanel cardsContainer;
     private JButton backBtn;
+
+    // region Cards
+
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
+    private PlayCard playCard;
+
+    // endregion
+
     private CardLayout cl;
 
     private CardName currentCardName = null;
@@ -43,20 +51,25 @@ public class Start {
     private void createUIComponents() {
         createAndAttachWelcomeCard();
         createAndAttachStatsCard();
+        createAndAttachPlayCard();
 
         cl = (CardLayout) (this.cardsContainer.getLayout());
 
         showCard(CardName.WELCOME);
 
+        initListeners();
+    }
+
+
+    private void initListeners() {
+        initClickBackListener();
+    }
+
+    private void initClickBackListener() {
         backBtn.addActionListener(e -> {
-            this.cl.previous(this.cardsContainer);
+            this.showCard(CardName.WELCOME);
 
-            currentCardName = prevCardName;
-            prevCardName = null;
-
-            if (currentCardName == CardName.WELCOME) {
-                backBtn.setVisible(false);
-            }
+            backBtn.setVisible(false);
         });
     }
 
@@ -66,6 +79,15 @@ public class Start {
 
         addCard(welcomeCard, CardName.WELCOME);
         welcomeCard.initComponents();
+    }
+
+
+    private void createAndAttachPlayCard() {
+        playCard = new PlayCard();
+        playCard.init();
+
+        addCard(playCard, CardName.PLAY);
+        playCard.initComponents();
     }
 
     private void generatedClicked() {
