@@ -8,6 +8,8 @@ import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import GUI.MazePreviewPanel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
 import player.ComputerPlayer;
 import player.DirectionKeys;
@@ -21,6 +23,8 @@ import java.util.Objects;
 
 public class GameWindow {
     private JPanel wrapper;
+    private JPanel usersMetadataPanel;
+    private JPanel mazePanel;
     private MazePreviewPanel previewPanel;
 
     public GameWindow() {
@@ -175,9 +179,20 @@ public class GameWindow {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
+        wrapper.setLayout(new CardLayout(0, 0));
         wrapper.setMinimumSize(new Dimension(300, 300));
         wrapper.setOpaque(true);
         wrapper.setPreferredSize(new Dimension(300, 300));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new FormLayout("fill:d:grow", "center:d:grow,top:4dlu:noGrow,center:d:grow(6.0)"));
+        wrapper.add(panel1, "Card1");
+        mazePanel = new JPanel();
+        mazePanel.setLayout(new CardLayout(0, 0));
+        CellConstraints cc = new CellConstraints();
+        panel1.add(mazePanel, cc.xy(1, 3));
+        usersMetadataPanel = new JPanel();
+        usersMetadataPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+        panel1.add(usersMetadataPanel, cc.xy(1, 1));
     }
 
     /**
@@ -186,4 +201,5 @@ public class GameWindow {
     public JComponent $$$getRootComponent$$$() {
         return wrapper;
     }
+
 }

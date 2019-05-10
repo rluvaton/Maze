@@ -56,6 +56,10 @@ public class WelcomePanel extends JPanel {
         generateBtn.putClientProperty("hideActionText", Boolean.FALSE);
         generateBtn.putClientProperty("html.disable", Boolean.FALSE);
 
+        this.generateBtn.addActionListener(e -> {
+
+        });
+
         this.add(generateBtn, new CellConstraints(1, 5, 1, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
     }
 

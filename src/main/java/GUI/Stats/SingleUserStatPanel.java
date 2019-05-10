@@ -1,6 +1,8 @@
 package GUI.Stats;
 
 import GUI.GuiHelper;
+import Helpers.TimeFormatter;
+import Statistics.User;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -9,22 +11,22 @@ import java.awt.*;
 
 public class SingleUserStatPanel extends JPanel {
 
+    private User user;
+
     private JLabel totalGameValueLabel;
     private JLabel totalTimeLimitedGamesValueLabel;
     private JLabel maxMazeAreaPlayedValueLabel;
     private JLabel timePlayedValueLabel;
     private JLabel winningPercentageValueLabel;
-    
-    public SingleUserStatPanel() {
-    }
 
-    public SingleUserStatPanel(Object user) {
+    public SingleUserStatPanel() {
         // TODO - convert to user
     }
     
     public void init() {
         this.setLayout(new FormLayout("fill:63px:noGrow,left:4dlu:noGrow,fill:84px:noGrow,left:4dlu:noGrow,fill:158px:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-//        this.add(this, cc.xywh(1, 7, 10, 3));
+
+        this.setVisible(false);
     }
 
     public void initComponents() {
@@ -35,7 +37,6 @@ public class SingleUserStatPanel extends JPanel {
         initMaxMazeAreaPlayed(cc);
         initTimePlayed(cc);
         initWinningPercentage(cc);
-
     }
 
     private void initWinningPercentage(CellConstraints cc) {
@@ -83,7 +84,6 @@ public class SingleUserStatPanel extends JPanel {
         initLabelForInput("Total Games", 1, 3);
     }
 
-
     private void initLabelForInput(String text, int gridY, int gridWidth) {
         final JLabel label = new JLabel();
 
@@ -95,6 +95,27 @@ public class SingleUserStatPanel extends JPanel {
         label.setText(text);
 
         this.add(label, new CellConstraints(1, gridY, gridWidth, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+
+        this.setVisible(this.user != null);
+        this.updateComponentsValue();
+    }
+
+    private void updateComponentsValue() {
+        if(this.user == null) {
+            return;
+        }
+
+        totalGameValueLabel.setText(this.user.getTotalGames() + "");
+        totalTimeLimitedGamesValueLabel.setText(this.user.getTotalTimeLimitedGames() + "");
+        this.maxMazeAreaPlayedValueLabel.setText(this.user.getMaxMazeAreaPlayed() + "");
+
+        this.timePlayedValueLabel.setText(TimeFormatter.convertFromSecondsToHumanReadableText(user.getTotalTimePlayedInSeconds()));
+        this.winningPercentageValueLabel.setText(this.user.getWinningPercentage() + "%");
+
     }
 
 }

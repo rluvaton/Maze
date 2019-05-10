@@ -1,11 +1,19 @@
 package GUI.Stats;
 
 import GUI.GuiHelper;
+import Statistics.GameStats;
+import Statistics.User;
+import Statistics.UsersDataSource;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Vector;
 
 public class UsersStatPanel extends JPanel {
     private JLabel header;
@@ -18,6 +26,8 @@ public class UsersStatPanel extends JPanel {
 
     private SingleUserStatPanel singleUserStatPanel;
 
+    private GameStats stats;
+
     public UsersStatPanel() {
     }
 
@@ -29,6 +39,8 @@ public class UsersStatPanel extends JPanel {
     public void initComponents() {
         CellConstraints cc = new CellConstraints();
 
+        this.stats = UsersDataSource.getStats();
+
         initHeader(cc);
 
         initSingleUserStatPanel(cc);
@@ -38,6 +50,8 @@ public class UsersStatPanel extends JPanel {
         initTotalTimePlayed(cc);
 
         initUserSelection(cc);
+
+        initListeners();
     }
 
     private void initHeader(CellConstraints cc) {
@@ -70,11 +84,11 @@ public class UsersStatPanel extends JPanel {
         totalUsersPlayedValueLabel.setText("0");
         this.add(totalUsersPlayedValueLabel, cc.xy(6, 3));
 
-        initLabelForValue(cc, "Total Users Played", 4);
+        initLabelForValue(cc, "Total Users Played:", 4);
     }
 
     private void initTotalTimePlayed(CellConstraints cc) {
-        initLabelForValue(cc, "Total Time Played", 8);
+        initLabelForValue(cc, "Total Time Played:", 8);
 
         totalTimePlayedValueLabel = new JLabel();
 
@@ -90,11 +104,25 @@ public class UsersStatPanel extends JPanel {
         this.add(label, cc.xy(col, 3));
     }
 
+
     private void initUserSelection(CellConstraints cc) {
-        userSelection = new JComboBox();
+        userSelection = new JComboBox<User>();
 
         userSelection.setMinimumSize(new Dimension(150, 24));
         userSelection.setPreferredSize(new Dimension(150, 24));
+
+        Collection<User> users = (this.stats == null) ? new LinkedList<>() : List.of(this.stats.getUsers());
+        Vector<User> options = new Vector<>();
+
+        // Add empty value
+        options.add(null);
+
+        // Add after the empty value all the values
+        options.addAll(users);
+
+        userSelection.setModel(new DefaultComboBoxModel<>(options));
+        userSelection.setSelectedItem(0);
+
         this.add(userSelection, cc.xyw(6, 5, 3, CellConstraints.LEFT, CellConstraints.DEFAULT));
 
         userSelectionLabel = new JLabel();
@@ -103,6 +131,30 @@ public class UsersStatPanel extends JPanel {
         this.add(userSelectionLabel, new CellConstraints(4, 5, 1, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
 
         userSelectionLabel.setLabelFor(userSelection);
+    }
+
+
+    private void initListeners() {
+        listenToUserSelectionChange();
+    }
+
+    private void listenToUserSelectionChange() {
+        this.userSelection.addItemListener(event -> {
+            int state = event.getStateChange();
+            User user = null;
+
+            switch (state) {
+                case ItemEvent.SELECTED:
+                    user = (User) event.getItem();
+                    break;
+                case ItemEvent.DESELECTED:
+                    break;
+                default:
+                    return;
+            }
+
+            this.singleUserStatPanel.setUser(user);
+        });
     }
 
 }

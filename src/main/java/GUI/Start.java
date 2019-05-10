@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
 
 import javax.swing.*;
@@ -7,7 +8,8 @@ import java.awt.*;
 
 public class Start {
     private JPanel containerPanel;
-    private JPanel welcomeCard;
+    private WelcomePanel welcomeCard;
+    private UsersStatPanel statCard;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Start");
@@ -29,10 +31,18 @@ public class Start {
 
     private void createAndAttachWelcomeCard() {
         welcomeCard = new WelcomePanel();
-        ((WelcomePanel) welcomeCard).init();
+        welcomeCard.init();
 
         containerPanel.add(welcomeCard, "Card1");
-        ((WelcomePanel) welcomeCard).initComponents();
+        welcomeCard.initComponents();
+    }
+
+    private void createAndAttachStatsCard() {
+        statCard = new UsersStatPanel();
+        statCard.init();
+
+        containerPanel.add(statCard, "Card2");
+        statCard.initComponents();
     }
 
     {
