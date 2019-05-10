@@ -41,6 +41,7 @@ public class GameWindow {
         frame.setContentPane(gameWindow.wrapper);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        frame.setFocusable(true);
         setFrameIcon(frame);
 
         frame.pack();

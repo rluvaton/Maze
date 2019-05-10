@@ -14,7 +14,7 @@ import java.util.LinkedList;
 
 public class CandiesStep extends JPanel implements IPlayConfigStep {
 
-    private JSpinner minDistanceValue;
+    private JSpinner totalCandies;
     private JCheckBox candyPointsCheckBox;
     private JCheckBox onlyGoodCandiesCheckBox;
     private JCheckBox expiredCandiesCheckBox;
@@ -41,8 +41,8 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
         label2.setText("Total Candies");
         this.add(label2, cc.xywh(4, 6, 1, 2, CellConstraints.RIGHT, CellConstraints.DEFAULT));
 
-        minDistanceValue = new JSpinner();
-        this.add(minDistanceValue, new CellConstraints(5, 6, 3, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
+        totalCandies = new JSpinner();
+        this.add(totalCandies, new CellConstraints(5, 6, 3, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
     }
 
     private void initOnlyGoodCandiesCheckBox(CellConstraints cc) {
@@ -117,15 +117,24 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setTypes(candyTypes.toArray(new CandyPowerType[0]));
 
-        if (this.onlyGoodCandiesCheckBox.isSelected()) {
-            candyConfig.setStrengthPower(new MazeGenerator.IntegerConfiguration(1, 1000));
-        }
-
-        if (!this.expiredCandiesCheckBox.isSelected()) {
-            candyConfig.setTimeToLive(new MazeGenerator.IntegerConfiguration(Candy.WITHOUT_TIMEOUT));
-        }
+        candyConfig.setStrengthPower(getStrengthPower());
+        candyConfig.setTimeToLive(getTimeToLive());
+        builder.setTotalCandies(getTotalCandiesValue());
 
         return builder
                 .setCandyConfig(candyConfig);
+    }
+
+    private MazeGenerator.IntegerConfiguration getStrengthPower() {
+        return this.onlyGoodCandiesCheckBox.isSelected() ? new MazeGenerator.IntegerConfiguration(1, 1000) : new MazeGenerator.IntegerConfiguration(0);
+    }
+
+    private MazeGenerator.IntegerConfiguration getTimeToLive() {
+        return this.expiredCandiesCheckBox.isSelected() ? GenerateCandyConfig.DEFAULT_TIME_TO_LIVE : new MazeGenerator.IntegerConfiguration(Candy.WITHOUT_TIMEOUT);
+    }
+
+    private int getTotalCandiesValue() {
+        Object totalCandiesValue = this.totalCandies.getValue();
+        return totalCandiesValue instanceof Integer && (Integer) totalCandiesValue > 0 ? (Integer) totalCandiesValue : 0;
     }
 }

@@ -7,12 +7,16 @@ import java.util.concurrent.TimeUnit;
 
 public class GenerateCandyConfig {
 
-    private CandyPowerType[] types = CandyPowerType.values();
-    private MazeGenerator.IntegerConfiguration timeToLive = new MazeGenerator.IntegerConfiguration(
+    public static MazeGenerator.IntegerConfiguration DEFAULT_TIME_TO_LIVE = new MazeGenerator.IntegerConfiguration(
             (int) TimeUnit.SECONDS.toMillis(20),
             (int) TimeUnit.MINUTES.toMillis(5)
     );
-    private MazeGenerator.IntegerConfiguration strengthPower = new MazeGenerator.IntegerConfiguration(-1000, 1000);
+
+    public static MazeGenerator.IntegerConfiguration DEFAULT_STRENGTH_POWER = new MazeGenerator.IntegerConfiguration(-1000, 1000);
+
+    private CandyPowerType[] types = CandyPowerType.values();
+    private MazeGenerator.IntegerConfiguration timeToLive = DEFAULT_TIME_TO_LIVE;
+    private MazeGenerator.IntegerConfiguration strengthPower = DEFAULT_STRENGTH_POWER;
     private Coordinate otherCellLocation = null;
     private Coordinate cellLoc = null;
 
