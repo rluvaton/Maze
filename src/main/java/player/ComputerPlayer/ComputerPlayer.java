@@ -291,8 +291,6 @@ public class ComputerPlayer extends BasePlayer {
 
         this.playerThread = createPlayerThread();
 
-        this.runnablePlayer.restart();
-
         this.playerThread.start();
     }
 

@@ -355,7 +355,15 @@ public class MazeGenerator {
             throw new MazeBuilderException(this.mazeBuilder, "Nothing to build, please create generate maze");
         }
 
-        return mazeGenerator.mazeBuilder.getMaze();
+        Maze maze = mazeGenerator.mazeBuilder.getMaze();
+
+        if(maze == null) {
+            throw new MazeBuilderException(this.mazeBuilder, "Error at creating the maze");
+        }
+
+        maze.setSolverAdapter(this.solverAdapter);
+
+        return maze;
     }
 
     class DFSMazeGenerator {
@@ -435,13 +443,13 @@ public class MazeGenerator {
     }
 
     public static class IntegerConfiguration {
-        private int value;
+        private int defaultValue;
         private int from;
         private int to;
         private boolean randomize;
 
-        public IntegerConfiguration(int value) {
-            this.value = value;
+        public IntegerConfiguration(int defaultValue) {
+            this.defaultValue = defaultValue;
             this.randomize = false;
         }
 
@@ -452,7 +460,7 @@ public class MazeGenerator {
         }
 
         int getValue() {
-            return randomize ? RandomHelper.getRandomNumber(from, to) : value;
+            return randomize ? RandomHelper.getRandomNumber(from, to) : defaultValue;
         }
     }
 

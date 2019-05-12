@@ -49,24 +49,24 @@ public class RunnableHumanPlayer extends ControlledRunnable {
             return true;
         }
 
-        this.immediateMove(direction);
+        this.immediateMove();
         delay();
 
         return false;
     }
 
-    private void immediateMove(Direction direction) {
+    private void immediateMove() {
         synchronized (player) {
             try {
-                player.move(direction);
+                player.move(this.direction);
             } catch (InvalidDirectionException invalidDirectionEx) {
-                handleInvalidDirectionException(direction);
+                handleInvalidDirectionException(this.direction);
             }
         }
     }
 
     private void handleInvalidDirectionException(Direction direction) {
-        logger.warn("Invalid computer move " + direction);
+        logger.warn("Invalid Human move " + direction);
     }
 
     private void delay() {

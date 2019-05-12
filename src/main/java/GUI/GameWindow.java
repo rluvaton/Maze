@@ -25,6 +25,10 @@ public class GameWindow {
     public GameWindow() {
     }
 
+    public GameWindow(MazePreviewPanel previewPanel) {
+        this.previewPanel = previewPanel;
+    }
+
     public static void main(String[] args) {
         main(args, null);
     }
@@ -35,13 +39,10 @@ public class GameWindow {
         }
         JFrame frame = new JFrame("GameWindow");
 
-        GameWindow gameWindow = new GameWindow();
+        GameWindow gameWindow = new GameWindow(previewPanel);
 
-        if(previewPanel == null) {
-            gameWindow.createUIComponents();
-        } else {
-            gameWindow.createUIComponents(previewPanel);
-        }
+        // Uncommented because in `$$setupUI$$` it's already been called
+//        gameWindow.createUIComponents();
 
         frame.setContentPane(gameWindow.wrapper);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,6 +50,7 @@ public class GameWindow {
         setFrameIcon(frame);
 
         frame.pack();
+
         frame.setVisible(true);
     }
 
@@ -75,64 +77,16 @@ public class GameWindow {
         this.createWrapper();
 
         // TODO - clean this
-        int height = 15;
-        int width = 5;
+        int height;
+        int width;
 
-        // TODO - add scroller to the game JPanel
-
-        Dimension previewPanel = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
-
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-
-        int minDistance = 0;
-
-        this.previewPanel = start(height, width, minDistance);
-
-
-        Dimension wrapperSize = (Dimension) previewPanel.clone();
-        int buttonHeight = 20;
-        wrapperSize.setSize(previewPanel.width, previewPanel.height + buttonHeight);
-
-
-        this.wrapper.setPreferredSize(wrapperSize);
-//
-//        c.gridx = 0;
-//        c.gridy = 0;
-//        this.wrapper.add(this.logSizeBtn, c);
-//
-//        c.gridx = 1;
-//        c.gridy = 0;
-//        c.weightx = 20;
-//        this.wrapper.add(this.widthSpinner, c);
-//
-//        c.gridx = 2;
-//        c.gridy = 0;
-//        this.wrapper.add(this.heightSpinner, c);
-
-        c.ipady = previewPanel.height;      // make this component tall
-        c.weightx = previewPanel.width;
-        c.weighty = previewPanel.height;
-        c.gridwidth = previewPanel.width;
-        c.gridx = 0;
-        c.gridy = 1;
-        this.wrapper.add(this.previewPanel, c);
-
-        this.wrapper.updateUI();
-
-        this.previewPanel.initGame();
-    }
-
-    private void createUIComponents(MazePreviewPanel previewPanel) {
-        // TODO: place custom component creation code here
-
-        this.createWrapper();
-
-        // TODO - clean this
-        int height = previewPanel.getMaze().getHeight();
-        int width = previewPanel.getMaze().getWidth();
+        if (previewPanel == null) {
+            height = 15;
+            width = 10;
+        } else {
+            height = previewPanel.getMaze().getHeight();
+            width = previewPanel.getMaze().getWidth();
+        }
 
         // TODO - add scroller to the game JPanel
 
@@ -145,7 +99,9 @@ public class GameWindow {
 
         int minDistance = 0;
 
-        this.previewPanel = previewPanel;
+        if (previewPanel == null) {
+            this.previewPanel = start(height, width, minDistance);
+        }
 
 
         Dimension wrapperSize = (Dimension) previewPanelDim.clone();
@@ -179,6 +135,7 @@ public class GameWindow {
         this.wrapper.updateUI();
 
         this.previewPanel.initGame();
+        this.previewPanel.startGame();
     }
 
 

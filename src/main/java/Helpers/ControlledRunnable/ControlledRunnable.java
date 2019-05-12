@@ -39,12 +39,6 @@ public abstract class ControlledRunnable implements Runnable {
         // to unblock
     }
 
-    public final void restart() {
-        running = true;
-        // TODO - FIX THIS - NOT SURE IF THIS WORK
-        resume();
-    }
-
     public void pause() {
         // you may want to throw an IllegalStateException if !running
         paused = true;

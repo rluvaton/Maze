@@ -87,7 +87,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         }
 
         runnablePlayer.pause();
-        int stepSpeedMs = isPressed ? this.defaultStepSpeed : this.defaultEnhancedStepSpeed;
+        int stepSpeedMs = isPressed ? this.defaultEnhancedStepSpeed : this.defaultStepSpeed;
         runnablePlayer.setStepSpeedMs(stepSpeedMs);
         runnablePlayer.resume();
     }
@@ -98,13 +98,12 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         }
 
         if (isPressed) {
-            runnablePlayer.resume();
-        } else {
             runnablePlayer.pause();
+        } else {
         }
     }
 
-    public Thread start() {
+    public Thread create() {
         this.runnablePlayer = new RunnableHumanPlayer(this, defaultStepSpeed);
         this.playerThread = createPlayerThread();
         return this.playerThread;
