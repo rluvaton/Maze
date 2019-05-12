@@ -1,5 +1,6 @@
 package player;
 
+import Helpers.ControlledRunnable;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
 import io.reactivex.functions.Consumer;
@@ -12,7 +13,7 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class RunnableComputerPlayer implements Runnable {
+public class RunnableComputerPlayer extends ControlledRunnable {
 
     private final ComputerPlayer player;
     private List<Direction> directions;
@@ -22,10 +23,6 @@ public class RunnableComputerPlayer implements Runnable {
     private Direction lastStep;
 
     private Subject onDestroySub = PublishSubject.create();
-
-    private volatile boolean running = true;
-    private volatile boolean paused = false;
-    private Object pauseLock = new Object();
 
     public RunnableComputerPlayer(ComputerPlayer player, Direction[] directions, int stepSpeedMs) {
         this(player, Arrays.asList(directions), stepSpeedMs);
@@ -41,9 +38,6 @@ public class RunnableComputerPlayer implements Runnable {
         this.player = computerPlayer.player;
         this.directions = Arrays.asList(directions);
         this.stepSpeedMs = computerPlayer.stepSpeedMs;
-        this.running = computerPlayer.running;
-        this.paused = computerPlayer.paused;
-        this.pauseLock = computerPlayer.pauseLock;
     }
 
     @Override
@@ -64,42 +58,16 @@ public class RunnableComputerPlayer implements Runnable {
     }
 
     private boolean moveInDirection(Direction direction) {
-        if (threadActionManagement()) {
+        try {
+            if (super.threadActionManagement()) {
+                return true;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
             return true;
         }
 
         this.immediateMove(direction);
-        return false;
-    }
-
-    private boolean threadActionManagement() {
-        if (!this.running) {
-            return true;
-        }
-
-        if (paused) {
-            try {
-                synchronized (pauseLock) {
-                    pauseLock.wait();
-                /*
-                 will cause this Thread to block until
-                 another thread calls pauseLock.notifyAll()
-                 Note that calling wait() will
-                 relinquish the synchronized lock that this
-                 thread holds on pauseLock so another thread
-                 can acquire the lock to call notifyAll()
-                */
-                }
-            } catch (InterruptedException ex) {
-                System.out.println("Error at waiting in computer player");
-                ex.printStackTrace();
-                return true;
-            }
-            // running might have changed since we paused
-            if (!running) {
-                return true;
-            }
-        }
         return false;
     }
 
@@ -135,13 +103,13 @@ public class RunnableComputerPlayer implements Runnable {
 
     private void waitToKey() {
         Thread thread = new Thread(new Runnable() {
-            private volatile boolean iskeyListenerThreadRunning = true;
+            private volatile boolean isKeyListenerThreadRunning = true;
 
             @Override
             public void run() {
 
                 onDestroySub.subscribe(none -> {
-                    iskeyListenerThreadRunning = false;
+                    isKeyListenerThreadRunning = false;
                 });
 
                 DebuggerHelper.getInstance().getSingleKeyPressedObs(KeyEvent.VK_SPACE)
@@ -154,7 +122,7 @@ public class RunnableComputerPlayer implements Runnable {
                             }
                         });
 
-                while (iskeyListenerThreadRunning);
+                while (isKeyListenerThreadRunning);
 
                 System.out.println("Finishing thread " + Thread.currentThread().getName());
 
@@ -191,32 +159,6 @@ public class RunnableComputerPlayer implements Runnable {
         }
 
         return lastStep;
-    }
-
-    public void stop() {
-        running = false;
-        // you might also want to interrupt() the Thread that is
-        // running this Runnable, too, or perhaps call:
-        resume();
-        // to unblock
-    }
-
-    public void restart() {
-        running = true;
-        // TODO - FIX THIS - NOT SURE IF THIS WORK
-        resume();
-    }
-
-    public void pause() {
-        // you may want to throw an IllegalStateException if !running
-        paused = true;
-    }
-
-    public void resume() {
-        synchronized (pauseLock) {
-            paused = false;
-            pauseLock.notifyAll(); // Unblocks thread
-        }
     }
 
     private void destroy() {
