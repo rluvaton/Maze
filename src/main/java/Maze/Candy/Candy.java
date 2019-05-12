@@ -22,7 +22,7 @@ public abstract class Candy {
      * Time in milliseconds of candy to live, until it's expired and disappear
      * -1 means no time
      */
-    protected int timeToLive = -1;
+    protected int timeToLive = Candy.WITHOUT_TIMEOUT;
 
     // region Constructors
 

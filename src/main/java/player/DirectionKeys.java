@@ -23,7 +23,7 @@ public class DirectionKeys {
         this.leftKeyCode = leftKeyCode;
     }
 
-    public boolean isAllKeysSet() {
+    public boolean areAllKeysSet() {
         return this.upKeyCode != DirectionKeys.NO_KEY &&
                 this.downKeyCode != DirectionKeys.NO_KEY &&
                 this.rightKeyCode != DirectionKeys.NO_KEY &&

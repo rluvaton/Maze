@@ -1,4 +1,4 @@
-package UI;
+package GUI;
 
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
@@ -17,6 +17,7 @@ import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
 import javax.swing.*;
+import java.awt.Color;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,6 @@ public class MazePreviewPanel extends JPanel {
      */
     public MazePreviewPanel() {
         init();
-        initGame();
     }
 
     /**
@@ -89,7 +89,6 @@ public class MazePreviewPanel extends JPanel {
         this(maze, players, true);
 
         init();
-        initGame();
     }
 
     /**
@@ -108,7 +107,6 @@ public class MazePreviewPanel extends JPanel {
         }
 
         init();
-        initGame();
     }
 
     private void setPlayerLocationAtEntrances(Maze maze) {
@@ -148,13 +146,14 @@ public class MazePreviewPanel extends JPanel {
         this.players = players;
 
         init();
-        initGame();
     }
 
     private void init() {
         if (DebuggerHelper.isInDebugMode()) {
             this.initDebugging();
         }
+
+        this.setFocusable(true);
     }
 
     // endregion
@@ -168,7 +167,7 @@ public class MazePreviewPanel extends JPanel {
      *
      * @description Start listening for players movements
      */
-    private void initGame() {
+    public void initGame() {
         setBackground(Color.WHITE);
 
         ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
@@ -344,18 +343,16 @@ public class MazePreviewPanel extends JPanel {
         Color before = g.getColor();
 
 
-        ArrayList<Candy> cellCandies = cell.getCandies();
+        ArrayList<Candy> cellCandies = (ArrayList<Candy>) cell.getCandies().clone();
 
-        synchronized (cellCandies) {
-            if (!cellCandies.isEmpty()) {
-                for (Candy candy : cellCandies) {
-                    if (candy == null) {
-                        continue;
-                    }
-
-                    g.setColor(Color.decode(candy.getColor()));
-                    g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
+        if (!cellCandies.isEmpty()) {
+            for (Candy candy : cellCandies) {
+                if (candy == null) {
+                    continue;
                 }
+
+                g.setColor(Color.decode(candy.getColor()));
+                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
             }
         }
 
@@ -369,11 +366,14 @@ public class MazePreviewPanel extends JPanel {
      */
     private void showPlayers(Graphics g) {
 
+        Color before = g.getColor();
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
         for (BasePlayer player : this.players) {
-
+            if (player.getColor() != null) {
+                g.setColor(player.getColor().getColor());
+            }
             Coordinate coordinates = this.calculateLocation(player.getLocation());
 
             int horSpace = fullW / this.maze.getWidth();
@@ -390,6 +390,8 @@ public class MazePreviewPanel extends JPanel {
                     verSpace - this.cellVerMargin);
             repaint();
         }
+
+        g.setColor(before);
     }
 
     // endregion
@@ -503,5 +505,9 @@ public class MazePreviewPanel extends JPanel {
         }
 
         return true;
+    }
+
+    public Maze getMaze() {
+        return maze;
     }
 }

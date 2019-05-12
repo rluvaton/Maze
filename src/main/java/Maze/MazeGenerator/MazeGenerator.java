@@ -13,9 +13,11 @@ import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.IMazeBuilder;
 import Maze.MazeBuilder.IMazeBuilder.ELocationBaseData;
+import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.Exceptions.CandyBuilderException;
 import Maze.MazeGenerator.Exceptions.PortalCandyBuilderException;
 import Maze.Solver.Adapter.SolverAdapter;
+import Maze.Solver.BFS.BFSSolverAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -242,8 +244,6 @@ public class MazeGenerator {
     }
 
     public MazeGenerator generateRandomCandies(CandyPowerType[] types, int count, boolean generateOnlyGood) {
-        Coordinate cellLoc;
-        Cell cell;
 
         GenerateCandyConfig config = new GenerateCandyConfig()
                 .setTypes(types);
@@ -251,6 +251,13 @@ public class MazeGenerator {
         if (generateOnlyGood) {
             config.setStrengthPower(new IntegerConfiguration(1, 1000));
         }
+
+        return this.generateRandomCandies(config, count);
+    }
+
+    public MazeGenerator generateRandomCandies(GenerateCandyConfig config, int count) {
+        Coordinate cellLoc;
+        Cell cell;
 
         for (int i = 0; i < count; i++) {
             cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
@@ -406,7 +413,7 @@ public class MazeGenerator {
         }
     }
 
-    static class IntegerConfiguration {
+    public static class IntegerConfiguration {
         private int value;
         private int from;
         private int to;
@@ -425,6 +432,111 @@ public class MazeGenerator {
 
         int getValue() {
             return randomize ? RandomHelper.getRandomNumber(from, to) : value;
+        }
+    }
+
+    public static class Builder {
+        private IMazeBuilder mazeBuilder;
+        private SolverAdapter solverAdapter;
+
+        private int height;
+        private int width;
+        private int minDistance;
+        private int numOfEntrance;
+        private int numOfExits;
+
+        private GenerateCandyConfig candyConfig;
+        private int totalCandies = 0;
+
+        public Builder() {
+        }
+
+        public IMazeBuilder getMazeBuilder() {
+            return mazeBuilder;
+        }
+
+        public Builder setMazeBuilder(IMazeBuilder mazeBuilder) {
+            this.mazeBuilder = mazeBuilder;
+            return this;
+        }
+
+        public SolverAdapter getSolverAdapter() {
+            return solverAdapter;
+        }
+
+        public Builder setSolverAdapter(SolverAdapter solverAdapter) {
+            this.solverAdapter = solverAdapter;
+            return this;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public Builder setHeight(int height) {
+            this.height = height;
+            return this;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public Builder setWidth(int width) {
+            this.width = width;
+            return this;
+        }
+
+        public int getMinDistance() {
+            return minDistance;
+        }
+
+        public Builder setMinDistance(int minDistance) {
+            this.minDistance = minDistance;
+            return this;
+        }
+
+        public int getNumOfEntrance() {
+            return numOfEntrance;
+        }
+
+        public Builder setNumOfEntrance(int numOfEntrance) {
+            this.numOfEntrance = numOfEntrance;
+            return this;
+        }
+
+        public int getNumOfExits() {
+            return numOfExits;
+        }
+
+        public Builder setNumOfExits(int numOfExits) {
+            this.numOfExits = numOfExits;
+            return this;
+        }
+
+        public GenerateCandyConfig getCandyConfig() {
+            return candyConfig;
+        }
+
+        public Builder setCandyConfig(GenerateCandyConfig candyConfig) {
+            this.candyConfig = candyConfig;
+            return this;
+        }
+
+        public int getTotalCandies() {
+            return totalCandies;
+        }
+
+        public Builder setTotalCandies(int totalCandies) {
+            this.totalCandies = totalCandies;
+            return this;
+        }
+
+        public Maze build() throws MazeBuilderException {
+            return new MazeGenerator(this.mazeBuilder, this.solverAdapter)
+                    .generateMaze(this.height, this.width, this.minDistance, this.numOfEntrance, this.numOfExits)
+                    .generateRandomCandies(this.candyConfig, this.totalCandies)
+                    .create();
         }
     }
 }

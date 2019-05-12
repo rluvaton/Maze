@@ -1,5 +1,6 @@
 package player;
 
+import GUI.Color;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import io.reactivex.Observable;
@@ -63,6 +64,7 @@ public class BasePlayer
 
     private final Map<Direction, Runnable> directionActions = this.createDirectionActions();
 
+    private Color color;
     // endregion
 
     /**
@@ -86,6 +88,14 @@ public class BasePlayer
         this.location = location;
     }
 
+    public BasePlayer(String name, Color color) {
+        this.name = name;
+        this.color = color;
+    }
+    public BasePlayer(Coordinate location, String name, Color color) {
+        this(location, name);
+        this.color = color;
+    }
 
     /**
      * Create Action for each direction
@@ -255,6 +265,11 @@ public class BasePlayer
     }
 
     // endregion
+
+    public Color getColor() {
+        return color;
+    }
+
 
     // endregion
 }
