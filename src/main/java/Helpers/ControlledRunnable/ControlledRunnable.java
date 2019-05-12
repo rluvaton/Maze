@@ -1,4 +1,4 @@
-package Helpers;
+package Helpers.ControlledRunnable;
 
 public abstract class ControlledRunnable implements Runnable {
 
@@ -6,9 +6,9 @@ public abstract class ControlledRunnable implements Runnable {
     private volatile boolean paused = false;
     private final Object pauseLock = new Object();
 
-    protected final boolean threadActionManagement() throws InterruptedException {
+    protected final void threadActionManagement() throws InterruptedException, RunnableStoppedRunningException {
         if (!this.running) {
-            return true;
+            throw new RunnableStoppedRunningException();
         }
 
         if (paused) {
@@ -26,13 +26,12 @@ public abstract class ControlledRunnable implements Runnable {
 
             // running might have changed since we paused
             if (!running) {
-                return true;
+                throw new RunnableStoppedRunningException();
             }
         }
-        return false;
     }
 
-    public final void stop() {
+    public void stop() {
         running = false;
         // you might also want to interrupt() the Thread that is
         // running this Runnable, too, or perhaps call:
@@ -46,7 +45,7 @@ public abstract class ControlledRunnable implements Runnable {
         resume();
     }
 
-    public final void pause() {
+    public void pause() {
         // you may want to throw an IllegalStateException if !running
         paused = true;
     }

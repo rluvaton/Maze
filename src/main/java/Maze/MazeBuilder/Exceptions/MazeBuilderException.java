@@ -1,12 +1,12 @@
 package Maze.MazeBuilder.Exceptions;
 
-import Maze.MazeBuilder.RectangleMazeBuilder;
+import Maze.MazeBuilder.IMazeBuilder;
 
-public class MazeBuilderException extends Throwable {
-    private final RectangleMazeBuilder rectangleMazeBuilder;
+public class MazeBuilderException extends Exception {
+    private final IMazeBuilder mazeBuilder;
 
-    public MazeBuilderException(RectangleMazeBuilder rectangleMazeBuilder, String message) {
+    public MazeBuilderException(IMazeBuilder mazeBuilder, String message) {
         super(message);
-        this.rectangleMazeBuilder = rectangleMazeBuilder;
+        this.mazeBuilder = mazeBuilder;
     }
 }

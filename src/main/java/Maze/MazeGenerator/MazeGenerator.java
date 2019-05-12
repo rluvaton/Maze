@@ -13,11 +13,9 @@ import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.IMazeBuilder;
 import Maze.MazeBuilder.IMazeBuilder.ELocationBaseData;
-import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.Exceptions.CandyBuilderException;
 import Maze.MazeGenerator.Exceptions.PortalCandyBuilderException;
 import Maze.Solver.Adapter.SolverAdapter;
-import Maze.Solver.BFS.BFSSolverAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +36,8 @@ public class MazeGenerator {
     private ArrayList<ELocationBaseData> entrances = new ArrayList<>();
     private ArrayList<ELocationBaseData> exits = new ArrayList<>();
 
+    MazeGeneratorActions mazeGeneratorActions = new MazeGeneratorActions();
+
     public MazeGenerator(IMazeBuilder mazeBuilder, SolverAdapter solverAdapter) {
         assert mazeBuilder != null && solverAdapter != null;
         this.mazeBuilder = mazeBuilder;
@@ -45,59 +45,63 @@ public class MazeGenerator {
     }
 
     public MazeGenerator generateMaze(int height,
-                                      int width,
-                                      int minDistance,
-                                      int numOfEntrance,
-                                      int numOfExits) {
-        this.height = height;
-        this.width = width;
+                                      int width) {
+        this.mazeGeneratorActions.add(MazeGeneratorActions.MazeGenerationStepTypes.GENERATE_MAZE, () -> {
+            this.height = height;
+            this.width = width;
 
-        this.mazeBuilder
-                .buildMazeSkeleton(height, width)
-                .buildAllCellsAsEmpty();
+            this.mazeBuilder
+                    .buildMazeSkeleton(height, width)
+                    .buildAllCellsAsEmpty();
 
-        new DFSMazeGenerator(this.mazeBuilder, height, width)
-                .randomizeMaze(RandomHelper.generateCoordinate(height, width));
+            new DFSMazeGenerator(this.mazeBuilder, height, width)
+                    .randomizeMaze(RandomHelper.generateCoordinate(height, width));
 
-        this.createRandomEntrancesAndExists(numOfEntrance, numOfExits, minDistance);
+            return this;
+        });
 
         return this;
     }
 
     // region Random Entrances & Exists
-    private void createRandomEntrancesAndExists(int numOfEntrances, int numOfExits, int minDistance) {
-        assert numOfEntrances > 0 && numOfExits > 0;
+    public MazeGenerator createRandomEntrancesAndExists(int numOfEntrances, int numOfExits, int minDistance) {
+        this.mazeGeneratorActions.add(MazeGeneratorActions.MazeGenerationStepTypes.CREATE_ELOCATION, () -> {
+            assert numOfEntrances > 0 && numOfExits > 0;
 
-        this.validateMinDistance(minDistance);
+            this.validateMinDistance(minDistance);
 
-        this.eLocationOptionsCount = height * 2 + width * 2;
+            this.eLocationOptionsCount = height * 2 + width * 2;
 
-        while (this.entrances.size() < numOfEntrances || this.exits.size() < numOfExits) {
-            if (this.entrances.size() < numOfEntrances) {
-                try {
-                    ELocationBaseData entrance = randomizeEntrance(minDistance);
+            while (this.entrances.size() < numOfEntrances || this.exits.size() < numOfExits) {
+                if (this.entrances.size() < numOfEntrances) {
+                    try {
+                        ELocationBaseData entrance = randomizeEntrance(minDistance);
 
-                    this.entrances.add(entrance);
-                } catch (Exception e) {
-                    System.out.println("Retry after entrance not founded...");
-                    this.removeLastItem(exits);
+                        this.entrances.add(entrance);
+                    } catch (Exception e) {
+                        System.out.println("Retry after entrance not founded...");
+                        this.removeLastItem(exits);
+                    }
+                }
+
+                if (this.exits.size() < numOfExits) {
+                    try {
+                        ELocationBaseData exit = randomizeExit(minDistance);
+
+                        exits.add(exit);
+                    } catch (Exception e) {
+                        System.out.println("Retry after exit not founded...");
+                        this.removeLastItem(entrances);
+                    }
                 }
             }
 
-            if (this.exits.size() < numOfExits) {
-                try {
-                    ELocationBaseData exit = randomizeExit(minDistance);
+            this.mazeBuilder.buildManyEntrances(entrances);
+            this.mazeBuilder.buildManyExits(exits);
 
-                    exits.add(exit);
-                } catch (Exception e) {
-                    System.out.println("Retry after exit not founded...");
-                    this.removeLastItem(entrances);
-                }
-            }
-        }
-
-        this.mazeBuilder.buildManyEntrances(entrances);
-        this.mazeBuilder.buildManyExits(exits);
+            return this;
+        });
+        return this;
     }
 
     private void removeLastItem(ArrayList<ELocationBaseData> eLocationBaseData) {
@@ -256,27 +260,36 @@ public class MazeGenerator {
     }
 
     public MazeGenerator generateRandomCandies(GenerateCandyConfig config, int count) {
-        Coordinate cellLoc;
-        Cell cell;
+        this.mazeGeneratorActions.add(MazeGeneratorActions.MazeGenerationStepTypes.CREATE_CANDIES, () -> {
+            Coordinate cellLoc;
+            Cell cell;
 
-        for (int i = 0; i < count; i++) {
-            cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
-            cell = this.mazeBuilder.getCellAtPosition(cellLoc);
+            for (int i = 0; i < count; i++) {
+                cellLoc = RandomHelper.generateCoordinate(this.height, this.width);
+                cell = this.mazeBuilder.getCellAtPosition(cellLoc);
 
-            config.setCellLoc(cellLoc);
-            Candy candy = null;
+                if (cell.hasNeighborELocation()) {
+                    i--;
+                    continue;
+                }
 
-            try {
-                candy = this.generateSingleCandy(config);
-            } catch (CandyBuilderException e) {
-                i--;
-                continue;
-            } catch (Exception e) {
-                e.printStackTrace();
+                config.setCellLoc(cellLoc);
+                Candy candy = null;
+
+                try {
+                    candy = this.generateSingleCandy(config);
+                } catch (CandyBuilderException e) {
+                    i--;
+                    continue;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                cell.addCandy(candy);
             }
 
-            cell.addCandy(candy);
-        }
+            return this;
+        });
 
         return this;
     }
@@ -324,7 +337,9 @@ public class MazeGenerator {
     private boolean isPortalCandyCoordinatesValid(Coordinate otherCellLocation) {
         return otherCellLocation != null &&
                 Instance.inBounds(otherCellLocation, height, width) &&
-                mazeBuilder.getCellAtPosition(otherCellLocation).getCandies().stream().noneMatch(candy -> candy.getType() == CandyPowerType.Location);
+                mazeBuilder.getCellAtPosition(otherCellLocation).getCandies().stream().noneMatch(candy -> candy.getType() == CandyPowerType.Location) &&
+                this.exits.stream().noneMatch(eLocationBaseData -> otherCellLocation.equals(eLocationBaseData.getPos())) &&
+                this.entrances.stream().noneMatch(eLocationBaseData -> otherCellLocation.equals(eLocationBaseData.getPos()));
     }
 
     private CandyPowerType getRandomType(CandyPowerType[] types) {
@@ -334,7 +349,13 @@ public class MazeGenerator {
     // endregion
 
     public Maze create() throws MazeBuilderException {
-        return this.mazeBuilder.getMaze();
+        MazeGenerator mazeGenerator = this.mazeGeneratorActions.parseActions();
+
+        if (mazeGenerator == null) {
+            throw new MazeBuilderException(this.mazeBuilder, "Nothing to build, please create generate maze");
+        }
+
+        return mazeGenerator.mazeBuilder.getMaze();
     }
 
     class DFSMazeGenerator {
@@ -534,9 +555,12 @@ public class MazeGenerator {
 
         public Maze build() throws MazeBuilderException {
             return new MazeGenerator(this.mazeBuilder, this.solverAdapter)
-                    .generateMaze(this.height, this.width, this.minDistance, this.numOfEntrance, this.numOfExits)
+                    .generateMaze(this.height, this.width)
+                    .createRandomEntrancesAndExists(this.minDistance, this.numOfEntrance, this.numOfExits)
                     .generateRandomCandies(this.candyConfig, this.totalCandies)
                     .create();
         }
     }
+
 }
+

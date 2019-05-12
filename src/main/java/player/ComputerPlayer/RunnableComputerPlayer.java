@@ -1,6 +1,6 @@
-package player;
+package player.ComputerPlayer;
 
-import Helpers.ControlledRunnable;
+import Helpers.ControlledRunnable.ControlledRunnable;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
 import io.reactivex.functions.Consumer;
@@ -8,10 +8,13 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import player.exceptions.InvalidDirectionException;
 import player.exceptions.PlayerNotRunning;
+import Helpers.ControlledRunnable.RunnableStoppedRunningException;
 
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
+
+import static Logger.LoggerManager.logger;
 
 public class RunnableComputerPlayer extends ControlledRunnable {
 
@@ -47,8 +50,8 @@ public class RunnableComputerPlayer extends ControlledRunnable {
             waitToKey();
         }
 
-        // recomputing every loop cycle in purpose (the size can change)
-        for (currentStep = 0; currentStep < this.directions.size(); currentStep++) {
+        int size = this.directions.size();
+        for (currentStep = 0; currentStep < size; currentStep++) {
             if (moveInDirection(this.directions.get(currentStep))) {
                 break;
             }
@@ -59,15 +62,25 @@ public class RunnableComputerPlayer extends ControlledRunnable {
 
     private boolean moveInDirection(Direction direction) {
         try {
-            if (super.threadActionManagement()) {
-                return true;
-            }
+            super.threadActionManagement();
         } catch (InterruptedException e) {
             e.printStackTrace();
             return true;
+        } catch (RunnableStoppedRunningException e) {
+            return true;
+        }
+
+
+        if(DebuggerHelper.isInDebugMode()) {
+            pause();
         }
 
         this.immediateMove(direction);
+
+        if(!DebuggerHelper.isInDebugMode()) {
+            delay();
+        }
+
         return false;
     }
 
@@ -79,26 +92,20 @@ public class RunnableComputerPlayer extends ControlledRunnable {
     }
 
     private void immediateMove(Direction direction) {
-
-        if(DebuggerHelper.isInDebugMode()) {
-            pause();
-        }
-
-        System.out.println("Computer moved " + direction);
+        logger.info("[Computer Player][Move]: Direction " + direction);
         synchronized (player) {
             try {
                 player.move(direction);
             } catch (InvalidDirectionException invalidDirectionEx) {
-                System.out.println("Invalid computer move " + direction);
+                handleInvalidDirectionException(direction);
             }
 
             this.lastStep = direction;
         }
+    }
 
-
-        if(!DebuggerHelper.isInDebugMode()) {
-            delay();
-        }
+    private void handleInvalidDirectionException(Direction direction) {
+        logger.warn("[Error][Computer Player][Invalid Move]: Direction " + direction);
     }
 
     private void waitToKey() {
@@ -124,7 +131,7 @@ public class RunnableComputerPlayer extends ControlledRunnable {
 
                 while (isKeyListenerThreadRunning);
 
-                System.out.println("Finishing thread " + Thread.currentThread().getName());
+                logger.info("[Computer Player][Debug] Finishing thread " + Thread.currentThread().getName());
 
             }
         });
@@ -136,9 +143,13 @@ public class RunnableComputerPlayer extends ControlledRunnable {
         try {
             Thread.sleep(stepSpeedMs);
         } catch (InterruptedException e) {
-            System.out.println("Error in thread sleep in computer player move");
-            e.printStackTrace();
+            handleDelayException(e);
         }
+    }
+
+    private void handleDelayException(InterruptedException e) {
+        logger.warn("Error in thread sleep in human player move");
+        e.printStackTrace();
     }
 
     public void undoStep() throws PlayerNotRunning {

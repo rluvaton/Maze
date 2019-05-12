@@ -28,7 +28,7 @@ public class BasePlayer
      */
     private String name;
 
-    Subject<Boolean> onFinish = PublishSubject.create();
+    protected Subject<Boolean> onFinish = PublishSubject.create();
 
     /**
      * Subject for where the player move

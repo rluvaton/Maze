@@ -3,7 +3,7 @@ package GUI;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
-import Helpers.NoArgsVoidCallbackFunction;
+import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Maze.Candy.Candy;
 import Maze.Cell;
 import Maze.ELocation;
@@ -11,8 +11,8 @@ import Maze.ELocationType;
 import Maze.Maze;
 import io.reactivex.Observable;
 import player.BasePlayer;
-import player.ComputerPlayer;
-import player.HumanPlayer;
+import player.ComputerPlayer.ComputerPlayer;
+import player.HumanPlayer.HumanPlayer;
 import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
@@ -204,7 +204,13 @@ public class MazePreviewPanel extends JPanel {
             // TODO - MOVE TO SINGLE FUNCTION CALL THAT WILL START START THE PLAYERS
             // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
-                startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
+//                this.addKeyListener((HumanPlayer) player);
+                startPlayersCallbacks.add(() -> {
+                    addKeyListener((HumanPlayer) player);
+                    Thread playerThread = ((HumanPlayer) player).start();
+
+                    playerThread.start();
+                });
             } else if (player instanceof ComputerPlayer) {
                 startPlayersCallbacks.add(() -> {
                     Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, getExitForComputerPlayer((ComputerPlayer) player));
@@ -241,6 +247,8 @@ public class MazePreviewPanel extends JPanel {
      */
     private void playerFinished(BasePlayer player) {
         // Remove key listener if the player is human player
+        player.onPlayerFinished();
+
         if (player instanceof HumanPlayer) {
             this.removeKeyListener((HumanPlayer) player);
         }

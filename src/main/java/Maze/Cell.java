@@ -154,6 +154,11 @@ public class Cell extends Node<Coordinate> {
 
     // endregion
 
+
+    public boolean hasNeighborELocation() {
+        return this.neighbors.values().stream().anyMatch(neighborCell -> neighborCell != null && neighborCell.eLocation != null);
+    }
+
     public void setELocationAsNeighbor(ELocation elocation) {
 
         NeighborCell neighborCell = this.neighbors.get(elocation.getDirection());
