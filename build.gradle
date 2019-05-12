@@ -14,6 +14,7 @@ repositories {
     }
 }
 
+
 dependencies {
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.6.0'
     compile 'io.reactivex.rxjava2:rxjava:2.2.4'
@@ -21,7 +22,7 @@ dependencies {
     testCompile 'org.junit.jupiter:junit-jupiter:5.4.2'
 }
 
-group = 'rluvaton'
+group = 'com.rluvaton'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '1.11'
 
@@ -30,5 +31,12 @@ publishing {
         maven(MavenPublication) {
             from(components.java)
         }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }

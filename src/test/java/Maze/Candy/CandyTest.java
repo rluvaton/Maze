@@ -3,8 +3,6 @@ package Maze.Candy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class CandyTest {
@@ -32,7 +30,7 @@ class CandyTest {
 
         assertEquals(candyStrength, candy.getCandyStrength());
 
-        int[] unequalCandyStrengths = new int[] {
+        int[] unequalCandyStrengths = new int[]{
                 13,
                 0,
                 -4234
@@ -51,7 +49,7 @@ class CandyTest {
 
         assertEquals(candyStrength, candy.getCandyStrength());
 
-        int[] paramsTests = new int[] {
+        int[] paramsTests = new int[]{
                 candyStrength - 7,
                 0,
                 -19
@@ -81,7 +79,7 @@ class CandyTest {
 
         assertEquals(type, candy.getType());
 
-        int[] unequalTypes = new int[] {
+        int[] unequalTypes = new int[]{
                 13,
                 0,
                 -4234
@@ -104,7 +102,7 @@ class CandyTest {
 
         assertEquals(timeToLive, candy.getTimeToLive());
 
-        int[] unequalsTimeToLive = new int[] {
+        int[] unequalsTimeToLive = new int[]{
                 13,
                 0,
                 -4234
@@ -123,7 +121,7 @@ class CandyTest {
 
         assertEquals(timeToLive, candy.getTimeToLive());
 
-        int[] unequalTimeToLive = new int[] {
+        int[] unequalTimeToLive = new int[]{
                 timeToLive - 7,
                 0,
                 -19
@@ -158,14 +156,15 @@ class CandyTest {
     }
 
     private void assertCandyEqual(CandyPowerType otherType, int otherCandyStrength, int otherTimeToLive, boolean equals) {
-        assertCandyEqual(new Candy(otherType, otherCandyStrength, otherTimeToLive) {}, equals);
+        assertCandyEqual(new Candy(otherType, otherCandyStrength, otherTimeToLive) {
+        }, equals);
     }
 
     private void assertCandyEqual(Candy otherCandy, boolean equals) {
         assertNotNull(candy);
         assertNotSame(candy, otherCandy);
 
-        if(equals) {
+        if (equals) {
             assertEquals(candy, otherCandy);
             assertTrue(candy.equals(otherCandy));
         } else {
