@@ -8,7 +8,6 @@ import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Maze;
 import Maze.Solver.Adapter.SolverAdapter;
-import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,7 +100,7 @@ public class DFSSolverAdapter extends SolverAdapter {
      */
     @Override
     public Direction[] solveMaze(Cell[][] maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
-        throw new NotImplementedException("solveMaze with cell matrix");
+        throw new UnsupportedOperationException("solveMaze with cell matrix");
     }
 
     /**
