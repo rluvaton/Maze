@@ -1,4 +1,4 @@
-package GUI;
+package GUI.MazeGame;
 
 import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
@@ -19,12 +19,18 @@ import player.HumanPlayer.HumanPlayer;
 import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.Color;
 import java.awt.*;
-import java.awt.event.KeyListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -80,6 +86,11 @@ public class MazePreviewPanel extends JPanel {
     private final Subject onDestroySub = PublishSubject.create();
 
     private ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks;
+
+    private BufferedImage exitArrowImage;
+    private BufferedImage entranceArrowImage;
+
+    private int arrowSize;
 
     // region Constructors
 
@@ -164,7 +175,61 @@ public class MazePreviewPanel extends JPanel {
             this.initDebugging();
         }
 
+        loadArrowIcons();
+
         this.setFocusable(true);
+    }
+
+    private void loadArrowIcons() {
+
+        arrowSize = 15;
+        URL exitImagePath = getClass().getResource("/maze/arrow-right-solid-exit.png");
+
+        try {
+            exitArrowImage = loadArrowIcon(exitImagePath);
+        } catch (IOException e) {
+            handleExceptionInLoadArrow(e);
+            return;
+        }
+
+        URL entranceImagePath = getClass().getResource("/maze/arrow-right-solid-entrance.png");
+
+        try {
+            entranceArrowImage = loadArrowIcon(entranceImagePath);
+        } catch (IOException e) {
+            handleExceptionInLoadArrow(e);
+            return;
+        }
+    }
+
+    private void handleExceptionInLoadArrow(IOException e) {
+        LoggerManager.logger.error("[Load Image][Arrow Image]", e.getMessage());
+        e.printStackTrace();
+
+        // TODO - When Fail - show that can start the game or go to fallback
+    }
+
+    private BufferedImage loadArrowIcon(URL imagePath) throws IOException {
+
+        BufferedImage arrowImage;
+
+        arrowImage = loadImage(imagePath);
+
+        // The arrow image is too big
+        return resize(arrowImage, arrowSize, arrowSize);
+    }
+
+    private BufferedImage loadImage(URL imagePath) throws IOException {
+        return ImageIO.read(imagePath);
+    }
+
+    private BufferedImage resize(BufferedImage img, int height, int width) {
+        Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return resized;
     }
 
     // endregion
@@ -182,9 +247,6 @@ public class MazePreviewPanel extends JPanel {
         setBackground(background);
 
         this.startPlayersCallbacks = initPlayers();
-
-        // Start the players
-//        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
 
         LoggerManager.logger.debug("Don't forget to call `startGame()`");
     }
@@ -294,6 +356,18 @@ public class MazePreviewPanel extends JPanel {
         super.paintComponent(g);
         this.paintMaze(g);
         this.showPlayers(g);
+//        paintOverlay(g);
+    }
+
+
+    private void paintOverlay(Graphics g) {
+        Color before = g.getColor();
+
+        int alpha = 127; // 50% transparent
+        Color overlayColor = new Color(0, 0, 0, alpha);
+        g.setColor(overlayColor);
+        g.fillRect(0, 0, this.getWidth(), this.getHeight());
+        g.setColor(before);
     }
 
     private void paintMaze(Graphics g) {
@@ -302,97 +376,49 @@ public class MazePreviewPanel extends JPanel {
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
-        int horSpace = fullW / this.maze.getWidth();
-        int verSpace = fullH / this.maze.getHeight();
+        int horEdgeLen = fullW / this.maze.getWidth();
+        int verEdgeLen = fullH / this.maze.getHeight();
 
-        int x = startX;
-        int y = startY;
+        int topLeftX = startX;
+        int topLeftY = startY;
+
+        CellPainter.init(verEdgeLen, horEdgeLen, arrowSize, this::createArrow);
 
         for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
             for (int j = 0; j < w; j++) {
-                this.paintCell(g, x, y, verSpace, horSpace, horSpace, verSpace, maze.getCell(i, j), i, j);
-                x += horSpace;
+                CellPainter.paint(g, maze.getCell(i, j), topLeftX, topLeftY);
+                topLeftX += horEdgeLen;
             }
-            y += verSpace;
-            x = startX;
+
+            topLeftY += verEdgeLen;
+            topLeftX = startX;
         }
-
-        // TODO - Add arrow directed to maze at the entrance points and another arrow directed outside in the exit points
-
     }
 
-    /**
-     * Paint Square Cell
-     *
-     * @param g     Graphic
-     * @param x     Start painting at X point
-     * @param y     Start painting at Y point
-     * @param len   Length of each line
-     * @param space Space between each lines (space between horizontal lines and space between vertical lines)
-     * @param cell  Cell to pain, if null then it will paint all the walls
-     * @param row   Cell row at maze
-     * @param col   Cell column at maze
-     */
-    private void paintCell(Graphics g, int x, int y, int len, int space, Cell cell, int row, int col) {
-        this.paintCell(g, x, y, len, len, space, space, cell, row, col);
+    private void createArrow(Graphics g, int angle, int x, int y, boolean isEntrance) {
+        drawImageWithRotation((Graphics2D) g, isEntrance ? entranceArrowImage : exitArrowImage, angle, x, y);
     }
 
-    /**
-     * Paint Cell
-     *
-     * @param g        Graphic
-     * @param x        Start painting at X point
-     * @param y        Start painting at Y point
-     * @param verLen   Length of vertical line
-     * @param horLen   Length of horizontal line
-     * @param verSpace Space between vertical lines
-     * @param horSpace Space between horizontal lines
-     * @param cell     Cell to pain, if null then it will paint all the walls
-     * @param row      Cell row at maze
-     * @param col      Cell column at maze
-     */
-    private void paintCell(Graphics g, int x, int y, int verLen, int horLen, int verSpace, int horSpace, Cell cell, int row, int col) {
-        if (cell == null) {
-            cell = new Cell(row, col);
-        }
+    private void createExitArrow(Graphics g, Direction direction, int x, int y) {
+        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
+    }
 
-        // Top Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.UP)) {
-            g.drawLine(x, y, x + horLen, y);
-        }
+    private void createEntranceArrow(Graphics g, Direction direction, int x, int y) {
+        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
+    }
 
-        // Bottom Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.DOWN)) {
-            g.drawLine(x, y + horSpace, x + horLen, y + horSpace);
-        }
+    private void createArrowFromImage(Graphics g, BufferedImage arrowImage) {
+        drawImageWithRotation((Graphics2D) g, arrowImage, 45, 100, 100);
+    }
 
-        // Left Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.LEFT)) {
-            g.drawLine(x, y, x, y + verLen);
-        }
+    private void drawImageWithRotation(Graphics2D g2d, BufferedImage image, int degree, int x, int y) {
+        assert g2d != null && image != null;
 
-        // Right Wall
-        if (!cell.haveCellOrELocationAtDirection(Direction.RIGHT)) {
-            g.drawLine(x + verSpace, y, x + verSpace, y + verLen);
-        }
+        // The image not moved when the window resize
 
-        Color before = g.getColor();
-
-
-        ArrayList<Candy> cellCandies = (ArrayList<Candy>) cell.getCandies().clone();
-
-        if (!cellCandies.isEmpty()) {
-            for (Candy candy : cellCandies) {
-                if (candy == null) {
-                    continue;
-                }
-
-                g.setColor(Color.decode(candy.getColor()));
-                g.drawOval(x + horLen / 2, y + verLen / 2, horLen / 5, verLen / 5);
-            }
-        }
-
-        g.setColor(before);
+        AffineTransform affineTransform = AffineTransform.getTranslateInstance(x, y);
+        affineTransform.rotate(Math.toRadians(degree), image.getWidth() / 2, image.getHeight() / 2);
+        g2d.drawImage(image, affineTransform, this);
     }
 
     /**

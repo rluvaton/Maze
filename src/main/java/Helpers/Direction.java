@@ -9,21 +9,27 @@ import java.util.Map;
  * You can use {@link Utils#moveCoordinatesToDirection(Coordinate, Direction)} for moving in direction
  */
 public enum Direction {
-    UP(new Coordinate(-1, 0)),
-    RIGHT(new Coordinate(0, 1)),
-    DOWN(new Coordinate(1, 0)),
-    LEFT(new Coordinate(0, -1));
+    UP(new Coordinate(-1, 0), (short) 90),
+    RIGHT(new Coordinate(0, 1), (short) 0),
+    DOWN(new Coordinate(1, 0), (short) 270),
+    LEFT(new Coordinate(0, -1), (short) 180);
 
     private final Coordinate value;
+    private final short angle;
     public static Map<Direction, Direction> OPPOSITE_DIRECTIONS = Direction.createOppositeDirectionsMap();
 
-    Direction(final Coordinate newValue) {
-        value = newValue;
+    Direction(final Coordinate value, final short angle) {
+        this.value = value;
+        this.angle = angle;
     }
 
     public Coordinate getValue() {
         // We clone because we don't want the value to change somehow
         return value.clone();
+    }
+
+    public short getAngle() {
+        return this.angle;
     }
 
     private static Map<Direction, Direction> createOppositeDirectionsMap() {
