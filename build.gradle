@@ -16,8 +16,14 @@ repositories {
 
 
 dependencies {
+    
+    // For GUI
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.6.0'
+    
+    // For Handling events
     compile 'io.reactivex.rxjava2:rxjava:2.2.4'
+    
+    // Tests
     compile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testCompile 'org.junit.jupiter:junit-jupiter:5.4.2'
 }

@@ -1,24 +1,28 @@
 package GUI;
 
+import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
-import Helpers.NoArgsVoidCallbackFunction;
+import Logger.LoggerManager;
 import Maze.Candy.Candy;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Maze;
 import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import player.BasePlayer;
-import player.ComputerPlayer;
-import player.HumanPlayer;
+import player.ComputerPlayer.ComputerPlayer;
+import player.HumanPlayer.HumanPlayer;
 import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
 import javax.swing.*;
 import java.awt.Color;
 import java.awt.*;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +73,13 @@ public class MazePreviewPanel extends JPanel {
      * Set to 20 so it createRunningThread with a little padding
      */
     private final int cellHorMargin = 3;
+
+    /**
+     * Subject to stop all the left subscriptions
+     */
+    private final Subject onDestroySub = PublishSubject.create();
+
+    private ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks;
 
     // region Constructors
 
@@ -168,8 +179,30 @@ public class MazePreviewPanel extends JPanel {
      * @description Start listening for players movements
      */
     public void initGame() {
-        setBackground(Color.WHITE);
+        setBackground(background);
 
+        this.startPlayersCallbacks = initPlayers();
+
+        // Start the players
+//        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+
+        LoggerManager.logger.debug("Don't forget to call `startGame()`");
+    }
+
+    public void startGame() {
+        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+
+        this.maze.getCandies()
+                .stream()
+                .filter(candyLoc -> candyLoc.candy.getTimeToLive() > 0)
+                .forEach(candyLoc ->
+                        Observable.timer(candyLoc.candy.getTimeToLive(), TimeUnit.MILLISECONDS)
+                                .takeUntil(this.onDestroySub)
+                                .subscribe(finished -> this.maze.getCell(candyLoc.coordinate).removeCandy(candyLoc.candy)));
+
+    }
+
+    private ArrayList<NoArgsVoidCallbackFunction> initPlayers() {
         ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
 
         for (BasePlayer player : this.players) {
@@ -180,54 +213,60 @@ public class MazePreviewPanel extends JPanel {
             // Set default location to 0,0
             player.setLocation(entrance != null ? entrance.getLocation() : new Coordinate(0, 0));
 
-            // Move player when observable fire
-            player.getPlayerMoveObs()
-                    .subscribe(direction -> {
-                        MoveStatus res = this.movePlayer(player, direction);
-                        switch (res) {
-                            case Valid:
-                                System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
-                                break;
-                            case NotValidMove:
-                                System.out.println("Not Valid Move");
-                                break;
-                            case Finished:
-                                System.out.println("User Finished!");
-                                this.playerFinished(player);
-                                break;
-                            default:
-                                System.out.println("Unknown move status " + res);
-                                break;
-                        }
-                    });
+            listenToPlayerMovement(player);
 
-            // TODO - MOVE TO SINGLE FUNCTION CALL THAT WILL START START THE PLAYERS
-            // Set the key listener to the player if is a human player
             if (player instanceof HumanPlayer) {
-                startPlayersCallbacks.add(() -> this.addKeyListener((HumanPlayer) player));
+                startPlayersCallbacks.add(this.startHumanPlayer((HumanPlayer) player));
             } else if (player instanceof ComputerPlayer) {
-                startPlayersCallbacks.add(() -> {
-                    Thread playerThread = ((ComputerPlayer) player).createRunningThread(this.maze, getExitForComputerPlayer((ComputerPlayer) player));
-
-                    if (playerThread == null) {
-                        System.out.println("Player " + player.getName() + " can't start running");
-                        return;
-                    }
-
-                    playerThread.start();
-                });
+                startPlayersCallbacks.add(startComputerPlayer((ComputerPlayer) player));
             }
         }
 
-        // Start the players
-        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+        return startPlayersCallbacks;
+    }
 
-        this.maze.getCandies()
-                .stream()
-                .filter(candyLoc -> candyLoc.item1.getTimeToLive() > 0)
-                .forEach(candyLoc -> Observable.timer(candyLoc.item1.getTimeToLive(), TimeUnit.MILLISECONDS)
-                        .subscribe(finished -> this.maze.getCell(candyLoc.item2)
-                                .removeCandy(candyLoc.item1)));
+    private void listenToPlayerMovement(BasePlayer player) {
+        player.getPlayerMoveObs()
+                .takeUntil(onDestroySub)
+                .subscribe(direction -> {
+                    LoggerManager.logger.debug("[Player][OnMove] - Direction: " + direction);
+                    MoveStatus res = this.movePlayer(player, (Direction) direction);
+                    switch (res) {
+                        case Valid:
+                            System.out.println("Time is: " + player.getTime() + " | Points is: " + player.getPoints());
+                            break;
+                        case NotValidMove:
+                            System.out.println("Not Valid Move");
+                            break;
+                        case Finished:
+                            System.out.println("User Finished!");
+                            this.playerFinished(player);
+                            break;
+                        default:
+                            System.out.println("Unknown move status " + res);
+                            break;
+                    }
+                });
+    }
+
+    private NoArgsVoidCallbackFunction startComputerPlayer(ComputerPlayer player) {
+        Thread playerThread = player.createRunningThread(this.maze, getExitForComputerPlayer(player));
+
+        if (playerThread == null) {
+            System.out.println("Player " + player.getName() + " can't start running");
+            return null;
+        }
+
+
+        return playerThread::start;
+    }
+
+    private NoArgsVoidCallbackFunction startHumanPlayer(HumanPlayer player) {
+        LoggerManager.logger.debug("[Before Player Start]");
+        this.addKeyListener(player);
+        Thread playerThread = player.create();
+
+        return playerThread::start;
     }
 
     private Coordinate getExitForComputerPlayer(ComputerPlayer player) {
@@ -241,6 +280,8 @@ public class MazePreviewPanel extends JPanel {
      */
     private void playerFinished(BasePlayer player) {
         // Remove key listener if the player is human player
+        player.onPlayerFinished();
+
         if (player instanceof HumanPlayer) {
             this.removeKeyListener((HumanPlayer) player);
         }
@@ -255,11 +296,6 @@ public class MazePreviewPanel extends JPanel {
         this.showPlayers(g);
     }
 
-    /**
-     * Paint Maze
-     *
-     * @param g Graphics
-     */
     private void paintMaze(Graphics g) {
         g.setColor(this.mazeColor);
 
@@ -430,7 +466,7 @@ public class MazePreviewPanel extends JPanel {
         // Moved status
         MoveStatus moved = MoveStatus.NotValidMove;
 
-        if (this.maze.checkIfValidMove(loc, direction) != null) {
+        if (this.maze.isValidMove(loc, direction)) {
             player.setLocation(direction);
 
             cell = this.maze.getCell(player.getLocation());
@@ -505,6 +541,10 @@ public class MazePreviewPanel extends JPanel {
         }
 
         return true;
+    }
+
+    public void onFinishGame() {
+        this.onDestroySub.onNext(true);
     }
 
     public Maze getMaze() {

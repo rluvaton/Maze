@@ -31,6 +31,4 @@ public abstract class Node<T> {
     public void setAdjacent(LinkedList<Node<T>> adjacent) {
         this.adjacent = adjacent;
     }
-
-
 }

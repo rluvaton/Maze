@@ -7,18 +7,13 @@ import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
-import GUI.MazePreviewPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
-import player.ComputerPlayer;
-import player.DirectionKeys;
-import player.HumanPlayer;
+import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 public class GameWindow {
@@ -30,22 +25,12 @@ public class GameWindow {
     public GameWindow() {
     }
 
+    public GameWindow(MazePreviewPanel previewPanel) {
+        this.previewPanel = previewPanel;
+    }
+
     public static void main(String[] args) {
-        if (isInDebugMode(args)) {
-            turnOnDebugEnv();
-        }
-        JFrame frame = new JFrame("GameWindow");
-
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.createUIComponents();
-        frame.setContentPane(gameWindow.wrapper);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        frame.setFocusable(true);
-        setFrameIcon(frame);
-
-        frame.pack();
-        frame.setVisible(true);
+        main(args, null);
     }
 
     public static void main(String[] args, MazePreviewPanel previewPanel) {
@@ -54,14 +39,18 @@ public class GameWindow {
         }
         JFrame frame = new JFrame("GameWindow");
 
-        GameWindow gameWindow = new GameWindow();
-        gameWindow.createUIComponents(previewPanel);
+        GameWindow gameWindow = new GameWindow(previewPanel);
+
+        // Uncommented because in `$$setupUI$$` it's already been called
+//        gameWindow.createUIComponents();
+
         frame.setContentPane(gameWindow.wrapper);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setFrameIcon(frame);
 
         frame.pack();
+
         frame.setVisible(true);
     }
 
@@ -88,64 +77,16 @@ public class GameWindow {
         this.createWrapper();
 
         // TODO - clean this
-        int height = 50;
-        int width = 20;
+        int height;
+        int width;
 
-        // TODO - add scroller to the game JPanel
-
-        Dimension previewPanel = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
-
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-
-        int minDistance = 0;
-
-        this.previewPanel = start(height, width, minDistance);
-
-
-        Dimension wrapperSize = (Dimension) previewPanel.clone();
-        int buttonHeight = 20;
-        wrapperSize.setSize(previewPanel.width, previewPanel.height + buttonHeight);
-
-
-        this.wrapper.setPreferredSize(wrapperSize);
-//
-//        c.gridx = 0;
-//        c.gridy = 0;
-//        this.wrapper.add(this.logSizeBtn, c);
-//
-//        c.gridx = 1;
-//        c.gridy = 0;
-//        c.weightx = 20;
-//        this.wrapper.add(this.widthSpinner, c);
-//
-//        c.gridx = 2;
-//        c.gridy = 0;
-//        this.wrapper.add(this.heightSpinner, c);
-
-        c.ipady = previewPanel.height;      // make this component tall
-        c.weightx = previewPanel.width;
-        c.weighty = previewPanel.height;
-        c.gridwidth = previewPanel.width;
-        c.gridx = 0;
-        c.gridy = 1;
-        this.wrapper.add(this.previewPanel, c);
-
-        this.wrapper.updateUI();
-
-        this.previewPanel.initGame();
-    }
-
-    private void createUIComponents(MazePreviewPanel previewPanel) {
-        // TODO: place custom component creation code here
-
-        this.createWrapper();
-
-        // TODO - clean this
-        int height = previewPanel.getMaze().getHeight();
-        int width = previewPanel.getMaze().getWidth();
+        if (previewPanel == null) {
+            height = 15;
+            width = 10;
+        } else {
+            height = previewPanel.getMaze().getHeight();
+            width = previewPanel.getMaze().getWidth();
+        }
 
         // TODO - add scroller to the game JPanel
 
@@ -158,7 +99,9 @@ public class GameWindow {
 
         int minDistance = 0;
 
-        this.previewPanel = previewPanel;
+        if (previewPanel == null) {
+            this.previewPanel = start(height, width, minDistance);
+        }
 
 
         Dimension wrapperSize = (Dimension) previewPanelDim.clone();
@@ -192,6 +135,7 @@ public class GameWindow {
         this.wrapper.updateUI();
 
         this.previewPanel.initGame();
+        this.previewPanel.startGame();
     }
 
 
@@ -211,7 +155,8 @@ public class GameWindow {
 
         try {
             maze = new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
-                    .generateMaze(height, width, minDistance, 2, 2)
+                    .generateMaze(height, width)
+                    .createRandomEntrancesAndExists(minDistance, 2, 2)
                     .generateRandomCandies((int) getTotalCandiesCountForMaze(height, width), true)
                     .create();
         } catch (MazeBuilderException e) {
@@ -232,8 +177,8 @@ public class GameWindow {
     private BasePlayer[] getGamePlayer() {
         return new BasePlayer[]{
                 new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"),
-                new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", DirectionKeys.DEFAULT_AS_WASD),
-                new ComputerPlayer(new Coordinate(0, 0))
+//                new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", ActionsKeys.DEFAULT_AS_WASD),
+//                new ComputerPlayer(new Coordinate(0, 0))
         };
     }
 

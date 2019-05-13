@@ -1,4 +1,4 @@
-package player;
+package player.ComputerPlayer;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
@@ -6,6 +6,7 @@ import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Cell;
 import Maze.Maze;
+import player.BasePlayer;
 import player.exceptions.PlayerNotRunning;
 
 import java.util.AbstractMap;
@@ -289,8 +290,6 @@ public class ComputerPlayer extends BasePlayer {
         this.runnablePlayer = new RunnableComputerPlayer(this.runnablePlayer, steps);
 
         this.playerThread = createPlayerThread();
-
-        this.runnablePlayer.restart();
 
         this.playerThread.start();
     }

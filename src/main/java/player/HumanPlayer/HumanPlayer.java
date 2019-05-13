@@ -1,0 +1,189 @@
+package player.HumanPlayer;
+
+import GUI.Color;
+import Helpers.CallbackFns.ArgsVoidCallbackFunction;
+import Helpers.Coordinate;
+import Helpers.Direction;
+import Logger.LoggerManager;
+import player.ActionsKeys;
+import player.BasePlayer;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Human Player
+ *
+ * @implNote Implement {@link KeyListener} for moving with the keyboard
+ */
+public class HumanPlayer extends BasePlayer implements KeyListener {
+    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> specialKeys = this.getDefaultSpecialKeyAssignment();
+
+    private Map<Integer, Direction> directionKeys = this.getDefaultKeyAssignment();
+    private Map<Integer, Boolean> pressedKeys = new HashMap<>();
+
+    private Thread playerThread = null;
+    private RunnableHumanPlayer runnablePlayer = null;
+    private int defaultStepSpeed = 400;
+    private int defaultEnhancedStepSpeed = 100;
+
+    public HumanPlayer(Coordinate startingLocation) {
+        super(startingLocation);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name) {
+        super(startingLocation, name);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name, ActionsKeys directionActions) {
+        super(startingLocation, name);
+
+        assert directionActions != null;
+        this.directionKeys = createKeyAssignment(directionActions);
+        this.specialKeys = createSpecialKeyAssignment(directionActions);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name, Color color, ActionsKeys directionActions) {
+        super(startingLocation, name, color);
+        this.directionKeys = createKeyAssignment(directionActions);
+        this.specialKeys = createSpecialKeyAssignment(directionActions);
+    }
+
+    private Map<Integer, Direction> getDefaultKeyAssignment() {
+        return this.createKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+    }
+
+    private Map<Integer, Direction> createKeyAssignment(ActionsKeys actionsKeys) {
+        assert actionsKeys != null;
+        return actionsKeys.convertToDirectionsKey();
+    }
+
+    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> getDefaultSpecialKeyAssignment() {
+        return this.createSpecialKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+    }
+
+    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(ActionsKeys actionsKeys) {
+        assert actionsKeys != null;
+        return createSpecialKeyAssignment(
+                actionsKeys.getSpeedKeyCode(),
+                actionsKeys.getExitKeyCode()
+        );
+    }
+
+    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(int speedKeyCode, int exitKeyCode) {
+        Map<Integer, ArgsVoidCallbackFunction<Boolean>> keyAssignment = new HashMap<>();
+
+        keyAssignment.put(speedKeyCode, this::onSpeedKeyPressed);
+        keyAssignment.put(exitKeyCode, this::onExit);
+
+        return keyAssignment;
+    }
+
+    private void onSpeedKeyPressed(boolean isPressed) {
+        if (runnablePlayer == null) {
+            return;
+        }
+
+        runnablePlayer.pause();
+        int stepSpeedMs = isPressed ? this.defaultEnhancedStepSpeed : this.defaultStepSpeed;
+        runnablePlayer.setStepSpeedMs(stepSpeedMs);
+        runnablePlayer.resume();
+    }
+
+    private void onExit(boolean isPressed) {
+        if (runnablePlayer == null) {
+            return;
+        }
+
+        if (isPressed) {
+            runnablePlayer.pause();
+        } else {
+        }
+    }
+
+    public Thread create() {
+        this.runnablePlayer = new RunnableHumanPlayer(this, defaultStepSpeed);
+        this.playerThread = createPlayerThread();
+        return this.playerThread;
+    }
+
+    private Thread createPlayerThread() {
+        Thread playerThread = new Thread(runnablePlayer);
+        playerThread.setName("Player " + this.getName() + " Thread");
+        return playerThread;
+    }
+
+    // region KeyListener functions
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        pressedKeys.put(keyCode, true);
+
+        if (this.runnablePlayer == null) {
+            return;
+        }
+
+        if (!directionKeys.containsKey(keyCode) && !specialKeys.containsKey(keyCode)) {
+            return;
+        }
+
+        if (specialKeys.containsKey(keyCode)) {
+            specialKeys.get(keyCode).run(true);
+        } else {
+            movePlayerToDirection(directionKeys.get(keyCode));
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+        pressedKeys.remove(keyCode);
+
+        if (this.runnablePlayer == null) {
+            return;
+        }
+
+        if (!directionKeys.containsKey(keyCode) && !specialKeys.containsKey(keyCode)) {
+            return;
+        }
+
+        if (specialKeys.containsKey(keyCode)) {
+            specialKeys.get(keyCode).run(false);
+        } else {
+            movePlayerToDirection(getActiveDirection());
+        }
+
+    }
+
+    private void movePlayerToDirection(Direction activeDirection) {
+        this.runnablePlayer.pause();
+        this.runnablePlayer.setDirection(activeDirection);
+        this.runnablePlayer.resume();
+    }
+
+    private Direction getActiveDirection() {
+        int currentlyPressedDirectionKey = directionKeys.keySet().stream().filter(pressedKeys::containsKey).findFirst().orElse(ActionsKeys.NO_KEY);
+
+        return this.directionKeys.getOrDefault(currentlyPressedDirectionKey, null);
+    }
+
+    // endregion
+
+
+    @Override
+    public void onPlayerFinished() {
+        super.onPlayerFinished();
+        LoggerManager.logger.info("[Player][onPlayerFinished]");
+        if (this.runnablePlayer != null) {
+            LoggerManager.logger.info("[Player Finish][Stopping Thread]");
+            this.runnablePlayer.stop();
+        }
+    }
+}

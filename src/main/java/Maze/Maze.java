@@ -1,12 +1,16 @@
 package Maze;
 
-import Helpers.*;
-import Maze.Candy.*;
+import Helpers.Coordinate;
+import Helpers.Direction;
+import Helpers.RandomHelper;
+import Maze.Candy.CandyRecord;
 import Maze.Solver.Adapter.SolverAdapter;
 import Maze.Solver.BFS.BFSSolverAdapter;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static Helpers.Utils.Instance;
@@ -33,17 +37,17 @@ public class Maze {
     /**
      * Entrances Points
      */
-    private List<ELocation> entrances = new ArrayList<ELocation>();
+    private List<ELocation> entrances = new ArrayList<>();
 
     /**
      * Exists Points
      */
-    private List<ELocation> exits = new ArrayList<ELocation>();
+    private List<ELocation> exits = new ArrayList<>();
 
     /**
      * List of candy and his location
      */
-    private List<Tuple<Candy, Coordinate>> candies = new ArrayList<>();
+    private List<CandyRecord> candies = new ArrayList<>();
 
     private SolverAdapter solverAdapter = new BFSSolverAdapter();
 
@@ -68,6 +72,11 @@ public class Maze {
         this.addToCandyList(true);
     }
 
+    public Maze(Cell[][] mazeData, SolverAdapter solverAdapter) {
+        this(mazeData);
+        this.solverAdapter = solverAdapter;
+    }
+
     /**
      * Create Maze from cells
      *
@@ -85,7 +94,7 @@ public class Maze {
     private void getELocationsFromMazeData() {
         for (Cell[] row : this.mazeData) {
             for (Cell cell : row) {
-                if(cell == null) {
+                if (cell == null) {
                     continue;
                 }
 
@@ -121,18 +130,17 @@ public class Maze {
             this.candies.clear();
         }
 
-        // Add candies to the candy list
-        for (int i = 0, len = this.mazeData.length; i < len; i++) {
-            for (int j = 0, rowLen = this.mazeData[i].length; j < rowLen; j++) {
-                int finalI = i;
-                int finalJ = j;
-                this.candies.addAll(this.mazeData[i][j].getCandies().stream().map(candy -> new Tuple<>(candy,
-                        new Coordinate(
-                                finalI,
-                                finalJ))).collect(
-                        Collectors.toList()));
+        for (int row = 0, len = this.mazeData.length; row < len; row++) {
+            for (int column = 0, rowLen = this.mazeData[row].length; column < rowLen; column++) {
+                this.candies.addAll(getAllCandiesAtCoordination(new Coordinate(row, column)));
             }
         }
+    }
+
+    private List<CandyRecord> getAllCandiesAtCoordination(Coordinate coordinate) {
+        return this.getCell(coordinate).getCandies().stream()
+                .map(candy -> new CandyRecord(candy, coordinate))
+                .collect(Collectors.toList());
     }
 
     // region Helpers
@@ -142,15 +150,14 @@ public class Maze {
      *
      * @param location  Location from where the move is made
      * @param direction Wanted direction
-     * @return Return the direction of the move if it's valid
+     * @return Return if the move is valid
      */
-    public Direction checkIfValidMove(Coordinate location, Direction direction) {
+    public boolean isValidMove(Coordinate location, Direction direction) {
         Cell destCell = this.getCell(location);
 
-
-        return (destCell == null || this.getCell(Instance.moveCoordinatesToDirection(location,
-                direction)) == null || !destCell.haveCellAtDirection(
-                direction)) ? null : direction;
+        return destCell != null &&
+                this.getCell(Instance.moveCoordinatesToDirection(location, direction)) != null &&
+                destCell.haveCellAtDirection(direction);
     }
 
     /**
@@ -242,7 +249,7 @@ public class Maze {
 
     // region Getter & Setter
 
-    public List<Tuple<Candy, Coordinate>> getCandies() {
+    public List<CandyRecord> getCandies() {
         return candies;
     }
 
@@ -328,3 +335,5 @@ public class Maze {
 
     // endregion
 }
+
+

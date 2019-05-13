@@ -6,13 +6,12 @@ import GUI.MazePreviewPanel;
 import GUI.Play.Exceptions.NotFinishedStepException;
 import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
-import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
-import player.HumanPlayer;
+import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;

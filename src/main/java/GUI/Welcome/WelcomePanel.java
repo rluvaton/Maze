@@ -1,7 +1,7 @@
 package GUI.Welcome;
 
 import GUI.GuiHelper;
-import Helpers.NoArgsVoidCallbackFunction;
+import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 

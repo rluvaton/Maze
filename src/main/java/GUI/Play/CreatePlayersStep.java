@@ -7,8 +7,8 @@ import Helpers.Coordinate;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import player.DirectionKeys;
-import player.HumanPlayer;
+import player.ActionsKeys;
+import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +27,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     private JTextField leftIn;
     private JButton createNewPlayerButton;
 
-    private DirectionKeys directionKeys = new DirectionKeys();
+    private ActionsKeys actionsKeys = new ActionsKeys();
 
     java.util.List<HumanPlayer> playerList = new LinkedList<>();
     
@@ -71,14 +71,14 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
             userName = null;
         }
 
-        return new HumanPlayer(new Coordinate(0, 0), userName, this.directionKeys);
+        return new HumanPlayer(new Coordinate(0, 0), userName, this.actionsKeys);
     }
 
     private void initDirectionKeysInput() {
         this.downIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
             @Override
             public void keyPressed(KeyEvent e) {
-                directionKeys.setDownKeyCode(e.getKeyCode());
+                actionsKeys.setDownKeyCode(e.getKeyCode());
                 downIn.setText(e.getKeyChar() + "");
             }
         });
@@ -86,7 +86,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         this.upIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
             @Override
             public void keyPressed(KeyEvent e) {
-                directionKeys.setUpKeyCode(e.getKeyCode());
+                actionsKeys.setUpKeyCode(e.getKeyCode());
                 upIn.setText(e.getKeyChar() + "");
             }
         });
@@ -94,7 +94,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         this.leftIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
             @Override
             public void keyPressed(KeyEvent e) {
-                directionKeys.setLeftKeyCode(e.getKeyCode());
+                actionsKeys.setLeftKeyCode(e.getKeyCode());
                 leftIn.setText(e.getKeyChar() + "");
             }
         });
@@ -102,7 +102,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         this.rightIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
             @Override
             public void keyPressed(KeyEvent e) {
-                directionKeys.setRightKeyCode(e.getKeyCode());
+                actionsKeys.setRightKeyCode(e.getKeyCode());
                 rightIn.setText(e.getKeyChar() + "");
             }
         });
@@ -187,7 +187,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     @Override
     public boolean canContinue() {
-        return this.directionKeys.areAllKeysSet() &&
+        return this.actionsKeys.areAllDirectionsKeysSet() &&
                 this.nameIn.getText() != null;
     }
 
