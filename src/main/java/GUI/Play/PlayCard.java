@@ -2,7 +2,7 @@ package GUI.Play;
 
 import GUI.GameWindow;
 import GUI.GuiHelper;
-import GUI.MazePreviewPanel;
+import GUI.MazeGame.MazePreviewPanel;
 import GUI.Play.Exceptions.NotFinishedStepException;
 import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;

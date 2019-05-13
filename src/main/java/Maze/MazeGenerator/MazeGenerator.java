@@ -564,7 +564,7 @@ public class MazeGenerator {
         public Maze build() throws MazeBuilderException {
             return new MazeGenerator(this.mazeBuilder, this.solverAdapter)
                     .generateMaze(this.height, this.width)
-                    .createRandomEntrancesAndExists(this.minDistance, this.numOfEntrance, this.numOfExits)
+                    .createRandomEntrancesAndExists(this.numOfEntrance, this.numOfExits, this.minDistance)
                     .generateRandomCandies(this.candyConfig, this.totalCandies)
                     .create();
         }

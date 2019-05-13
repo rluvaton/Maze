@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.MazeGame.MazePreviewPanel;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -156,7 +157,7 @@ public class GameWindow {
         try {
             maze = new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
                     .generateMaze(height, width)
-                    .createRandomEntrancesAndExists(minDistance, 2, 2)
+                    .createRandomEntrancesAndExists(2, 2, minDistance)
                     .generateRandomCandies((int) getTotalCandiesCountForMaze(height, width), true)
                     .create();
         } catch (MazeBuilderException e) {
