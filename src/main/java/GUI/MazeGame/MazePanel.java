@@ -4,6 +4,7 @@ import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
+import Maze.Candy.CandyRecord;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static Logger.LoggerManager.logger;
@@ -83,6 +83,8 @@ public class MazePanel extends JPanel {
      * Subject to stop all the left subscriptions
      */
     private final Subject onDestroySub = PublishSubject.create();
+
+    List<ControlledTimer> timeToLiveCandiesTimers;
 
     private ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks;
 
@@ -269,8 +271,10 @@ public class MazePanel extends JPanel {
                     try {
                         if (this.currentlyOnPause) {
                             BasePlayer.pauseAllPlayers();
+                            this.pauseAllTimeLimitedCandies();
                         } else {
                             BasePlayer.resumeAllPlayers();
+                            this.resumeAllTimeLimitedCandies();
                         }
                     } catch (PlayerNotRunning playerNotRunning) {
                         playerNotRunning.printStackTrace();
@@ -279,18 +283,38 @@ public class MazePanel extends JPanel {
                 });
     }
 
+    private void pauseAllTimeLimitedCandies() {
+        timeToLiveCandiesTimers.forEach(ControlledTimer::pause);
+    }
+    private void resumeAllTimeLimitedCandies() {
+        timeToLiveCandiesTimers.forEach(ControlledTimer::resume);
+    }
+
     private void runPlayers() {
         startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
     }
 
     private void startCandiesTimers() {
-        this.maze.getCandies()
+        timeToLiveCandiesTimers = this.maze.getCandies()
                 .stream()
                 .filter(candyLoc -> candyLoc.candy.getTimeToLive() > 0)
-                .forEach(candyLoc ->
-                        Observable.timer(candyLoc.candy.getTimeToLive(), TimeUnit.MILLISECONDS)
-                                .takeUntil(this.onDestroySub)
-                                .subscribe(finished -> this.maze.getCell(candyLoc.coordinate).removeCandy(candyLoc.candy)));
+                .map(this::createControlledTimerForTimeLimitedCandy)
+                .collect(Collectors.toList());
+
+        timeToLiveCandiesTimers.forEach(ControlledTimer::start);
+
+    }
+
+    private ControlledTimer createControlledTimerForTimeLimitedCandy(CandyRecord candyRecord) {
+        ControlledTimer candyTimer = new ControlledTimer(candyRecord.candy.getTimeToLive(), () -> {
+            this.maze.getCell(candyRecord.coordinate).removeCandy(candyRecord.candy);
+        });
+
+        onDestroySub.subscribe((b) -> {
+            candyTimer.cancel();
+        });
+
+        return candyTimer;
     }
 
     private ArrayList<NoArgsVoidCallbackFunction> initPlayers() {
