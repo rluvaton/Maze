@@ -36,6 +36,8 @@ public class MazeGenerator {
     private ArrayList<ELocationBaseData> entrances = new ArrayList<>();
     private ArrayList<ELocationBaseData> exits = new ArrayList<>();
 
+    private boolean parseActionAlready = false;
+
     MazeGeneratorActions mazeGeneratorActions = new MazeGeneratorActions();
 
     public MazeGenerator(IMazeBuilder mazeBuilder, SolverAdapter solverAdapter) {
@@ -128,17 +130,17 @@ public class MazeGenerator {
         int maxTries = getMaxTries();
         int tryNo = 0;
 
-        ELocationBaseData entrance;
+        ELocationBaseData eLocation;
 
         do {
-            entrance = this.generateRandomELocationAtBorder();
-        } while (!this.isValidELocation(entrance, minDistance, type) && ++tryNo < maxTries);
+            eLocation = this.generateRandomELocationAtBorder();
+        } while (!this.isValidELocation(eLocation, minDistance, type) && ++tryNo < maxTries);
 
         if (tryNo >= maxTries) {
             throw new Exception("Tried " + tryNo + "and no valid " + type.toString() + "founded");
         }
 
-        return entrance;
+        return eLocation;
     }
 
     private int getMaxTries() {
@@ -159,7 +161,7 @@ public class MazeGenerator {
             column = 0;
             direction = Direction.LEFT;
         } else {
-            column = width;
+            column = width - 1;
             direction = Direction.RIGHT;
         }
 
@@ -174,7 +176,7 @@ public class MazeGenerator {
             row = 0;
             direction = Direction.UP;
         } else {
-            row = height;
+            row = height - 1;
             direction = Direction.DOWN;
         }
 
@@ -351,17 +353,19 @@ public class MazeGenerator {
     public Maze create() throws MazeBuilderException {
         MazeGenerator mazeGenerator = this.mazeGeneratorActions.parseActions();
 
-        if (mazeGenerator == null) {
+        if (mazeGenerator == null && !parseActionAlready) {
             throw new MazeBuilderException(this.mazeBuilder, "Nothing to build, please create generate maze");
         }
 
-        Maze maze = mazeGenerator.mazeBuilder.getMaze();
+        Maze maze = mazeBuilder.getMaze();
 
         if(maze == null) {
             throw new MazeBuilderException(this.mazeBuilder, "Error at creating the maze");
         }
 
         maze.setSolverAdapter(this.solverAdapter);
+
+        parseActionAlready = true;
 
         return maze;
     }

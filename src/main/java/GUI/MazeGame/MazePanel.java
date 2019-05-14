@@ -58,25 +58,25 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * From where to createRunningThread the maze X axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
-    private final int startX = 20;
+    private final int startX = 40;
 
     /**
      * From where to createRunningThread the maze Y axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
-    private final int startY = 20;
+    private final int startY = 40;
 
     /**
      * From where to createRunningThread the maze X axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
     private final int cellVerMargin = 3;
 
     /**
      * From where to createRunningThread the maze Y axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
     private final int cellHorMargin = 3;
 
@@ -373,8 +373,8 @@ public class MazePreviewPanel extends JPanel {
     private void paintMaze(Graphics g) {
         g.setColor(this.mazeColor);
 
-        int fullW = getWidth() - startX * 2;
-        int fullH = getHeight() - startY * 2;
+        int fullW = getWidth() - (startX * 2);
+        int fullH = getHeight() - (startY * 2);
 
         int horEdgeLen = fullW / this.maze.getWidth();
         int verEdgeLen = fullH / this.maze.getHeight();
@@ -386,7 +386,7 @@ public class MazePreviewPanel extends JPanel {
 
         for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
             for (int j = 0; j < w; j++) {
-                CellPainter.paint(g, maze.getCell(i, j), topLeftX, topLeftY);
+                CellPainter.paint(g, this.maze.getCell(i, j), topLeftX, topLeftY);
                 topLeftX += horEdgeLen;
             }
 
@@ -399,24 +399,17 @@ public class MazePreviewPanel extends JPanel {
         drawImageWithRotation((Graphics2D) g, isEntrance ? entranceArrowImage : exitArrowImage, angle, x, y);
     }
 
-    private void createExitArrow(Graphics g, Direction direction, int x, int y) {
-        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
-    }
-
-    private void createEntranceArrow(Graphics g, Direction direction, int x, int y) {
-        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
-    }
-
-    private void createArrowFromImage(Graphics g, BufferedImage arrowImage) {
-        drawImageWithRotation((Graphics2D) g, arrowImage, 45, 100, 100);
-    }
-
     private void drawImageWithRotation(Graphics2D g2d, BufferedImage image, int degree, int x, int y) {
         assert g2d != null && image != null;
 
         // The image not moved when the window resize
 
         AffineTransform affineTransform = AffineTransform.getTranslateInstance(x, y);
+
+        // Multiplying by -1 to fix the bug that the image didn't pointed to the right direction
+        // When the degree was 90 it rotated to bottom instead of top
+        degree *= -1;
+
         affineTransform.rotate(Math.toRadians(degree), image.getWidth() / 2, image.getHeight() / 2);
         g2d.drawImage(image, affineTransform, this);
     }

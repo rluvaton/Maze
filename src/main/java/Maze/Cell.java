@@ -162,9 +162,11 @@ public class Cell extends Node<Coordinate> {
     public void setELocationAsNeighbor(ELocation elocation) {
 
         NeighborCell neighborCell = this.neighbors.get(elocation.getDirection());
+
         if(neighborCell == null) {
             neighborCell = new NeighborCell(null, elocation);
         }
+
         this.neighbors.put(elocation.getDirection(), neighborCell);
     }
 
