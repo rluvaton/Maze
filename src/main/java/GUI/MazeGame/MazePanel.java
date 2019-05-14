@@ -123,6 +123,17 @@ public class MazePanel extends JPanel {
      * @param players     Players of the maze
      * @param atEntrances Set the players location at entrances
      */
+    public MazePanel(Maze maze, List<BasePlayer> players, boolean atEntrances) {
+        this(maze, players.toArray(new BasePlayer[0]), atEntrances);
+    }
+
+    /**
+     * Maze Preview Panel Constructor
+     *
+     * @param maze        Maze to build
+     * @param players     Players of the maze
+     * @param atEntrances Set the players location at entrances
+     */
     public MazePanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
         this.maze = maze;
         this.players = players;
@@ -286,6 +297,7 @@ public class MazePanel extends JPanel {
     private void pauseAllTimeLimitedCandies() {
         timeToLiveCandiesTimers.forEach(ControlledTimer::pause);
     }
+
     private void resumeAllTimeLimitedCandies() {
         timeToLiveCandiesTimers.forEach(ControlledTimer::resume);
     }
