@@ -4,7 +4,6 @@ import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
-import Logger.LoggerManager;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -20,16 +19,19 @@ import player.exceptions.PlayerNotRunning;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.Color;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static Logger.LoggerManager.logger;
 
 public class MazePanel extends JPanel {
 
@@ -88,6 +90,8 @@ public class MazePanel extends JPanel {
     private BufferedImage entranceArrowImage;
 
     private int arrowSize;
+
+    private boolean currentlyOnPause = false;
 
     // region Constructors
 
@@ -200,7 +204,7 @@ public class MazePanel extends JPanel {
     }
 
     private void handleExceptionInLoadArrow(IOException e) {
-        LoggerManager.logger.error("[Load Image][Arrow Image]", e.getMessage());
+        logger.error("[Load Image][Arrow Image]", e.getMessage());
         e.printStackTrace();
 
         // TODO - When Fail - show that can start the game or go to fallback
@@ -245,12 +249,41 @@ public class MazePanel extends JPanel {
 
         this.startPlayersCallbacks = initPlayers();
 
-        LoggerManager.logger.debug("Don't forget to call `startGame()`");
+        logger.debug("Don't forget to call `startGame()`");
     }
 
     public void startGame() {
-        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+        listenToPauseAction();
 
+        runPlayers();
+
+        startCandiesTimers();
+    }
+
+    private void listenToPauseAction() {
+        Observable.merge(Arrays.stream(this.players).filter(Objects::nonNull).map(BasePlayer::getOnPlayerPauseObs).collect(Collectors.toList()))
+                .takeUntil(onDestroySub)
+                .subscribe(isPaused -> {
+                    this.currentlyOnPause = (boolean) isPaused;
+
+                    try {
+                        if (this.currentlyOnPause) {
+                            BasePlayer.pauseAllPlayers();
+                        } else {
+                            BasePlayer.resumeAllPlayers();
+                        }
+                    } catch (PlayerNotRunning playerNotRunning) {
+                        playerNotRunning.printStackTrace();
+                        logger.error("[OnPause][PlayerNotRunning]");
+                    }
+                });
+    }
+
+    private void runPlayers() {
+        startPlayersCallbacks.forEach(NoArgsVoidCallbackFunction::run);
+    }
+
+    private void startCandiesTimers() {
         this.maze.getCandies()
                 .stream()
                 .filter(candyLoc -> candyLoc.candy.getTimeToLive() > 0)
@@ -258,7 +291,6 @@ public class MazePanel extends JPanel {
                         Observable.timer(candyLoc.candy.getTimeToLive(), TimeUnit.MILLISECONDS)
                                 .takeUntil(this.onDestroySub)
                                 .subscribe(finished -> this.maze.getCell(candyLoc.coordinate).removeCandy(candyLoc.candy)));
-
     }
 
     private ArrayList<NoArgsVoidCallbackFunction> initPlayers() {
@@ -288,7 +320,7 @@ public class MazePanel extends JPanel {
         player.getPlayerMoveObs()
                 .takeUntil(onDestroySub)
                 .subscribe(direction -> {
-                    LoggerManager.logger.debug("[Player][OnMove] - Direction: " + direction);
+                    logger.debug("[Player][OnMove] - Direction: " + direction);
                     MoveStatus res = this.movePlayer(player, (Direction) direction);
                     switch (res) {
                         case Valid:
@@ -321,7 +353,7 @@ public class MazePanel extends JPanel {
     }
 
     private NoArgsVoidCallbackFunction startHumanPlayer(HumanPlayer player) {
-        LoggerManager.logger.debug("[Before Player Start]");
+        logger.debug("[Before Player Start]");
         this.addKeyListener(player);
         Thread playerThread = player.create();
 
@@ -353,7 +385,10 @@ public class MazePanel extends JPanel {
         super.paintComponent(g);
         this.paintMaze(g);
         this.showPlayers(g);
-//        paintOverlay(g);
+
+        if (currentlyOnPause) {
+            paintOverlay(g);
+        }
     }
 
 
