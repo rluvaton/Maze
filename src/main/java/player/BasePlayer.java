@@ -23,6 +23,11 @@ public abstract class BasePlayer {
     // region Variables
 
     /**
+     * Pause Players Subject
+     */
+    protected static Subject<Boolean> onPauseSub = PublishSubject.create();
+
+    /**
      * Player name
      */
     private String name;
@@ -38,6 +43,8 @@ public abstract class BasePlayer {
      * Subject for where the player move
      */
     private BehaviorSubject<LocationChanged> playerLocationChangedSub = BehaviorSubject.create();
+
+    protected Subject<Boolean> onPlayerPauseSub = PublishSubject.create();
 
     /**
      * Current Location
@@ -65,8 +72,6 @@ public abstract class BasePlayer {
 
     private Color color;
 
-    protected static Subject<Boolean> onPauseSub = PublishSubject.create();
-
     // endregion
 
     // Constructor that called in before the Constructor
@@ -75,17 +80,19 @@ public abstract class BasePlayer {
     }
 
     private void listenToOnPause() {
-        onPauseSub.subscribe((isPause) -> {
-            try {
-                if (isPause) {
-                    this.pause();
-                } else {
-                    this.resume();
-                }
-            } catch (PlayerNotRunning playerNotRunning) {
-                playerNotRunning.printStackTrace();
+        onPauseSub.subscribe(this::onPauseAction);
+    }
+
+    protected void onPauseAction(Boolean isPause) {
+        try {
+            if (isPause) {
+                this.pause();
+            } else {
+                this.resume();
             }
-        });
+        } catch (PlayerNotRunning playerNotRunning) {
+            playerNotRunning.printStackTrace();
+        }
     }
 
     /**
@@ -211,6 +218,10 @@ public abstract class BasePlayer {
      */
     public Observable<LocationChanged> getPlayerLocationChangedObs() {
         return this.playerLocationChangedSub;
+    }
+
+    public Observable<Boolean> getOnPlayerPauseObs() {
+        return onPlayerPauseSub;
     }
 
     public static Observable<Boolean> getOnPauseObs() {

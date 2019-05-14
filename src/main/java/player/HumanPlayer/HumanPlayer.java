@@ -2,6 +2,7 @@ package player.HumanPlayer;
 
 import GUI.Color;
 import Helpers.CallbackFns.ArgsVoidCallbackFunction;
+import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Logger.LoggerManager;
@@ -21,6 +22,8 @@ import java.util.Map;
  */
 public class HumanPlayer extends BasePlayer implements KeyListener {
     private Map<Integer, ArgsVoidCallbackFunction<Boolean>> specialKeys = this.getDefaultSpecialKeyAssignment();
+    private Map<Integer, NoArgsVoidCallbackFunction> specialTypedKeys = this.getDefaultSpecialTypedKeyAssignment();
+
 
     private Map<Integer, Direction> directionKeys = this.getDefaultKeyAssignment();
     private Map<Integer, Boolean> pressedKeys = new HashMap<>();
@@ -29,6 +32,8 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     private RunnableHumanPlayer runnablePlayer = null;
     private int defaultStepSpeed = 400;
     private int defaultEnhancedStepSpeed = 100;
+
+    private boolean currentlyOnPause = false;
 
     public HumanPlayer(Coordinate startingLocation) {
         super(startingLocation);
@@ -68,24 +73,44 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(ActionsKeys actionsKeys) {
         assert actionsKeys != null;
         return createSpecialKeyAssignment(
-                actionsKeys.getSpeedKeyCode(),
-                actionsKeys.getExitKeyCode()
+                actionsKeys.getSpeedKeyCode()
         );
     }
 
-    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(int speedKeyCode, int exitKeyCode) {
+    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(int speedKeyCode) {
         Map<Integer, ArgsVoidCallbackFunction<Boolean>> keyAssignment = new HashMap<>();
 
         keyAssignment.put(speedKeyCode, this::onSpeedKeyPressed);
-        keyAssignment.put(exitKeyCode, this::onExit);
 
         return keyAssignment;
     }
 
+
+    private Map<Integer, NoArgsVoidCallbackFunction> getDefaultSpecialTypedKeyAssignment() {
+        return this.createSpecialTypedKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+    }
+
+    private Map<Integer, NoArgsVoidCallbackFunction> createSpecialTypedKeyAssignment(ActionsKeys actionsKeys) {
+        assert actionsKeys != null;
+        return createSpecialTypedKeyAssignment(
+                actionsKeys.getExitKeyCode()
+        );
+    }
+
+    private Map<Integer, NoArgsVoidCallbackFunction> createSpecialTypedKeyAssignment(int exitKeyCode) {
+        Map<Integer, NoArgsVoidCallbackFunction> typedKeyAssignment = new HashMap<>();
+
+        typedKeyAssignment.put(exitKeyCode, this::onExit);
+
+        return typedKeyAssignment;
+    }
+
     private void onSpeedKeyPressed(boolean isPressed) {
-        if (runnablePlayer == null) {
+        if (isPlayerOperationForbidden()) {
             return;
         }
+
+        assert runnablePlayer != null;
 
         runnablePlayer.pause();
         int stepSpeedMs = isPressed ? this.defaultEnhancedStepSpeed : this.defaultStepSpeed;
@@ -93,15 +118,13 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         runnablePlayer.resume();
     }
 
-    private void onExit(boolean isPressed) {
+    private void onExit() {
         if (runnablePlayer == null) {
             return;
         }
 
-        if (isPressed) {
-            runnablePlayer.pause();
-        } else {
-        }
+        // If already in pause mode resume, else pause
+        onPlayerPauseSub.onNext(!this.currentlyOnPause);
     }
 
     public Thread create() {
@@ -127,17 +150,15 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         int keyCode = e.getKeyCode();
         pressedKeys.put(keyCode, true);
 
-        if (this.runnablePlayer == null) {
-            return;
-        }
-
-        if (!directionKeys.containsKey(keyCode) && !specialKeys.containsKey(keyCode)) {
-            return;
-        }
-
         if (specialKeys.containsKey(keyCode)) {
             specialKeys.get(keyCode).run(true);
-        } else {
+        }
+
+        if (isPlayerOperationForbidden()) {
+            return;
+        }
+
+        if (directionKeys.containsKey(keyCode)) {
             movePlayerToDirection(directionKeys.get(keyCode));
         }
     }
@@ -147,20 +168,26 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         int keyCode = e.getKeyCode();
         pressedKeys.remove(keyCode);
 
-        if (this.runnablePlayer == null) {
-            return;
-        }
-
-        if (!directionKeys.containsKey(keyCode) && !specialKeys.containsKey(keyCode)) {
-            return;
+        if (specialTypedKeys.containsKey(keyCode)) {
+            specialTypedKeys.get(keyCode).run();
         }
 
         if (specialKeys.containsKey(keyCode)) {
             specialKeys.get(keyCode).run(false);
-        } else {
+        }
+
+        if (isPlayerOperationForbidden()) {
+            return;
+        }
+
+        if (directionKeys.containsKey(keyCode)) {
             movePlayerToDirection(getActiveDirection());
         }
 
+    }
+
+    private boolean isPlayerOperationForbidden() {
+        return this.runnablePlayer == null || currentlyOnPause;
     }
 
     private void movePlayerToDirection(Direction activeDirection) {
@@ -176,6 +203,13 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     }
 
     // endregion
+
+
+    @Override
+    protected void onPauseAction(Boolean isPause) {
+        super.onPauseAction(isPause);
+        this.currentlyOnPause = isPause;
+    }
 
     @Override
     public void pause() throws PlayerNotRunning {
