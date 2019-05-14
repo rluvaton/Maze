@@ -27,6 +27,7 @@ public class GameWindow {
     private JPanel mazePanel;
     private static MazePanel previewPanel;
     private static GameStep step;
+    private Dimension wrapperSize;
 
     public GameWindow() {
     }
@@ -43,6 +44,7 @@ public class GameWindow {
 
         GameWindow.previewPanel = previewPanel;
         GameWindow gameWindow = new GameWindow();
+        gameWindow.init();
 
         // Uncommented because in `$$setupUI$$` it's already been called
 //        gameWindow.createUIComponents();
@@ -57,6 +59,11 @@ public class GameWindow {
         frame.setVisible(true);
     }
 
+    private void init() {
+        // Set the size here because that way we protect from overriding the the size in $$initComponents$$
+        this.wrapper.setPreferredSize(wrapperSize);
+    }
+
     public static void main(String[] args, GameStep step) {
         if (isInDebugMode(args)) {
             turnOnDebugEnv();
@@ -65,6 +72,7 @@ public class GameWindow {
 
         GameWindow.step = step;
         GameWindow gameWindow = new GameWindow();
+        gameWindow.init();
 
         // Uncommented because in `$$setupUI$$` it's already been called
 //        gameWindow.createUIComponents();
@@ -133,12 +141,10 @@ public class GameWindow {
         }
 
 
-        Dimension wrapperSize = (Dimension) previewPanelDim.clone();
+        wrapperSize = (Dimension) previewPanelDim.clone();
         int buttonHeight = 20;
         wrapperSize.setSize(previewPanelDim.width, previewPanelDim.height + buttonHeight);
 
-
-        this.wrapper.setPreferredSize(wrapperSize);
 //
 //        c.gridx = 0;
 //        c.gridy = 0;
