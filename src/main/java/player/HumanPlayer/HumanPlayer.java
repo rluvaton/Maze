@@ -30,7 +30,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
     private Thread playerThread = null;
     private RunnableHumanPlayer runnablePlayer = null;
-    private int defaultStepSpeed = 400;
+    private int defaultStepSpeed = 200;
     private int defaultEnhancedStepSpeed = 100;
 
     private boolean currentlyOnPause = false;

@@ -101,11 +101,11 @@ public class GameWindow {
 
         this.createWrapper();
 
-        if(step != null) {
+        if (step != null) {
             previewPanel = start(step);
         }
 
-            // TODO - clean this
+        // TODO - clean this
         int height;
         int width;
 
@@ -159,12 +159,12 @@ public class GameWindow {
         c.gridwidth = previewPanelDim.width;
         c.gridx = 0;
         c.gridy = 1;
-        this.wrapper.add(this.previewPanel, c);
+        this.wrapper.add(previewPanel, c);
 
         this.wrapper.updateUI();
 
-        this.previewPanel.initGame();
-        this.previewPanel.startGame();
+        previewPanel.initGame();
+        previewPanel.startGame();
     }
 
 
@@ -195,7 +195,7 @@ public class GameWindow {
         List<BasePlayer> players = getGamePlayer();
 
         ComputerPlayer player = step.getPlayer();
-        if(player != null) {
+        if (player != null) {
             players.add(player);
         }
 
