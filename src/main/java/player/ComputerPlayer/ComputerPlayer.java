@@ -113,6 +113,22 @@ public class ComputerPlayer extends BasePlayer {
     }
 
     @Override
+    public void pause() throws PlayerNotRunning {
+        if(runnablePlayer == null) {
+            throw new PlayerNotRunning();
+        }
+        this.runnablePlayer.pause();
+    }
+
+    @Override
+    public void resume() throws PlayerNotRunning {
+        if(runnablePlayer == null) {
+            throw new PlayerNotRunning();
+        }
+        this.runnablePlayer.resume();
+    }
+
+    @Override
     public void onPlayerTeleported() throws PlayerNotRunning {
         if (returnAfterTeleport) {
             return;

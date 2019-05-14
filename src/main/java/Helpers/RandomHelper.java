@@ -50,4 +50,8 @@ public class RandomHelper {
     public static Coordinate generateCoordinate(int firstLimit, int secondLimit) {
         return new Coordinate(getRandomNumber(firstLimit), getRandomNumber(secondLimit));
     }
+
+    public static <T> T generateItemFromArray(T[] items) {
+        return items.length == 0 ? null : items[getRandomNumber(items.length)];
+    }
 }

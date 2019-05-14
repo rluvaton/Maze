@@ -1,6 +1,6 @@
 package GUI;
 
-import GUI.MazeGame.MazePreviewPanel;
+import GUI.MazeGame.MazePanel;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -21,12 +21,12 @@ public class GameWindow {
     private JPanel wrapper;
     private JPanel usersMetadataPanel;
     private JPanel mazePanel;
-    private MazePreviewPanel previewPanel;
+    private MazePanel previewPanel;
 
     public GameWindow() {
     }
 
-    public GameWindow(MazePreviewPanel previewPanel) {
+    public GameWindow(MazePanel previewPanel) {
         this.previewPanel = previewPanel;
     }
 
@@ -34,7 +34,7 @@ public class GameWindow {
         main(args, null);
     }
 
-    public static void main(String[] args, MazePreviewPanel previewPanel) {
+    public static void main(String[] args, MazePanel previewPanel) {
         if (isInDebugMode(args)) {
             turnOnDebugEnv();
         }
@@ -151,7 +151,7 @@ public class GameWindow {
 
     }
 
-    private MazePreviewPanel start(int height, int width, int minDistance) {
+    private MazePanel start(int height, int width, int minDistance) {
         Maze maze;
 
         try {
@@ -167,11 +167,11 @@ public class GameWindow {
 
         BasePlayer[] players = getGamePlayer();
 
-        MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, players, false);
-        mazePreviewPanel.setFocusable(true);
-        mazePreviewPanel.requestFocusInWindow();
+        MazePanel mazePanel = new MazePanel(maze, players, false);
+        mazePanel.setFocusable(true);
+        mazePanel.requestFocusInWindow();
 
-        return mazePreviewPanel;
+        return mazePanel;
 
     }
 

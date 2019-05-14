@@ -19,8 +19,7 @@ import static Helpers.Utils.Instance;
  * Base Player
  * Abstract class for player
  */
-public class BasePlayer
-{
+public abstract class BasePlayer {
     // region Variables
 
     /**
@@ -65,7 +64,29 @@ public class BasePlayer
     private final Map<Direction, Runnable> directionActions = this.createDirectionActions();
 
     private Color color;
+
+    protected static Subject<Boolean> onPauseSub = PublishSubject.create();
+
     // endregion
+
+    // Constructor that called in before the Constructor
+    {
+        listenToOnPause();
+    }
+
+    private void listenToOnPause() {
+        onPauseSub.subscribe((isPause) -> {
+            try {
+                if (isPause) {
+                    this.pause();
+                } else {
+                    this.resume();
+                }
+            } catch (PlayerNotRunning playerNotRunning) {
+                playerNotRunning.printStackTrace();
+            }
+        });
+    }
 
     /**
      * Constructor
@@ -92,6 +113,7 @@ public class BasePlayer
         this.name = name;
         this.color = color;
     }
+
     public BasePlayer(Coordinate location, String name, Color color) {
         this(location, name);
         this.color = color;
@@ -99,6 +121,7 @@ public class BasePlayer
 
     /**
      * Create Action for each direction
+     *
      * @return Map with all the directions and the actions
      */
     private Map<Direction, Runnable> createDirectionActions() {
@@ -118,7 +141,7 @@ public class BasePlayer
      * @param direction direction to move
      */
     public void move(Direction direction) throws InvalidDirectionException {
-        if(!this.directionActions.containsKey(direction)) {
+        if (!this.directionActions.containsKey(direction)) {
             throw new InvalidDirectionException(direction);
         }
 
@@ -189,6 +212,22 @@ public class BasePlayer
     public Observable<LocationChanged> getPlayerLocationChangedObs() {
         return this.playerLocationChangedSub;
     }
+
+    public static Observable<Boolean> getOnPauseObs() {
+        return onPauseSub;
+    }
+
+    public static void pauseAllPlayers() throws PlayerNotRunning {
+        onPauseSub.onNext(true);
+    }
+
+    public static void resumeAllPlayers() throws PlayerNotRunning {
+        onPauseSub.onNext(false);
+    }
+
+    public abstract void pause() throws PlayerNotRunning;
+
+    public abstract void resume() throws PlayerNotRunning;
 
     public Coordinate getLocation() {
         return location;

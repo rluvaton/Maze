@@ -5,7 +5,6 @@ import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
 import Logger.LoggerManager;
-import Maze.Candy.Candy;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -29,12 +28,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class MazePreviewPanel extends JPanel {
+public class MazePanel extends JPanel {
 
     /**
      * Maze
@@ -97,7 +94,7 @@ public class MazePreviewPanel extends JPanel {
     /**
      * Maze Preview Panel Base Constructor
      */
-    public MazePreviewPanel() {
+    public MazePanel() {
         init();
     }
 
@@ -107,7 +104,7 @@ public class MazePreviewPanel extends JPanel {
      * @param maze    Maze to build
      * @param players Players of the maze
      */
-    public MazePreviewPanel(Maze maze, BasePlayer[] players) {
+    public MazePanel(Maze maze, BasePlayer[] players) {
         this(maze, players, true);
 
         init();
@@ -120,7 +117,7 @@ public class MazePreviewPanel extends JPanel {
      * @param players     Players of the maze
      * @param atEntrances Set the players location at entrances
      */
-    public MazePreviewPanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
+    public MazePanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
         this.maze = maze;
         this.players = players;
 
@@ -163,7 +160,7 @@ public class MazePreviewPanel extends JPanel {
      * @param cells   Cells of the maze
      * @param players Players of the maze
      */
-    public MazePreviewPanel(Cell[][] cells, BasePlayer[] players) {
+    public MazePanel(Cell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
         this.players = players;
 

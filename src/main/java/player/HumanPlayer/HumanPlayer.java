@@ -7,6 +7,7 @@ import Helpers.Direction;
 import Logger.LoggerManager;
 import player.ActionsKeys;
 import player.BasePlayer;
+import player.exceptions.PlayerNotRunning;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -176,14 +177,33 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
     // endregion
 
+    @Override
+    public void pause() throws PlayerNotRunning {
+        if (runnablePlayer == null) {
+            throw new PlayerNotRunning();
+        }
+        this.runnablePlayer.pause();
+    }
+
+    @Override
+    public void resume() throws PlayerNotRunning {
+        if (runnablePlayer == null) {
+            throw new PlayerNotRunning();
+        }
+        this.runnablePlayer.resume();
+    }
 
     @Override
     public void onPlayerFinished() {
         super.onPlayerFinished();
         LoggerManager.logger.info("[Player][onPlayerFinished]");
+
         if (this.runnablePlayer != null) {
             LoggerManager.logger.info("[Player Finish][Stopping Thread]");
             this.runnablePlayer.stop();
+
+            this.runnablePlayer = null;
+            this.playerThread = null;
         }
     }
 }
