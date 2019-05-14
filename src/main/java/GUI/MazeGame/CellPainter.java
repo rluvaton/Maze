@@ -36,7 +36,7 @@ public class CellPainter {
     }
 
     public static void paint(Graphics g, Cell cell, int topLeftX, int topLeftY) {
-        if(!initialized) {
+        if (!initialized) {
             throw new ExceptionInInitializerError("Please Init the Cell painter by calling `CellPainter.init(<verticalEdgeLen>, <horizontalEdgeLen>)` before creating");
         }
 
@@ -102,49 +102,50 @@ public class CellPainter {
     private void paintELocations() {
         Set<Map.Entry<Direction, ELocation>> elocationEntries = paintedCell.getELocationNeighbors().entrySet();
 
-        Direction direction;
-        ELocation eLocation;
-
-        Point point;
-        int arrowX;
-        int arrowY;
+        ArrowData arrowData;
 
         for (Map.Entry<Direction, ELocation> entry : elocationEntries) {
-            direction = entry.getKey();
-            eLocation = entry.getValue();
+
+            arrowData = new ArrowData(entry.getValue().getType(), entry.getKey());
 
             try {
-                point = getPointForArrow(direction);
+                arrowData = getPointForArrow(arrowData);
             } catch (InvalidDirectionException e) {
-                LoggerManager.logger.error("[PaintELocation][InvalidD Direction] ", e.getMessage());
+                LoggerManager.logger.error("[PaintELocation][Invalid Direction] ", e.getMessage());
                 continue;
             }
 
-            createArrowFn.createArrow(g, direction.getAngle(), point.x, point.y, eLocation.getType() == ELocationType.Entrance);
+            createArrowFn.createArrow(g, arrowData.getDirectionBasedOnELocationType().getAngle(), arrowData.x, arrowData.y, arrowData.type == ELocationType.Entrance);
         }
     }
 
-    private Point getPointForArrow(Direction direction) throws InvalidDirectionException {
-        Point point;
+    private ArrowData getPointForArrow(ArrowData arrowData) throws InvalidDirectionException {
+        int x;
+        int y;
 
-        switch (direction) {
+        int arrowPaddingBeforeMaze = 5;
+        switch (arrowData.direction) {
             case UP:
-                point = new Point(topLeftX + (horizontalEdgeLen / 2), topLeftY - arrowSize);
+                x = topLeftX + (Math.abs(arrowSize - horizontalEdgeLen)) / 2;
+                y = topLeftY - arrowSize - arrowPaddingBeforeMaze;
                 break;
             case DOWN:
-                point = new Point(topLeftX + (horizontalEdgeLen / 2), topLeftY + verticalEdgeLen + arrowSize);
+                x = topLeftX + (Math.abs(arrowSize - horizontalEdgeLen)) / 2;
+                y = topLeftY + verticalEdgeLen + arrowPaddingBeforeMaze;
                 break;
             case RIGHT:
-                point = new Point(topLeftX + horizontalEdgeLen + arrowSize, topLeftY + (verticalEdgeLen / 2));
+                x = topLeftX + horizontalEdgeLen + arrowPaddingBeforeMaze;
+                y = topLeftY + (Math.abs(arrowSize - verticalEdgeLen)) / 2;
                 break;
             case LEFT:
-                point = new Point(topLeftX - arrowSize, topLeftY + (verticalEdgeLen / 2));
+                x = topLeftX - arrowSize - arrowPaddingBeforeMaze;
+                y = topLeftY + (Math.abs(arrowSize - verticalEdgeLen)) / 2;
                 break;
             default:
-                throw new InvalidDirectionException(direction);
+                throw new InvalidDirectionException(arrowData.direction);
         }
 
-        return point;
+        return arrowData.setPoint(x, y);
     }
 
     private void paintCandiesInCell() {
@@ -166,5 +167,5 @@ public class CellPainter {
         g.setColor(before);
     }
 
-
 }
+

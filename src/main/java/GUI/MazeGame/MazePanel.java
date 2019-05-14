@@ -5,7 +5,6 @@ import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
 import Logger.LoggerManager;
-import Maze.Candy.Candy;
 import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
@@ -29,12 +28,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class MazePreviewPanel extends JPanel {
+public class MazePanel extends JPanel {
 
     /**
      * Maze
@@ -58,25 +55,25 @@ public class MazePreviewPanel extends JPanel {
 
     /**
      * From where to createRunningThread the maze X axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
-    private final int startX = 20;
+    private final int startX = 40;
 
     /**
      * From where to createRunningThread the maze Y axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
-    private final int startY = 20;
+    private final int startY = 40;
 
     /**
      * From where to createRunningThread the maze X axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
     private final int cellVerMargin = 3;
 
     /**
      * From where to createRunningThread the maze Y axis
-     * Set to 20 so it createRunningThread with a little padding
+     * Set to 20 so it start with a little padding
      */
     private final int cellHorMargin = 3;
 
@@ -97,7 +94,7 @@ public class MazePreviewPanel extends JPanel {
     /**
      * Maze Preview Panel Base Constructor
      */
-    public MazePreviewPanel() {
+    public MazePanel() {
         init();
     }
 
@@ -107,7 +104,7 @@ public class MazePreviewPanel extends JPanel {
      * @param maze    Maze to build
      * @param players Players of the maze
      */
-    public MazePreviewPanel(Maze maze, BasePlayer[] players) {
+    public MazePanel(Maze maze, BasePlayer[] players) {
         this(maze, players, true);
 
         init();
@@ -120,7 +117,7 @@ public class MazePreviewPanel extends JPanel {
      * @param players     Players of the maze
      * @param atEntrances Set the players location at entrances
      */
-    public MazePreviewPanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
+    public MazePanel(Maze maze, BasePlayer[] players, boolean atEntrances) {
         this.maze = maze;
         this.players = players;
 
@@ -163,7 +160,7 @@ public class MazePreviewPanel extends JPanel {
      * @param cells   Cells of the maze
      * @param players Players of the maze
      */
-    public MazePreviewPanel(Cell[][] cells, BasePlayer[] players) {
+    public MazePanel(Cell[][] cells, BasePlayer[] players) {
         this.maze = new Maze(cells);
         this.players = players;
 
@@ -373,8 +370,8 @@ public class MazePreviewPanel extends JPanel {
     private void paintMaze(Graphics g) {
         g.setColor(this.mazeColor);
 
-        int fullW = getWidth() - startX * 2;
-        int fullH = getHeight() - startY * 2;
+        int fullW = getWidth() - (startX * 2);
+        int fullH = getHeight() - (startY * 2);
 
         int horEdgeLen = fullW / this.maze.getWidth();
         int verEdgeLen = fullH / this.maze.getHeight();
@@ -386,7 +383,7 @@ public class MazePreviewPanel extends JPanel {
 
         for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
             for (int j = 0; j < w; j++) {
-                CellPainter.paint(g, maze.getCell(i, j), topLeftX, topLeftY);
+                CellPainter.paint(g, this.maze.getCell(i, j), topLeftX, topLeftY);
                 topLeftX += horEdgeLen;
             }
 
@@ -399,24 +396,17 @@ public class MazePreviewPanel extends JPanel {
         drawImageWithRotation((Graphics2D) g, isEntrance ? entranceArrowImage : exitArrowImage, angle, x, y);
     }
 
-    private void createExitArrow(Graphics g, Direction direction, int x, int y) {
-        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
-    }
-
-    private void createEntranceArrow(Graphics g, Direction direction, int x, int y) {
-        drawImageWithRotation((Graphics2D) g, exitArrowImage, direction.getAngle(), x, y);
-    }
-
-    private void createArrowFromImage(Graphics g, BufferedImage arrowImage) {
-        drawImageWithRotation((Graphics2D) g, arrowImage, 45, 100, 100);
-    }
-
     private void drawImageWithRotation(Graphics2D g2d, BufferedImage image, int degree, int x, int y) {
         assert g2d != null && image != null;
 
         // The image not moved when the window resize
 
         AffineTransform affineTransform = AffineTransform.getTranslateInstance(x, y);
+
+        // Multiplying by -1 to fix the bug that the image didn't pointed to the right direction
+        // When the degree was 90 it rotated to bottom instead of top
+        degree *= -1;
+
         affineTransform.rotate(Math.toRadians(degree), image.getWidth() / 2, image.getHeight() / 2);
         g2d.drawImage(image, affineTransform, this);
     }

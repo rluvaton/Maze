@@ -102,11 +102,11 @@ public class RectangleMazeBuilder extends BaseMazeBuilder {
         return this;
     }
 
-    private void buildELocation(Coordinate pos, Direction direction, ELocationType exit) {
+    private void buildELocation(Coordinate pos, Direction direction, ELocationType type) {
         assert pos != null && direction != null;
         Cell cell = this.getCellAtPosition(pos);
-        ELocation entrance = new ELocation(pos, direction, exit);
-        cell.setELocationAsNeighbor(entrance);
+        ELocation eLocation = new ELocation(pos, direction, type);
+        cell.setELocationAsNeighbor(eLocation);
     }
 
     @Override

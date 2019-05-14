@@ -2,7 +2,7 @@ package GUI.Play;
 
 import GUI.GameWindow;
 import GUI.GuiHelper;
-import GUI.MazeGame.MazePreviewPanel;
+import GUI.MazeGame.MazePanel;
 import GUI.Play.Exceptions.NotFinishedStepException;
 import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
@@ -113,8 +113,8 @@ public class PlayCard extends JPanel {
 
         BasePlayer[] players = this.createPlayersStep.playerList.toArray(new HumanPlayer[0]);
 
-        MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, players, false);
-        GameWindow.main(new String[0], mazePreviewPanel);
+        MazePanel mazePanel = new MazePanel(maze, players, false);
+        GameWindow.main(new String[0], mazePanel);
 
 //        throw new UnsupportedOperationException();
     }
