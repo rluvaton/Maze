@@ -3,6 +3,7 @@ package player;
 import GUI.Color;
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.RandomHelper;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
@@ -70,7 +71,7 @@ public abstract class BasePlayer {
 
     private final Map<Direction, Runnable> directionActions = this.createDirectionActions();
 
-    private Color color;
+    private Color color = RandomHelper.generateItemFromArray(Color.values());
 
     // endregion
 

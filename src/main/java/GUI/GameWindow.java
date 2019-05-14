@@ -33,13 +33,52 @@ public class GameWindow {
     }
 
     public static void main(String[] args) {
-        main(args, GameStep.HARD);
-    }
 
-    public static void main(String[] args, MazePanel previewPanel) {
         if (isInDebugMode(args)) {
             turnOnDebugEnv();
         }
+
+        main(getStepFromArgs(args));
+    }
+
+    private static GameStep getStepFromArgs(String[] args) {
+
+        if(args.length == 0 || (args.length == 1 && isInDebugMode(args))) {
+            return null;
+        }
+
+        String stepName;
+
+        if(args.length == 1) {
+            stepName = args[0];
+        } else {
+            stepName = args[1];
+        }
+
+        GameStep step = null;
+
+        switch (stepName) {
+            case "very-easy":
+                step = GameStep.VERY_EASY;
+                break;
+            case "easy":
+                step = GameStep.EASY;
+                break;
+            case "medium":
+                step = GameStep.MEDIUM;
+                break;
+            case "hard":
+                step = GameStep.HARD;
+                break;
+            case "very-hard":
+                step = GameStep.VERY_HARD;
+                break;
+        }
+
+        return step;
+    }
+
+    public static void main(MazePanel previewPanel) {
         JFrame frame = new JFrame("GameWindow");
 
         GameWindow.previewPanel = previewPanel;
@@ -64,10 +103,7 @@ public class GameWindow {
         this.wrapper.setPreferredSize(wrapperSize);
     }
 
-    public static void main(String[] args, GameStep step) {
-        if (isInDebugMode(args)) {
-            turnOnDebugEnv();
-        }
+    public static void main(GameStep step) {
         JFrame frame = new JFrame("GameWindow");
 
         GameWindow.step = step;

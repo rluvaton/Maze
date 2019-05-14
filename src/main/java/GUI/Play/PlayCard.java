@@ -114,7 +114,7 @@ public class PlayCard extends JPanel {
         BasePlayer[] players = this.createPlayersStep.playerList.toArray(new HumanPlayer[0]);
 
         MazePanel mazePanel = new MazePanel(maze, players, false);
-        GameWindow.main(new String[0], mazePanel);
+        GameWindow.main(mazePanel);
 
 //        throw new UnsupportedOperationException();
     }
