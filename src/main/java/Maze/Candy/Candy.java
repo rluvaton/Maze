@@ -80,7 +80,6 @@ public abstract class Candy {
 
     public abstract static class Builder {
 
-        /// instance fields
         protected CandyPowerType type;
         protected int candyStrength = 0;
         protected int timeToLive = -1;

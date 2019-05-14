@@ -4,6 +4,7 @@ import GUI.Play.Exceptions.NotFinishedStepException;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.MazeGenerator.GenerateCandyConfig;
+import Maze.MazeGenerator.IntegerConfiguration;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -125,12 +126,12 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
                 .setCandyConfig(candyConfig);
     }
 
-    private MazeGenerator.IntegerConfiguration getStrengthPower() {
-        return this.onlyGoodCandiesCheckBox.isSelected() ? new MazeGenerator.IntegerConfiguration(1, 1000) : new MazeGenerator.IntegerConfiguration(0);
+    private IntegerConfiguration getStrengthPower() {
+        return this.onlyGoodCandiesCheckBox.isSelected() ? new IntegerConfiguration(1, 1000) : new IntegerConfiguration(0);
     }
 
-    private MazeGenerator.IntegerConfiguration getTimeToLive() {
-        return this.expiredCandiesCheckBox.isSelected() ? GenerateCandyConfig.DEFAULT_TIME_TO_LIVE : new MazeGenerator.IntegerConfiguration(Candy.WITHOUT_TIMEOUT);
+    private IntegerConfiguration getTimeToLive() {
+        return this.expiredCandiesCheckBox.isSelected() ? GenerateCandyConfig.DEFAULT_TIME_TO_LIVE : new IntegerConfiguration(Candy.WITHOUT_TIMEOUT);
     }
 
     private int getTotalCandiesValue() {

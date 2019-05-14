@@ -35,7 +35,18 @@ public class ComputerPlayer extends BasePlayer {
      */
     public ComputerPlayer(Coordinate location) {
         super(location);
+    }
 
+    public ComputerPlayer(Coordinate location, int defaultDelayMovementInMs) {
+        super(location);
+        this.defaultDelayMovementInMs = defaultDelayMovementInMs;
+    }
+
+    {
+        updateCurrentCellOnPlayerLocationChanged();
+    }
+
+    private void updateCurrentCellOnPlayerLocationChanged() {
         this.getPlayerLocationChangedObs()
                 .takeUntil(this.onFinish)
                 .subscribe(locationChanged -> {

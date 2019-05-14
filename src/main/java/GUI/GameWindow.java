@@ -1,6 +1,7 @@
 package GUI;
 
 import GUI.MazeGame.MazePanel;
+import Game.GameStep;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -11,27 +12,27 @@ import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
+import player.ComputerPlayer.ComputerPlayer;
 import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class GameWindow {
     private JPanel wrapper;
     private JPanel usersMetadataPanel;
     private JPanel mazePanel;
-    private MazePanel previewPanel;
+    private static MazePanel previewPanel;
+    private static GameStep step;
 
     public GameWindow() {
     }
 
-    public GameWindow(MazePanel previewPanel) {
-        this.previewPanel = previewPanel;
-    }
-
     public static void main(String[] args) {
-        main(args, null);
+        main(args, GameStep.HARD);
     }
 
     public static void main(String[] args, MazePanel previewPanel) {
@@ -40,7 +41,30 @@ public class GameWindow {
         }
         JFrame frame = new JFrame("GameWindow");
 
-        GameWindow gameWindow = new GameWindow(previewPanel);
+        GameWindow.previewPanel = previewPanel;
+        GameWindow gameWindow = new GameWindow();
+
+        // Uncommented because in `$$setupUI$$` it's already been called
+//        gameWindow.createUIComponents();
+
+        frame.setContentPane(gameWindow.wrapper);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setFrameIcon(frame);
+
+        frame.pack();
+
+        frame.setVisible(true);
+    }
+
+    public static void main(String[] args, GameStep step) {
+        if (isInDebugMode(args)) {
+            turnOnDebugEnv();
+        }
+        JFrame frame = new JFrame("GameWindow");
+
+        GameWindow.step = step;
+        GameWindow gameWindow = new GameWindow();
 
         // Uncommented because in `$$setupUI$$` it's already been called
 //        gameWindow.createUIComponents();
@@ -77,7 +101,11 @@ public class GameWindow {
 
         this.createWrapper();
 
-        // TODO - clean this
+        if(step != null) {
+            previewPanel = start(step);
+        }
+
+            // TODO - clean this
         int height;
         int width;
 
@@ -101,7 +129,7 @@ public class GameWindow {
         int minDistance = 0;
 
         if (previewPanel == null) {
-            this.previewPanel = start(height, width, minDistance);
+            previewPanel = start(height, width, minDistance);
         }
 
 
@@ -151,6 +179,33 @@ public class GameWindow {
 
     }
 
+    private MazePanel start(GameStep step) {
+        assert step != null;
+
+        Maze maze;
+
+        try {
+            maze = step.build();
+        } catch (MazeBuilderException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
+        List<BasePlayer> players = getGamePlayer();
+
+        ComputerPlayer player = step.getPlayer();
+        if(player != null) {
+            players.add(player);
+        }
+
+        MazePanel mazePanel = new MazePanel(maze, players, false);
+        mazePanel.setFocusable(true);
+        mazePanel.requestFocusInWindow();
+
+        return mazePanel;
+    }
+
     private MazePanel start(int height, int width, int minDistance) {
         Maze maze;
 
@@ -165,7 +220,7 @@ public class GameWindow {
             return null;
         }
 
-        BasePlayer[] players = getGamePlayer();
+        java.util.List<BasePlayer> players = getGamePlayer();
 
         MazePanel mazePanel = new MazePanel(maze, players, false);
         mazePanel.setFocusable(true);
@@ -175,12 +230,14 @@ public class GameWindow {
 
     }
 
-    private BasePlayer[] getGamePlayer() {
-        return new BasePlayer[]{
-                new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"),
-//                new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", ActionsKeys.DEFAULT_AS_WASD),
-//                new ComputerPlayer(new Coordinate(0, 0))
-        };
+    private java.util.List<BasePlayer> getGamePlayer() {
+        java.util.List<BasePlayer> players = new ArrayList<BasePlayer>();
+
+        players.add(new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"));
+//        players.add(new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", ActionsKeys.DEFAULT_AS_WASD));
+//        players.add(new ComputerPlayer(new Coordinate(0, 0));
+
+        return players;
     }
 
     {
