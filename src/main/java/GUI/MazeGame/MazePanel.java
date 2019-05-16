@@ -67,16 +67,6 @@ public class MazePanel extends JPanel {
      */
     private final Subject onDestroySub = PublishSubject.create();
 
-    /**
-     * @deprecated Please use the {@link Game.MazeGame} instead
-     */
-    List<ControlledTimer> timeToLiveCandiesTimers;
-
-    /**
-     * @deprecated Please use the {@link Game.MazeGame} instead
-     */
-    private ArrayList<NoArgsVoidCallbackFunction> startPlayersCallbacks;
-
     private BufferedImage exitArrowImage;
     private BufferedImage entranceArrowImage;
 
