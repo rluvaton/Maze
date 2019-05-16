@@ -29,20 +29,6 @@ public class MazePanel extends JPanel {
     private MazeGame game;
 
     /**
-     * Maze
-     *
-     * @deprecated Please use the {@link Game.MazeGame} instead
-     */
-    private Maze maze;
-
-    /**
-     * Maze Players
-     *
-     * @deprecated Please use the {@link Game.MazeGame} instead
-     */
-    private BasePlayer[] players;
-
-    /**
      * Background Color
      */
     private Color background = Color.WHITE;
@@ -232,17 +218,20 @@ public class MazePanel extends JPanel {
         int fullW = getWidth() - (startX * 2);
         int fullH = getHeight() - (startY * 2);
 
-        int horEdgeLen = fullW / this.maze.getWidth();
-        int verEdgeLen = fullH / this.maze.getHeight();
+        Maze maze = this.game.getMaze();
+        Dimension mazeDimension = getMazeDimension();
+
+        int horEdgeLen = fullW / mazeDimension.width;
+        int verEdgeLen = fullH / mazeDimension.height;
 
         int topLeftX = startX;
         int topLeftY = startY;
 
         CellPainter.init(verEdgeLen, horEdgeLen, arrowSize, this::createArrow);
 
-        for (int i = 0, h = this.maze.getHeight(), w = this.maze.getWidth(); i < h; i++) {
-            for (int j = 0; j < w; j++) {
-                CellPainter.paint(g, this.maze.getCell(i, j), topLeftX, topLeftY);
+        for (int i = 0; i < mazeDimension.height; i++) {
+            for (int j = 0; j < mazeDimension.width; j++) {
+                CellPainter.paint(g, maze.getCell(i, j), topLeftX, topLeftY);
                 topLeftX += horEdgeLen;
             }
 
@@ -278,17 +267,23 @@ public class MazePanel extends JPanel {
     private void showPlayers(Graphics g) {
 
         Color before = g.getColor();
+
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
-        for (BasePlayer player : this.players) {
+        Dimension mazeDimension = getMazeDimension();
+
+        int horSpace = fullW / mazeDimension.width;
+        int verSpace = fullH / mazeDimension.height;
+
+        List<BasePlayer> players = this.game.getPlayers();
+
+        for (BasePlayer player : players) {
             if (player.getColor() != null) {
                 g.setColor(player.getColor().getColor());
             }
-            Coordinate coordinates = this.calculateLocation(player.getLocation());
 
-            int horSpace = fullW / this.maze.getWidth();
-            int verSpace = fullH / this.maze.getHeight();
+            Coordinate coordinates = this.calculateLocation(player.getLocation());
 
             g.drawRect(coordinates.getRow() + this.cellHorMargin,
                     coordinates.getColumn() + this.cellVerMargin,
@@ -317,8 +312,10 @@ public class MazePanel extends JPanel {
         int fullW = getWidth() - startX * 2;
         int fullH = getHeight() - startY * 2;
 
-        int horSpace = fullW / this.maze.getWidth();
-        int verSpace = fullH / this.maze.getHeight();
+        Dimension mazeDimension = getMazeDimension();
+
+        int horSpace = fullW / mazeDimension.width;
+        int verSpace = fullH / mazeDimension.height;
 
         return new Coordinate(startX + horSpace * location.getColumn(), startY + verSpace * location.getRow());
     }
@@ -330,7 +327,7 @@ public class MazePanel extends JPanel {
         game.onFinishGame();
     }
 
-    public Maze getMaze() {
-        return maze;
+    public Dimension getMazeDimension() {
+        return new Dimension(this.game.getMazeWidth(), this.game.getMazeHeight());
     }
 }

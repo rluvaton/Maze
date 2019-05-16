@@ -151,20 +151,11 @@ public class GameWindow {
         }
 
         // TODO - clean this
-        int height;
-        int width;
-
-        if (previewPanel == null) {
-            height = 15;
-            width = 10;
-        } else {
-            height = previewPanel.getMaze().getHeight();
-            width = previewPanel.getMaze().getWidth();
-        }
+        Dimension mazeDimension = previewPanel == null ? new Dimension(10, 15) : previewPanel.getMazeDimension();
 
         // TODO - add scroller to the game JPanel
 
-        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
+        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(mazeDimension);
 
         GridBagConstraints c = new GridBagConstraints();
 
@@ -174,7 +165,7 @@ public class GameWindow {
         int minDistance = 0;
 
         if (previewPanel == null) {
-            previewPanel = start(height, width, minDistance);
+            previewPanel = start(mazeDimension.height, mazeDimension.width, minDistance);
         }
 
 

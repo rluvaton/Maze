@@ -563,4 +563,22 @@ public class MazeGame {
         return this.gameState == GameState.READY ||
                 this.gameState == GameState.NOT_READY;
     }
+
+    public Maze getMaze() {
+        return maze;
+    }
+
+    public List<BasePlayer> getPlayers() {
+        return players;
+    }
+
+    public int getMazeWidth() {
+        return this.maze.getWidth();
+    }
+
+    public int getMazeHeight() {
+        return this.maze.getHeight();
+    }
+
+
 }
