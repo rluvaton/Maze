@@ -21,7 +21,6 @@ import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -38,10 +37,11 @@ public class MazeGame {
     /**
      * Maze Players
      */
-    private BasePlayer[] players;
+    private List<BasePlayer> players = new ArrayList<>();
 
     /**
      * Timers for all the expired candies
+     * (have time to live value bigger than zero)
      */
     List<ControlledTimer> timeToLiveCandiesTimers;
 
@@ -69,19 +69,19 @@ public class MazeGame {
         this(maze, players, movementListenerManager, false);
     }
 
-    public MazeGame(Maze maze, List<BasePlayer> players, MovementListenerManager movementListenerManager, boolean arePlayersAtPosition) {
-        this(maze, players.toArray(new BasePlayer[0]), movementListenerManager, arePlayersAtPosition);
+    public MazeGame(Maze maze, BasePlayer[] players, MovementListenerManager movementListenerManager, boolean arePlayersAtPosition) {
+        this(maze, List.of(players), movementListenerManager, arePlayersAtPosition);
     }
 
     public MazeGame(Maze maze, List<BasePlayer> players, boolean arePlayersAtPosition) {
-        this(maze, players.toArray(new BasePlayer[0]), null, arePlayersAtPosition);
-    }
-
-    public MazeGame(Maze maze, BasePlayer[] players, boolean arePlayersAtPosition) {
         this(maze, players, null, arePlayersAtPosition);
     }
 
-    public MazeGame(Maze maze, BasePlayer[] players, MovementListenerManager movementListenerManager, boolean arePlayersAtPosition) {
+    public MazeGame(Maze maze, BasePlayer[] players, boolean arePlayersAtPosition) {
+        this(maze, List.of(players), null, arePlayersAtPosition);
+    }
+
+    public MazeGame(Maze maze, List<BasePlayer> players, MovementListenerManager movementListenerManager, boolean arePlayersAtPosition) {
         ObjectAssertion.requireNonNull(maze, "Maze can't be null");
         ObjectAssertion.requireNonNull(players, "Players can't be null");
         // The `movementListenerManager` can be null until the game init (can add in start play game)
@@ -96,8 +96,7 @@ public class MazeGame {
     }
 
     private void setPlayerLocationAtEntrances() {
-        List<Coordinate> locations = maze.getEntrances().stream().map(eLocation ->
-                eLocation.getLocation()).collect(Collectors.toList());
+        List<Coordinate> locations = maze.getEntrancesLocations();
 
         if (locations.size() == 0) {
             return;
@@ -108,17 +107,20 @@ public class MazeGame {
         Coordinate defaultEntrance = locations.get(defaultIndex);
         locations.remove(defaultIndex);
 
-        Coordinate playerLoc;
-
         for (BasePlayer player : this.players) {
-            playerLoc = defaultEntrance;
-
-            if (!locations.isEmpty()) {
-                playerLoc = locations.get(0);
-                locations.remove(0);
-            }
-            player.setLocation(playerLoc);
+            setEntranceForPlayer(locations, defaultEntrance, player);
         }
+    }
+
+    private void setEntranceForPlayer(List<Coordinate> locations, Coordinate defaultEntrance, BasePlayer player) {
+        Coordinate playerLoc;
+        playerLoc = defaultEntrance;
+
+        if (!locations.isEmpty()) {
+            playerLoc = locations.get(0);
+            locations.remove(0);
+        }
+        player.setLocation(playerLoc);
     }
 
     public void initGame(MovementListenerManager movementListenerManager) {
@@ -137,7 +139,6 @@ public class MazeGame {
 
         gameState = GameState.READY;
     }
-
 
     public void startGame() {
 
@@ -159,7 +160,8 @@ public class MazeGame {
     private List<Observable<Boolean>> getAllPlayersPauseObservables() {
         ObjectAssertion.requireNonNull(this.players, "Players can't be null");
 
-        return Arrays.stream(this.players)
+        return this.players
+                .stream()
                 .filter(Objects::nonNull)
                 .map(BasePlayer::getOnPlayerPauseObs)
                 .collect(Collectors.toList());
@@ -247,25 +249,35 @@ public class MazeGame {
 
     private ArrayList<CallbackFns.NoArgsVoidCallbackFunction> initPlayers() {
         ArrayList<CallbackFns.NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
+        CallbackFns.NoArgsVoidCallbackFunction initCallback;
 
         for (BasePlayer player : this.players) {
+            initCallback = initSinglePlayer(player);
 
-            // Create entrance
-            ELocation entrance = this.maze.getRandomEntrance();
-
-            // Set default location to 0,0
-            player.setLocation(entrance != null ? entrance.getLocation() : new Coordinate(0, 0));
-
-            listenToPlayerMovement(player);
-
-            if (player instanceof HumanPlayer) {
-                startPlayersCallbacks.add(this.startHumanPlayer((HumanPlayer) player));
-            } else if (player instanceof ComputerPlayer) {
-                startPlayersCallbacks.add(startComputerPlayer((ComputerPlayer) player));
+            if(initCallback != null) {
+                startPlayersCallbacks.add(initCallback);
             }
         }
 
         return startPlayersCallbacks;
+    }
+
+    private CallbackFns.NoArgsVoidCallbackFunction initSinglePlayer(BasePlayer player) {
+        // Create entrance
+        ELocation entrance = this.maze.getRandomEntrance();
+
+        // Set default location to 0,0
+        player.setLocation(entrance != null ? entrance.getLocation() : new Coordinate(0, 0));
+
+        listenToPlayerMovement(player);
+
+        if (player instanceof HumanPlayer) {
+            return this.startHumanPlayer((HumanPlayer) player);
+        } else if (player instanceof ComputerPlayer) {
+            return startComputerPlayer((ComputerPlayer) player);
+        }
+
+        return null;
     }
 
     private void listenToPlayerMovement(BasePlayer player) {
@@ -323,12 +335,10 @@ public class MazeGame {
      * @param player The player that finished
      */
     private void playerFinished(BasePlayer player) {
-        // Remove key listener if the player is human player
         player.onPlayerFinished();
 
         if (player instanceof HumanPlayer) {
             movementListenerManager.removeListenerForPlayer((HumanPlayer) player);
-//            this.removeKeyListener((HumanPlayer) player);
         }
     }
 
@@ -451,5 +461,14 @@ public class MazeGame {
 
     public void onFinishGame() {
         this.onDestroySub.onNext(true);
+    }
+
+    public void addPlayer(BasePlayer player) {
+        this.addPlayer(player, false);
+    }
+
+    public void addPlayer(BasePlayer player, boolean atEntrance) {
+        // TODO - finish this!
+        //        If game state is running cant add player
     }
 }

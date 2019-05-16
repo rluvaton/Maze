@@ -264,6 +264,14 @@ public class Maze {
                 : entrances.get(RandomHelper.getRandomNumber(entrances.size()));
     }
 
+
+    public List<Coordinate> getEntrancesLocations() {
+        return this.getEntrances()
+                .stream()
+                .map(eLocation -> eLocation.getLocation())
+                .collect(Collectors.toList());
+    }
+
     public List<ELocation> getEntrances() {
         return entrances;
     }

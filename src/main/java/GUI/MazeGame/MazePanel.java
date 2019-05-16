@@ -5,21 +5,12 @@ import Game.MovementListenerManager;
 import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
-import Helpers.Direction;
 import Helpers.ThrowableAssertions.ObjectAssertion;
-import Maze.Candy.CandyRecord;
-import Maze.Cell;
-import Maze.ELocation;
-import Maze.ELocationType;
 import Maze.Maze;
-import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import player.BasePlayer;
-import player.ComputerPlayer.ComputerPlayer;
 import player.HumanPlayer.HumanPlayer;
-import player.MoveStatus;
-import player.exceptions.PlayerNotRunning;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -29,10 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static Logger.LoggerManager.logger;
 
