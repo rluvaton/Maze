@@ -3,6 +3,7 @@ package GUI.Play;
 import GUI.Color;
 import GUI.GuiHelper;
 import GUI.Play.Exceptions.NotFinishedStepException;
+import Helpers.CallbackFns;
 import Helpers.Coordinate;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -13,8 +14,12 @@ import player.HumanPlayer.HumanPlayer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
+import static java.awt.event.KeyEvent.getKeyText;
 
 public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
@@ -30,11 +35,11 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     private ActionsKeys actionsKeys = new ActionsKeys();
 
     java.util.List<HumanPlayer> playerList = new LinkedList<>();
-    
+
     @Override
     public void init() {
-       this.setLayout(new FormLayout("left:26dlu:noGrow,fill:max(d;4px):noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:d:grow", "center:31px:noGrow,top:4dlu:noGrow,top:13dlu:noGrow,top:13dlu:noGrow,top:10dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,top:4dlu:noGrow,top:15dlu:noGrow,center:max(d;4px):noGrow,top:12dlu:noGrow,center:max(d;4px):noGrow"));
-        
+        this.setLayout(new FormLayout("left:26dlu:noGrow,fill:max(d;4px):noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:d:grow", "center:31px:noGrow,top:4dlu:noGrow,top:13dlu:noGrow,top:13dlu:noGrow,top:10dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,top:4dlu:noGrow,top:15dlu:noGrow,center:max(d;4px):noGrow,top:12dlu:noGrow,center:max(d;4px):noGrow"));
+
     }
 
     @Override
@@ -59,7 +64,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         initDirectionKeysInput();
 
         this.createNewPlayerButton.addActionListener((e) -> {
-            if(this.canContinue()) {
+            if (this.canContinue()) {
                 this.playerList.add(this.createNewPlayer());
             }
         });
@@ -67,7 +72,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private HumanPlayer createNewPlayer() {
         String userName = this.nameIn.getText();
-        if(userName == null || userName.equals("")) {
+        if (userName == null || userName.equals("")) {
             userName = null;
         }
 
@@ -75,37 +80,55 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     private void initDirectionKeysInput() {
-        this.downIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                actionsKeys.setDownKeyCode(e.getKeyCode());
-                downIn.setText(e.getKeyChar() + "");
-            }
-        });
+        this.downIn.addKeyListener(new KeyActionListener(actionsKeys::setDownKeyCode));
 
-        this.upIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                actionsKeys.setUpKeyCode(e.getKeyCode());
-                upIn.setText(e.getKeyChar() + "");
-            }
-        });
+        this.upIn.addKeyListener(new KeyActionListener(actionsKeys::setUpKeyCode));
 
-        this.leftIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                actionsKeys.setLeftKeyCode(e.getKeyCode());
-                leftIn.setText(e.getKeyChar() + "");
-            }
-        });
+        this.leftIn.addKeyListener(new KeyActionListener(actionsKeys::setLeftKeyCode));
 
-        this.rightIn.addKeyListener(new GuiHelper.OnlyKeyPressed() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                actionsKeys.setRightKeyCode(e.getKeyCode());
-                rightIn.setText(e.getKeyChar() + "");
+        this.rightIn.addKeyListener(new KeyActionListener(actionsKeys::setRightKeyCode));
+    }
+
+    private class KeyActionListener implements KeyListener {
+
+        CallbackFns.ArgsVoidCallbackFunction<Integer> setKeyCode;
+
+        int keyCode;
+        int extendedKeyCode;
+
+        String currentKeyText = null;
+
+        public KeyActionListener(CallbackFns.ArgsVoidCallbackFunction<Integer> setKeyCode) {
+            this.setKeyCode = setKeyCode;
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+            if (e.getExtendedKeyCode() != extendedKeyCode) {
+                return;
             }
-        });
+
+            JTextField textField = (JTextField) e.getSource();
+
+            if(!Objects.equals(textField.getText(), currentKeyText)) {
+                textField.setText(currentKeyText);
+            }
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            keyCode = e.getKeyCode();
+            extendedKeyCode = e.getExtendedKeyCode();
+
+            this.setKeyCode.run(keyCode);
+
+            currentKeyText = getKeyText(keyCode);
+            ((JTextField)e.getSource()).setText(currentKeyText);
+        }
     }
 
     private void initCreateNewPlayer(CellConstraints cc) {
