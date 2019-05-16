@@ -11,6 +11,7 @@ import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Maze;
+import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -37,15 +38,15 @@ public class MazeGame {
     /**
      * Maze Players
      */
-    private List<BasePlayer> players = new ArrayList<>();
+    private List<BasePlayer> players;
 
     /**
      * Timers for all the expired candies
      * (have time to live value bigger than zero)
      */
-    List<ControlledTimer> timeToLiveCandiesTimers;
+    private List<ControlledTimer> timeToLiveCandiesTimers;
 
-    MovementListenerManager movementListenerManager;
+    private MovementListenerManager movementListenerManager;
 
     /**
      * List of all players callback for starting the game
@@ -60,6 +61,32 @@ public class MazeGame {
 
     private GameState gameState = GameState.NOT_READY;
 
+
+    // region Create MazeGame from Step
+
+    public static MazeGame createMazeGameFromStep(GameStep step) throws MazeBuilderException {
+        ComputerPlayer computerPlayer = step.getPlayer();
+        List<BasePlayer> players = new ArrayList<>();
+
+        if(computerPlayer != null) {
+            players.add(computerPlayer);
+        }
+
+        return MazeGame.createMazeGameFromStep(step, players, false);
+    }
+
+    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players) throws MazeBuilderException {
+        return MazeGame.createMazeGameFromStep(step, players, false);
+    }
+
+    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players, boolean atEntrances) throws MazeBuilderException {
+        ObjectAssertion.requireNonNull(step, "Step can't be null");
+        ObjectAssertion.requireNonNull(players, "Players can't be null");
+
+        return new MazeGame(step.build(), players, atEntrances);
+    }
+
+    // endregion
 
     public MazeGame(Maze maze, List<BasePlayer> players, MovementListenerManager movementListenerManager) {
         this(maze, players, movementListenerManager, false);
@@ -91,15 +118,15 @@ public class MazeGame {
         this.movementListenerManager = movementListenerManager;
 
         if (!arePlayersAtPosition) {
-            setPlayerLocationAtEntrances();
+            setAllPlayersLocationAtEntrances();
         }
     }
 
-    private void setPlayerLocationAtEntrances() {
+    private void setAllPlayersLocationAtEntrances() {
         List<Coordinate> locations = maze.getEntrancesLocations();
 
         if (locations.size() == 0) {
-            return;
+            locations.add(this.getDefaultEntrance());
         }
 
         int defaultIndex = 0;
@@ -108,11 +135,11 @@ public class MazeGame {
         locations.remove(defaultIndex);
 
         for (BasePlayer player : this.players) {
-            setEntranceForPlayer(locations, defaultEntrance, player);
+            setEntranceForSinglePlayer(locations, defaultEntrance, player);
         }
     }
 
-    private void setEntranceForPlayer(List<Coordinate> locations, Coordinate defaultEntrance, BasePlayer player) {
+    private void setEntranceForSinglePlayer(List<Coordinate> locations, Coordinate defaultEntrance, BasePlayer player) {
         Coordinate playerLoc;
         playerLoc = defaultEntrance;
 
@@ -249,13 +276,13 @@ public class MazeGame {
 
     private ArrayList<CallbackFns.NoArgsVoidCallbackFunction> initPlayers() {
         ArrayList<CallbackFns.NoArgsVoidCallbackFunction> startPlayersCallbacks = new ArrayList<>();
-        CallbackFns.NoArgsVoidCallbackFunction initCallback;
+        CallbackFns.NoArgsVoidCallbackFunction initPlayerCallback;
 
         for (BasePlayer player : this.players) {
-            initCallback = initSinglePlayer(player);
+            initPlayerCallback = initSinglePlayer(player);
 
-            if(initCallback != null) {
-                startPlayersCallbacks.add(initCallback);
+            if (initPlayerCallback != null) {
+                startPlayersCallbacks.add(initPlayerCallback);
             }
         }
 
@@ -468,7 +495,72 @@ public class MazeGame {
     }
 
     public void addPlayer(BasePlayer player, boolean atEntrance) {
-        // TODO - finish this!
-        //        If game state is running cant add player
+        ObjectAssertion.requireNonNull(player, "Player can't be null");
+
+        CallbackFns.NoArgsVoidCallbackFunction initPlayerCallback;
+
+        if (!this.isNewPlayerCanBeAdded()) {
+            return;
+        }
+
+        if (!atEntrance) {
+            setEntranceForLatePlayer(player);
+        }
+
+        if(this.isNewPlayerNeedToBeInitialized()) {
+            initPlayerCallback = initSinglePlayer(player);
+
+            if (initPlayerCallback != null) {
+                startPlayersCallbacks.add(initPlayerCallback);
+            }
+        }
+
+        this.players.add(player);
+    }
+
+    private boolean isNewPlayerNeedToBeInitialized() {
+        return this.gameState == GameState.READY;
+    }
+
+    private void setEntranceForLatePlayer(BasePlayer player) {
+        Coordinate entrance = getUntakenEntrance();
+
+        if (entrance == null) {
+            entrance = this.getDefaultEntrance();
+        }
+
+        player.setLocation(entrance);
+    }
+
+    private Coordinate getDefaultEntrance() {
+        return new Coordinate(0, 0);
+    }
+
+    private Coordinate getUntakenEntrance() {
+        List<Coordinate> locations = this.maze.getEntrancesLocations();
+
+        if (locations.size() == 0) {
+            return null;
+        }
+
+        List<Coordinate> playersEntranceLocation = this.getAllPlayersEntranceLocations();
+
+        return locations.stream()
+                .filter(location -> !playersEntranceLocation.contains(location))
+                .findFirst().orElse(null);
+    }
+
+    private List<Coordinate> getAllPlayersEntranceLocations() {
+        ObjectAssertion.requireNonNull(this.players, "Players can't be null");
+
+        return this.players.stream()
+                .map(BasePlayer::getLocation)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isNewPlayerCanBeAdded() {
+        return this.gameState == GameState.READY ||
+                this.gameState == GameState.NOT_READY;
     }
 }
