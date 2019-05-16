@@ -2,6 +2,7 @@ package GUI;
 
 import GUI.MazeGame.MazePanel;
 import Game.GameStep;
+import Game.MazeGame;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -150,20 +151,11 @@ public class GameWindow {
         }
 
         // TODO - clean this
-        int height;
-        int width;
-
-        if (previewPanel == null) {
-            height = 15;
-            width = 10;
-        } else {
-            height = previewPanel.getMaze().getHeight();
-            width = previewPanel.getMaze().getWidth();
-        }
+        Dimension mazeDimension = previewPanel == null ? new Dimension(10, 15) : previewPanel.getMazeDimension();
 
         // TODO - add scroller to the game JPanel
 
-        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
+        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(mazeDimension);
 
         GridBagConstraints c = new GridBagConstraints();
 
@@ -173,7 +165,7 @@ public class GameWindow {
         int minDistance = 0;
 
         if (previewPanel == null) {
-            previewPanel = start(height, width, minDistance);
+            previewPanel = start(mazeDimension.height, mazeDimension.width, minDistance);
         }
 
 
@@ -241,7 +233,7 @@ public class GameWindow {
             players.add(player);
         }
 
-        MazePanel mazePanel = new MazePanel(maze, players, false);
+        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
         mazePanel.setFocusable(true);
         mazePanel.requestFocusInWindow();
 
@@ -264,7 +256,7 @@ public class GameWindow {
 
         java.util.List<BasePlayer> players = getGamePlayer();
 
-        MazePanel mazePanel = new MazePanel(maze, players, false);
+        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
         mazePanel.setFocusable(true);
         mazePanel.requestFocusInWindow();
 

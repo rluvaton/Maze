@@ -6,12 +6,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class DirectionTest {
 
     @ParameterizedTest(name = "{index}: getOppositeDirection(Direction.{0}) = {1}")
     @MethodSource("provideDirectionsForgetOppositeDirection")
     void getOppositeDirection(Direction direction, Direction actualOppositeDirection) {
-        System.out.println(direction + " " + actualOppositeDirection);
+        assertNotEquals(direction, actualOppositeDirection);
+        assertEquals(actualOppositeDirection, Direction.getOppositeDirection(direction));
     }
 
     private static Stream<Arguments> provideDirectionsForgetOppositeDirection() {
