@@ -105,37 +105,6 @@ public class Window {
 
         containerPanel.add(menuBar, BorderLayout.PAGE_START);
         containerPanel.add(cardsContainer, BorderLayout.CENTER);
-//        GroupLayout layout = new GroupLayout(containerPanel);
-//        containerPanel.setLayout(layout);
-//        layout.setHorizontalGroup(
-//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                        .addGroup(layout.createSequentialGroup()
-//                                .addContainerGap()
-//                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                                        .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-//                                        .addGroup(layout.createSequentialGroup()
-//                                                .addComponent(backBtn)
-//                                                .addGap(0, 0, Short.MAX_VALUE)))
-//                                .addContainerGap())
-//        );
-//        layout.setVerticalGroup(
-//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                        .addGroup(layout.createSequentialGroup()
-//                                .addContainerGap()
-//                                .addComponent(backBtn)
-//                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-//                                .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-//                                .addContainerGap())
-//        );
-
-        containerPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[ContainerPanel]     ", e.getComponent().getSize());
-
-            }
-        });
     }
 
     private void initMenuBar() {
@@ -222,10 +191,6 @@ public class Window {
 
         this.cardsContainer.setSize(size);
         this.cardsContainer.setMinimumSize(size);
-
-//        frame.pack();
-//        Dimension frameSize = (Dimension) size.clone();
-//        this.frame.setSize(frameSize);
     }
 
     private void addCard(JPanel panel, CardName cardName) {
@@ -233,14 +198,6 @@ public class Window {
     }
 
     private void onFinishMazeCreation(MazePanel mazePanel) {
-
-        mazePanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[MazePanel]    ", e.getComponent().getSize());
-            }
-        });
 
         addCard(mazePanel, CardName.GAME);
 
@@ -252,28 +209,15 @@ public class Window {
         Dimension mazePanelSize = mazePanel.getPreferredSize();
         mazePanel.setMinimumSize(mazePanelSize);
         mazePanel.setPreferredSize(mazePanelSize);
-//        mazePanel.setMaximumSize(mazePanelSize);
         mazePanel.setSize(mazePanelSize);
 
         this.cardsContainer.setMinimumSize(mazePanelSize);
         this.cardsContainer.setPreferredSize(mazePanelSize);
-//        this.cardsContainer.setMaximumSize(mazePanelSize);
         this.cardsContainer.setSize(mazePanelSize);
-
-//
-//        this.containerPanel.setMinimumSize(this.cardsContainer.getMinimumSize());
-//        this.containerPanel.setPreferredSize(this.cardsContainer.getPreferredSize());
-//        this.containerPanel.setMaximumSize(this.cardsContainer.getMaximumSize());
-//        this.containerPanel.setSize(this.cardsContainer.getSize());
 
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
-//        this.frame.setMinimumSize(this.cardsContainer.getMinimumSize());
-//        this.frame.setPreferredSize(this.cardsContainer.getPreferredSize());
-//        this.frame.setMaximumSize(this.cardsContainer.getMaximumSize());
-//        this.frame.setSize(this.cardsContainer.getMaximumSize());
         this.frame.pack();
-
 
         mazePanel.initGame();
 
@@ -281,7 +225,6 @@ public class Window {
         mazePanel.requestFocusInWindow();
 
         mazePanel.startGame();
-
     }
 
     private void setEnabledBack(boolean enabled) {

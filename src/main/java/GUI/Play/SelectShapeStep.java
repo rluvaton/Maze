@@ -22,14 +22,6 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     private JSpinner widthValue;
 
     public SelectShapeStep() {
-
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[SelectShapeStep]", e.getComponent().getSize());
-            }
-        });
     }
 
     public void init() {

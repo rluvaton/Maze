@@ -69,22 +69,6 @@ public class PlayCard extends JPanel implements WindowCard {
         initStepContainer(cc);
         initNextStepBtn();
 
-        this.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[PlayCard]", e.getComponent().getSize());
-            }
-        });
-
-        stepPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[StepPanel]", e.getComponent().getSize());
-            }
-        });
-
         this.setMinimumSize(new Dimension(100, 100));
         this.setPreferredSize(new Dimension(100, 100));
 
