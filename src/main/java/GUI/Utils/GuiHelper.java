@@ -46,4 +46,8 @@ public class GuiHelper {
         }
         return null;
     }
+
+    public static Dimension getScreenSize() {
+        return Toolkit.getDefaultToolkit().getScreenSize();
+    }
 }

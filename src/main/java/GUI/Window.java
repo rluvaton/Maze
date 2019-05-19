@@ -16,7 +16,9 @@ import static Logger.LoggerManager.logger;
 public class Window {
     private JPanel containerPanel;
     private JPanel cardsContainer;
-    private JButton backBtn;
+
+    private JMenuBar menuBar;
+    private JMenuItem backMenu;
 
     // region Cards
 
@@ -81,7 +83,6 @@ public class Window {
 
         showCard(CardName.WELCOME);
 
-        initListeners();
     }
 
     private void a() {
@@ -92,7 +93,7 @@ public class Window {
     private void initContainerPanel() {
         containerPanel = new JPanel();
 
-        initBackBtn();
+        initMenuBar();
 
         cardsContainer = new JPanel();
 
@@ -100,28 +101,32 @@ public class Window {
 
         cardsContainer.setMinimumSize(new Dimension(25, 25));
 
-        GroupLayout layout = new GroupLayout(containerPanel);
-        containerPanel.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addComponent(backBtn)
-                                                .addGap(0, 0, Short.MAX_VALUE)))
-                                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(backBtn)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-                                .addContainerGap())
-        );
+        containerPanel.setLayout(new BorderLayout());
+
+        containerPanel.add(menuBar, BorderLayout.PAGE_START);
+        containerPanel.add(cardsContainer, BorderLayout.CENTER);
+//        GroupLayout layout = new GroupLayout(containerPanel);
+//        containerPanel.setLayout(layout);
+//        layout.setHorizontalGroup(
+//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+//                        .addGroup(layout.createSequentialGroup()
+//                                .addContainerGap()
+//                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+//                                        .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+//                                        .addGroup(layout.createSequentialGroup()
+//                                                .addComponent(backBtn)
+//                                                .addGap(0, 0, Short.MAX_VALUE)))
+//                                .addContainerGap())
+//        );
+//        layout.setVerticalGroup(
+//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+//                        .addGroup(layout.createSequentialGroup()
+//                                .addContainerGap()
+//                                .addComponent(backBtn)
+//                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+//                                .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+//                                .addContainerGap())
+//        );
 
         containerPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -133,18 +138,21 @@ public class Window {
         });
     }
 
-    private void initBackBtn() {
-        backBtn = new JButton();
+    private void initMenuBar() {
+        menuBar = new JMenuBar();
+
+        backMenu = new JMenuItem();
+        backMenu.add(createBackBtn());
+        backMenu.setEnabled(false);
+
+        menuBar.add(backMenu);
+    }
+
+    private JButton createBackBtn() {
+        JButton backBtn = new JButton();
 
         backBtn.setText("Back");
-        backBtn.setVisible(false);
-    }
 
-    private void initListeners() {
-        initClickBackListener();
-    }
-
-    private void initClickBackListener() {
         backBtn.addActionListener(e -> {
 
             if (this.currentCardName == CardName.PLAY && this.playCard.back()) {
@@ -154,8 +162,10 @@ public class Window {
             this.showCard(CardName.WELCOME);
 
             this.currentCardName = CardName.WELCOME;
-            backBtn.setVisible(false);
+            setEnabledBack(false);
         });
+
+        return backBtn;
     }
 
     private void createAndAttachWelcomeCard() {
@@ -206,7 +216,7 @@ public class Window {
 
         cl.show(this.cardsContainer, cardName.getValue());
 
-        this.backBtn.setVisible(currentCardName != CardName.WELCOME);
+        setEnabledBack(currentCardName != CardName.WELCOME);
 
         Dimension size = this.cl.preferredLayoutSize(this.cardsContainer);
 
@@ -234,16 +244,36 @@ public class Window {
 
         addCard(mazePanel, CardName.GAME);
 
-        backBtn.setVisible(false);
 
         showCard(CardName.GAME);
 
-        Dimension mazePanelSize = mazePanel.getPreferredSize();
+        setEnabledBack(false);
 
+        Dimension mazePanelSize = mazePanel.getPreferredSize();
+        mazePanel.setMinimumSize(mazePanelSize);
+        mazePanel.setPreferredSize(mazePanelSize);
+//        mazePanel.setMaximumSize(mazePanelSize);
+        mazePanel.setSize(mazePanelSize);
 
         this.cardsContainer.setMinimumSize(mazePanelSize);
         this.cardsContainer.setPreferredSize(mazePanelSize);
-        this.containerPanel.setPreferredSize(null);
+//        this.cardsContainer.setMaximumSize(mazePanelSize);
+        this.cardsContainer.setSize(mazePanelSize);
+
+//
+//        this.containerPanel.setMinimumSize(this.cardsContainer.getMinimumSize());
+//        this.containerPanel.setPreferredSize(this.cardsContainer.getPreferredSize());
+//        this.containerPanel.setMaximumSize(this.cardsContainer.getMaximumSize());
+//        this.containerPanel.setSize(this.cardsContainer.getSize());
+
+        this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
+
+//        this.frame.setMinimumSize(this.cardsContainer.getMinimumSize());
+//        this.frame.setPreferredSize(this.cardsContainer.getPreferredSize());
+//        this.frame.setMaximumSize(this.cardsContainer.getMaximumSize());
+//        this.frame.setSize(this.cardsContainer.getMaximumSize());
+        this.frame.pack();
+
 
         mazePanel.initGame();
 
@@ -252,5 +282,9 @@ public class Window {
 
         mazePanel.startGame();
 
+    }
+
+    private void setEnabledBack(boolean enabled) {
+        this.backMenu.setEnabled(enabled);
     }
 }
