@@ -37,11 +37,11 @@ public class KeyStrokeUtils {
 
         switch (key.getKeyEventType()) {
             case KeyEvent.KEY_TYPED:
-                s.append(key.getKeyChar() + " ");
+                s.append(key.getKeyChar()).append(" ");
                 break;
             case KeyEvent.KEY_PRESSED:
             case KeyEvent.KEY_RELEASED:
-                s.append(getKeyText(key.getKeyCode()) + " ");
+                s.append(getKeyText(key.getKeyCode())).append(" ");
                 break;
             default:
                 s.append("unknown-event-type ");
