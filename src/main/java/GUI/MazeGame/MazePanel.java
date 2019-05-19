@@ -1,8 +1,9 @@
 package GUI.MazeGame;
 
+import GUI.WindowCard;
+import Game.GameState;
 import Game.MazeGame;
 import Game.MovementListenerManager;
-import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -19,12 +20,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import static Logger.LoggerManager.logger;
 
-public class MazePanel extends JPanel {
+public class MazePanel extends JPanel implements WindowCard {
+
+    private static final int DEFAULT_CELL_EDGE = 25;
 
     private MazeGame game;
 
@@ -39,28 +41,34 @@ public class MazePanel extends JPanel {
     private Color mazeColor = Color.BLUE;
 
     /**
-     * From where to createRunningThread the maze X axis
-     * Set to 20 so it start with a little padding
+     * From where to start the maze X axis so it start with a little padding
      */
     private final int startX = 40;
 
     /**
-     * From where to createRunningThread the maze Y axis
-     * Set to 20 so it start with a little padding
+     * From where to start the maze Y axis so it start with a little padding
      */
     private final int startY = 40;
 
     /**
-     * From where to createRunningThread the maze X axis
-     * Set to 20 so it start with a little padding
+     * From where the player will start with vertical padding
      */
-    private final int cellVerMargin = 3;
+    private final int cellVerPadding = 5;
 
     /**
-     * From where to createRunningThread the maze Y axis
-     * Set to 20 so it start with a little padding
+     * From where the player will start with horizontal padding
      */
-    private final int cellHorMargin = 3;
+    private final int cellHorPadding = 5;
+
+    /**
+     * Cell horizontal length (from right to left)
+     */
+    private int cellHorizontalLength = 10;
+
+    /**
+     * Cell vertical size (from top to bottom)
+     */
+    private int cellVerticalLength = 10;
 
     /**
      * Subject to stop all the left subscriptions
@@ -171,11 +179,12 @@ public class MazePanel extends JPanel {
             }
         });
 
-        logger.debug("Don't forget to call `startGame()`");
+        logger.debug("[MazePanel][Reminder] Don't forget to call `startGame()`");
     }
 
     public void startGame() {
         game.startGame();
+        setFocusable(true);
     }
 
     // region GUI Painting
@@ -186,7 +195,7 @@ public class MazePanel extends JPanel {
         this.paintMaze(g);
         this.showPlayers(g);
 
-        if (currentlyOnPause) {
+        if (game.getGameState() == GameState.PAUSE) {
             paintOverlay(g);
         }
     }
@@ -205,27 +214,28 @@ public class MazePanel extends JPanel {
     private void paintMaze(Graphics g) {
         g.setColor(this.mazeColor);
 
+        Dimension mazeDimension = getMazeDimension();
+
         int fullW = getWidth() - (startX * 2);
         int fullH = getHeight() - (startY * 2);
 
         Maze maze = this.game.getMaze();
-        Dimension mazeDimension = getMazeDimension();
 
-        int horEdgeLen = fullW / mazeDimension.width;
-        int verEdgeLen = fullH / mazeDimension.height;
+        cellHorizontalLength = fullW / mazeDimension.width;
+        cellVerticalLength = fullH / mazeDimension.height;
 
         int topLeftX = startX;
         int topLeftY = startY;
 
-        CellPainter.init(verEdgeLen, horEdgeLen, arrowSize, this::createArrow);
+        CellPainter.init(cellVerticalLength, cellHorizontalLength, arrowSize, this::createArrow);
 
         for (int i = 0; i < mazeDimension.height; i++) {
             for (int j = 0; j < mazeDimension.width; j++) {
                 CellPainter.paint(g, maze.getCell(i, j), topLeftX, topLeftY);
-                topLeftX += horEdgeLen;
+                topLeftX += cellHorizontalLength;
             }
 
-            topLeftY += verEdgeLen;
+            topLeftY += cellVerticalLength;
             topLeftX = startX;
         }
     }
@@ -275,15 +285,15 @@ public class MazePanel extends JPanel {
 
             Coordinate coordinates = this.calculateLocation(player.getLocation());
 
-            g.drawRect(coordinates.getRow() + this.cellHorMargin,
-                    coordinates.getColumn() + this.cellVerMargin,
-                    horSpace - this.cellHorMargin,
-                    verSpace - this.cellVerMargin);
+            g.drawOval(coordinates.getRow() + this.cellHorPadding,
+                    coordinates.getColumn() + this.cellVerPadding,
+                    horSpace - this.cellHorPadding,
+                    verSpace - this.cellVerPadding);
 
-            g.fillRect(coordinates.getRow() + this.cellHorMargin,
-                    coordinates.getColumn() + this.cellVerMargin,
-                    horSpace - this.cellHorMargin,
-                    verSpace - this.cellVerMargin);
+            g.fillOval(coordinates.getRow() + this.cellHorPadding,
+                    coordinates.getColumn() + this.cellVerPadding,
+                    horSpace - this.cellHorPadding,
+                    verSpace - this.cellVerPadding);
             repaint();
         }
 
@@ -319,5 +329,15 @@ public class MazePanel extends JPanel {
 
     public Dimension getMazeDimension() {
         return new Dimension(this.game.getMazeWidth(), this.game.getMazeHeight());
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension mazeDim = getMazeDimension();
+
+        return new Dimension(
+                DEFAULT_CELL_EDGE * mazeDim.width + 2 * startX,
+                DEFAULT_CELL_EDGE * mazeDim.height + 2 * startY
+        );
     }
 }

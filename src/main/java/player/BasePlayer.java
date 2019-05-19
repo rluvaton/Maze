@@ -13,6 +13,7 @@ import player.exceptions.PlayerNotRunning;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static Helpers.Utils.Instance;
 
@@ -199,6 +200,29 @@ public abstract class BasePlayer {
 
     public void onPlayerFinished() {
         this.onFinish.onNext(true);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BasePlayer player = (BasePlayer) o;
+        return time == player.time &&
+                points == player.points &&
+                name.equals(player.name) &&
+                location.equals(player.location) &&
+                Objects.equals(prevLocation, player.prevLocation) &&
+                Objects.equals(directionActions, player.directionActions) &&
+                color == player.color;
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
     }
 
     // region Getter & Setter

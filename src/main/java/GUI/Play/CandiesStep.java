@@ -1,6 +1,7 @@
 package GUI.Play;
 
 import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Utils.GuiHelper;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.MazeGenerator.GenerateCandyConfig;
@@ -42,7 +43,7 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
         label2.setText("Total Candies");
         this.add(label2, cc.xywh(4, 6, 1, 2, CellConstraints.RIGHT, CellConstraints.DEFAULT));
 
-        totalCandies = new JSpinner();
+        totalCandies = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly(true));
         this.add(totalCandies, new CellConstraints(5, 6, 3, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
     }
 
