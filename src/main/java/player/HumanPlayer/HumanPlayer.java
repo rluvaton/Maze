@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Human Player
@@ -239,5 +240,28 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
             this.runnablePlayer = null;
             this.playerThread = null;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        HumanPlayer humanPlayer = (HumanPlayer) o;
+        return defaultStepSpeed == humanPlayer.defaultStepSpeed &&
+                defaultEnhancedStepSpeed == humanPlayer.defaultEnhancedStepSpeed &&
+                currentlyOnPause == humanPlayer.currentlyOnPause &&
+                specialKeys.equals(humanPlayer.specialKeys) &&
+                specialTypedKeys.equals(humanPlayer.specialTypedKeys) &&
+                directionKeys.equals(humanPlayer.directionKeys) &&
+                pressedKeys.equals(humanPlayer.pressedKeys) &&
+                Objects.equals(playerThread, humanPlayer.playerThread) &&
+                Objects.equals(runnablePlayer, humanPlayer.runnablePlayer);
     }
 }

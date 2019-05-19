@@ -1,6 +1,6 @@
 package GUI.Stats;
 
-import GUI.GuiHelper;
+import GUI.Utils.GuiHelper;
 import Helpers.TimeFormatter;
 import Statistics.User;
 import com.jgoodies.forms.layout.CellConstraints;

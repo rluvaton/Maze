@@ -162,7 +162,7 @@ public class MazeGame {
 
         this.startPlayersCallbacks = initPlayers();
 
-        logger.debug("Don't forget to call `startGame()`");
+        logger.debug("[Maze Game][Reminder] Don't forget to call `startGame()`");
 
         gameState = GameState.READY;
     }
@@ -580,5 +580,7 @@ public class MazeGame {
         return this.maze.getHeight();
     }
 
-
+    public GameState getGameState() {
+        return gameState;
+    }
 }

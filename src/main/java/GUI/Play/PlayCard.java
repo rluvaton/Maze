@@ -1,23 +1,22 @@
 package GUI.Play;
 
-import GUI.GameWindow;
-import GUI.GuiHelper;
+import GUI.Utils.GuiHelper;
 import GUI.MazeGame.MazePanel;
 import GUI.Play.Exceptions.NotFinishedStepException;
-import Game.MazeGame;
+import GUI.WindowCard;
+import Helpers.CallbackFns;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Maze;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import player.BasePlayer;
-import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class PlayCard extends JPanel {
+public class PlayCard extends JPanel implements WindowCard {
 
     private JPanel stepPanel;
     private JProgressBar stepsProgress;
@@ -39,13 +38,17 @@ public class PlayCard extends JPanel {
     MazeGenerator.Builder builder = new MazeGenerator.Builder()
             .setSolverAdapter(new BFSSolverAdapter());
 
+    private CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn;
 
-    public PlayCard() {
+
+    public PlayCard(CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn) {
+        ObjectAssertion.requireNonNull(onBuildFn, "`onBuildFn` can't be null");
+        this.onBuildFn = onBuildFn;
     }
 
     public void init() {
-
         this.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
+
     }
 
     public void initComponents() {
@@ -84,6 +87,8 @@ public class PlayCard extends JPanel {
 
             stepIndex++;
 
+            currentStep.onNextStep();
+
             if (this.stepIndex >= this.steps.length) {
                 this.onFinish();
                 return;
@@ -100,8 +105,6 @@ public class PlayCard extends JPanel {
     }
 
     private void onFinish() {
-        // TODO - FINISH THIS
-        // TODO - BUILD THE MAZE
 
         Maze maze;
 
@@ -112,12 +115,9 @@ public class PlayCard extends JPanel {
             return;
         }
 
-        BasePlayer[] players = this.createPlayersStep.playerList.toArray(new HumanPlayer[0]);
+        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, this.createPlayersStep.playerList, false));
 
-        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
-        GameWindow.main(mazePanel);
-
-//        throw new UnsupportedOperationException();
+        this.onBuildFn.run(mazePanel);
     }
 
     private void initSteps() {
@@ -177,6 +177,7 @@ public class PlayCard extends JPanel {
 
     private void showCard(PlayStep playStep) {
         this.cardLayout.show(this.stepPanel, playStep.getValue());
+        this.setPreferredSize(getPreferredSize());
     }
 
     private void initNextStepBtn() {
@@ -225,4 +226,5 @@ public class PlayCard extends JPanel {
         updateSteps();
         return true;
     }
+
 }

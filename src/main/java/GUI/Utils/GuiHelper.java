@@ -1,4 +1,4 @@
-package GUI;
+package GUI.Utils;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -26,7 +26,7 @@ public class GuiHelper {
 
     public static java.awt.Color getColorByName(String name) {
         try {
-            return (java.awt.Color)Color.class.getField(name.toUpperCase()).get(null);
+            return (java.awt.Color) GUI.Color.class.getField(name.toUpperCase()).get(null);
         } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
             e.printStackTrace();
             return null;

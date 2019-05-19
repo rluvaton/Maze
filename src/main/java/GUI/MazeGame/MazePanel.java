@@ -1,5 +1,7 @@
 package GUI.MazeGame;
 
+import GUI.WindowCard;
+import Game.GameState;
 import Game.MazeGame;
 import Game.MovementListenerManager;
 import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
@@ -24,7 +26,7 @@ import java.util.List;
 
 import static Logger.LoggerManager.logger;
 
-public class MazePanel extends JPanel {
+public class MazePanel extends JPanel implements WindowCard {
 
     private MazeGame game;
 
@@ -39,26 +41,22 @@ public class MazePanel extends JPanel {
     private Color mazeColor = Color.BLUE;
 
     /**
-     * From where to createRunningThread the maze X axis
-     * Set to 20 so it start with a little padding
+     * From where to start the maze X axis so it start with a little padding
      */
     private final int startX = 40;
 
     /**
-     * From where to createRunningThread the maze Y axis
-     * Set to 20 so it start with a little padding
+     * From where to start the maze Y axis so it start with a little padding
      */
     private final int startY = 40;
 
     /**
-     * From where to createRunningThread the maze X axis
-     * Set to 20 so it start with a little padding
+     * Cell vertical size (from top to bottom)
      */
     private final int cellVerMargin = 3;
 
     /**
-     * From where to createRunningThread the maze Y axis
-     * Set to 20 so it start with a little padding
+     * Cell horizontal size (from right to left)
      */
     private final int cellHorMargin = 3;
 
@@ -171,11 +169,12 @@ public class MazePanel extends JPanel {
             }
         });
 
-        logger.debug("Don't forget to call `startGame()`");
+        logger.debug("[MazePanel][Reminder] Don't forget to call `startGame()`");
     }
 
     public void startGame() {
         game.startGame();
+        setFocusable(true);
     }
 
     // region GUI Painting
@@ -186,7 +185,7 @@ public class MazePanel extends JPanel {
         this.paintMaze(g);
         this.showPlayers(g);
 
-        if (currentlyOnPause) {
+        if (game.getGameState() == GameState.PAUSE) {
             paintOverlay(g);
         }
     }
@@ -319,5 +318,14 @@ public class MazePanel extends JPanel {
 
     public Dimension getMazeDimension() {
         return new Dimension(this.game.getMazeWidth(), this.game.getMazeHeight());
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        Dimension mazeDim = getMazeDimension();
+
+        int width = mazeDim.width * cellHorMargin + startX * 2;
+        int height = mazeDim.height * cellVerMargin + startY * 2;
+        return new Dimension(width, height);
     }
 }

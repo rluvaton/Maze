@@ -1,17 +1,17 @@
 package GUI.Play;
 
 import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Utils.SpringUtilities;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class SelectShapeStep extends JPanel implements IPlayConfigStep {
 
+    private SpringLayout layout;
     private JComboBox<String> selectMazeShapeComboBox;
     private JSpinner heightValue;
     private JSpinner widthValue;
@@ -20,52 +20,66 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     }
 
     public void init() {
-        this.setLayout(new FormLayout("fill:p:noGrow,left:59dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:52px:grow,left:4dlu:noGrow,fill:d:grow,left:5dlu:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-//        stepPanel.add(selectMazeShape, "Card1");
+        this.layout = new SpringLayout();
+        this.setLayout(layout);
+        setPreferredSize(getPreferredSize());
+
     }
 
     public void initComponents() {
 
-        CellConstraints cc = new CellConstraints();
-
         initSelectMazeShape();
 
-        initHeight(cc);
+        initWidth();
+        initHeight();
 
-        initWidth(cc);
+        SpringUtilities.makeCompactGrid(
+                this,
+                3, 2,    //rows, cols
+                6, 6, //initX, initY
+                6, 6);   //xPad, yPa
     }
 
-    private void initWidth(CellConstraints cc) {
+    private void initWidth() {
         widthValue = new JSpinner();
-        this.add(widthValue, cc.xy(5, 5, CellConstraints.FILL, CellConstraints.DEFAULT));
 
-        final JLabel label3 = new JLabel();
-        label3.setText("Width");
-        this.add(label3, new CellConstraints(1, 5, 3, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
+        final JLabel label = new JLabel();
+        label.setText("Width");
+
+        addInputAndLabelPair(widthValue, label);
     }
 
-    private void initHeight(CellConstraints cc) {
+    private void initHeight() {
         heightValue = new JSpinner();
-        this.add(heightValue, cc.xy(5, 3, CellConstraints.FILL, CellConstraints.DEFAULT));
 
-        final JLabel label2 = new JLabel();
-        label2.setText("Height");
-        this.add(label2, new CellConstraints(1, 3, 3, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
+        final JLabel label = new JLabel();
+        label.setText("Height");
+
+        addInputAndLabelPair(heightValue, label);
     }
 
     private void initSelectMazeShape() {
+
         selectMazeShapeComboBox = new JComboBox<>();
-        final DefaultComboBoxModel<String> defaultComboBoxModel1 = new DefaultComboBoxModel<String>();
+        final DefaultComboBoxModel<String> defaultComboBoxModel1 = new DefaultComboBoxModel<>();
 
         defaultComboBoxModel1.addElement("Rectangular");
         selectMazeShapeComboBox.setModel(defaultComboBoxModel1);
-        this.add(selectMazeShapeComboBox, new CellConstraints(5, 1, 4, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 0, 0, 10)));
 
-        final JLabel label4 = new JLabel();
-        label4.setText("Select Maze Shape");
-        this.add(label4, new CellConstraints(1, 1, 3, 1, CellConstraints.RIGHT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
+        final JLabel label = new JLabel();
+        label.setText("Select Maze Shape");
 
-        label4.setLabelFor(selectMazeShapeComboBox);
+        label.setLabelFor(selectMazeShapeComboBox);
+
+        addInputAndLabelPair(selectMazeShapeComboBox, label);
+    }
+
+    private void addInputAndLabelPair(JComponent input, JLabel label) {
+        this.add(label);
+        this.add(input);
+
+        layout.putConstraint(SpringLayout.WEST, input, 5, SpringLayout.EAST, label);
+        layout.putConstraint(SpringLayout.NORTH, input, 5, SpringLayout.NORTH, this);
     }
 
     @Override

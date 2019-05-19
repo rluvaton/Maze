@@ -1,6 +1,6 @@
 package GUI.Stats;
 
-import GUI.GuiHelper;
+import GUI.Utils.GuiHelper;
 import Statistics.GameStats;
 import Statistics.User;
 import Statistics.UsersDataSource;

@@ -4,7 +4,8 @@ public enum CardName {
     WELCOME("WelcomeCard"),
     STATS("StatsCard"),
     GENERATOR("GeneratorCard"),
-    PLAY("PlayCard");
+    PLAY("PlayCard"),
+    GAME("Game");
 
     private String cardName;
 

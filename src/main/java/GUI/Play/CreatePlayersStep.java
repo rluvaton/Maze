@@ -1,20 +1,22 @@
 package GUI.Play;
 
 import GUI.Color;
-import GUI.GuiHelper;
 import GUI.Play.Exceptions.NotFinishedStepException;
 import Helpers.CallbackFns;
 import Helpers.Coordinate;
 import Maze.MazeGenerator.MazeGenerator;
+import com.github.javafaker.Faker;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.ActionsKeys;
+import player.BasePlayer;
 import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -34,12 +36,13 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private ActionsKeys actionsKeys = new ActionsKeys();
 
-    java.util.List<HumanPlayer> playerList = new LinkedList<>();
+    java.util.List<BasePlayer> playerList = new LinkedList<>();
+
+    private List<Color> selectedColors = new ArrayList<>();
 
     @Override
     public void init() {
         this.setLayout(new FormLayout("left:26dlu:noGrow,fill:max(d;4px):noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:d:grow", "center:31px:noGrow,top:4dlu:noGrow,top:13dlu:noGrow,top:13dlu:noGrow,top:10dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,top:4dlu:noGrow,top:15dlu:noGrow,center:max(d;4px):noGrow,top:12dlu:noGrow,center:max(d;4px):noGrow"));
-
     }
 
     @Override
@@ -66,27 +69,50 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         this.createNewPlayerButton.addActionListener((e) -> {
             if (this.canContinue()) {
                 this.playerList.add(this.createNewPlayer());
+                this.onNewPlayerAdded();
             }
         });
+    }
+
+    private void onNewPlayerAdded() {
+        this.resetInputs();
+    }
+
+    private void resetInputs() {
+        nameIn.setText("");
+
+        colorComboBox.removeItem(colorComboBox.getSelectedItem());
+
+        this.upIn.setText("");
+        this.downIn.setText("");
+        this.rightIn.setText("");
+        this.leftIn.setText("");
+
+        actionsKeys = new ActionsKeys();
     }
 
     private HumanPlayer createNewPlayer() {
         String userName = this.nameIn.getText();
         if (userName == null || userName.equals("")) {
-            userName = null;
+            userName = this.generateName();
+            this.nameIn.setText(userName);
         }
 
-        return new HumanPlayer(new Coordinate(0, 0), userName, this.actionsKeys);
+        return new HumanPlayer(new Coordinate(0, 0), userName, (Color) this.colorComboBox.getSelectedItem(), this.actionsKeys);
+    }
+
+    private String generateName() {
+        return new Faker().superhero().name();
     }
 
     private void initDirectionKeysInput() {
-        this.downIn.addKeyListener(new KeyActionListener(actionsKeys::setDownKeyCode));
+        this.downIn.addKeyListener(new KeyActionListener(downKeyCode -> actionsKeys.setDownKeyCode(downKeyCode)));
 
-        this.upIn.addKeyListener(new KeyActionListener(actionsKeys::setUpKeyCode));
+        this.upIn.addKeyListener(new KeyActionListener(upKeyCode -> actionsKeys.setUpKeyCode(upKeyCode)));
 
-        this.leftIn.addKeyListener(new KeyActionListener(actionsKeys::setLeftKeyCode));
+        this.leftIn.addKeyListener(new KeyActionListener(leftKeyCode -> actionsKeys.setLeftKeyCode(leftKeyCode)));
 
-        this.rightIn.addKeyListener(new KeyActionListener(actionsKeys::setRightKeyCode));
+        this.rightIn.addKeyListener(new KeyActionListener(rightKeyCode -> actionsKeys.setRightKeyCode(rightKeyCode)));
     }
 
     private class KeyActionListener implements KeyListener {
@@ -139,7 +165,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private void initKeyStrokeHeader(CellConstraints cc) {
         final JLabel label8 = new JLabel();
-        label8.setText("Key Stroke Assigntment");
+        label8.setText("Key Stroke Assignment");
         this.add(label8, cc.xywh(1, 5, 5, 2, CellConstraints.CENTER, CellConstraints.DEFAULT));
     }
 
@@ -153,7 +179,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private void initRight() {
         final JLabel label6 = new JLabel();
-        label6.setText("right");
+        label6.setText("Right");
         keyStrokePanel.add(label6);
 
         rightIn = createDirectionInput();
@@ -177,7 +203,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private void initUp() {
         final JLabel label4 = new JLabel();
-        label4.setText("up");
+        label4.setText("Up");
         keyStrokePanel.add(label4);
 
         upIn = createDirectionInput();
@@ -209,9 +235,21 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
+    public void onNextStep() {
+        if(!isPlayerWithCurrentInputsExistAlready()) {
+            this.playerList.add(this.createNewPlayer());
+        }
+    }
+
+    private boolean isPlayerWithCurrentInputsExistAlready() {
+        return this.playerList.stream().anyMatch(player ->
+                player.equals(this.createNewPlayer())
+        );
+    }
+
+    @Override
     public boolean canContinue() {
-        return this.actionsKeys.areAllDirectionsKeysSet() &&
-                this.nameIn.getText() != null;
+        return !this.playerList.isEmpty() || (this.actionsKeys.areAllDirectionsKeysSet());
     }
 
     @Override
@@ -227,7 +265,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         return builder;
     }
 
-    public List<HumanPlayer> getPlayerList() {
+    public List<BasePlayer> getPlayerList() {
         return playerList;
     }
 }
