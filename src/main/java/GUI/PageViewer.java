@@ -2,6 +2,8 @@ package GUI;
 
 import java.awt.*;
 
+import static GUI.Utils.GuiHelper.findCurrentComponent;
+
 public class PageViewer extends CardLayout {
 
     @Override
@@ -17,14 +19,5 @@ public class PageViewer extends CardLayout {
             return pref;
         }
         return super.preferredLayoutSize(parent);
-    }
-
-    public Component findCurrentComponent(Container parent) {
-        for (Component comp : parent.getComponents()) {
-            if (comp.isVisible()) {
-                return comp;
-            }
-        }
-        return null;
     }
 }

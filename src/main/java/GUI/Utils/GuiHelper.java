@@ -1,5 +1,6 @@
 package GUI.Utils;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -24,12 +25,25 @@ public class GuiHelper {
         return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
-    public static java.awt.Color getColorByName(String name) {
-        try {
-            return (java.awt.Color) GUI.Color.class.getField(name.toUpperCase()).get(null);
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-            e.printStackTrace();
-            return null;
+    public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly() {
+        return createSpinnerModelForPositiveNumberOnly(false, Short.MAX_VALUE);
+    }
+
+    public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly(boolean includeZero) {
+        return createSpinnerModelForPositiveNumberOnly(includeZero, Short.MAX_VALUE);
+    }
+
+    public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly(boolean includeZero, long maxValue) {
+        int minValue = includeZero ? 0 : 1;
+        return new SpinnerNumberModel(minValue, minValue, Math.toIntExact(maxValue), (int)Integer.valueOf(1));
+    }
+
+    public static Component findCurrentComponent(Container parent) {
+        for (Component comp : parent.getComponents()) {
+            if (comp.isVisible()) {
+                return comp;
+            }
         }
+        return null;
     }
 }

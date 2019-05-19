@@ -1,6 +1,7 @@
 package GUI.Play;
 
 import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Utils.GuiHelper;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -42,12 +43,12 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
         label4.setText("Entrances Count");
         this.add(label4, new CellConstraints(2, 1, 3, 1, CellConstraints.DEFAULT, CellConstraints.DEFAULT, new Insets(0, 10, 0, 0)));
 
-        entrancesCountValue = new JSpinner();
+        entrancesCountValue = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly(true));
         this.add(entrancesCountValue, cc.xy(5, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
     }
 
     private void initMinDistance(CellConstraints cc) {
-        minDistanceValue = new JSpinner();
+        minDistanceValue = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly(true));
         this.add(minDistanceValue, cc.xy(5, 5, CellConstraints.FILL, CellConstraints.DEFAULT));
 
         final JLabel label3 = new JLabel();
@@ -56,7 +57,7 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
     }
 
     private void initExitsCount(CellConstraints cc) {
-        exitsCountValue = new JSpinner();
+        exitsCountValue = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly(true));
         this.add(exitsCountValue, cc.xy(5, 3, CellConstraints.FILL, CellConstraints.DEFAULT));
 
         final JLabel label2 = new JLabel();

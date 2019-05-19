@@ -127,7 +127,7 @@ public class Window {
             @Override
             public void componentResized(ComponentEvent e) {
                 super.componentResized(e);
-                logger.debug(e.getComponent().getSize());
+                logger.debug("[ContainerPanel]     ", e.getComponent().getSize());
 
             }
         });
@@ -209,9 +209,9 @@ public class Window {
         this.backBtn.setVisible(currentCardName != CardName.WELCOME);
 
         Dimension size = this.cl.preferredLayoutSize(this.cardsContainer);
+
         this.cardsContainer.setSize(size);
         this.cardsContainer.setMinimumSize(size);
-//        this.containerPanel.setPreferredSize(size);
 
 //        frame.pack();
 //        Dimension frameSize = (Dimension) size.clone();
@@ -223,16 +223,34 @@ public class Window {
     }
 
     private void onFinishMazeCreation(MazePanel mazePanel) {
+
+        mazePanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                logger.debug("[MazePanel]    ", e.getComponent().getSize());
+            }
+        });
+
         addCard(mazePanel, CardName.GAME);
 
         backBtn.setVisible(false);
 
         showCard(CardName.GAME);
 
+        Dimension mazePanelSize = mazePanel.getPreferredSize();
+
+
+        this.cardsContainer.setMinimumSize(mazePanelSize);
+        this.cardsContainer.setPreferredSize(mazePanelSize);
+        this.containerPanel.setPreferredSize(null);
+
         mazePanel.initGame();
-        mazePanel.startGame();
 
         mazePanel.setFocusable(true);
         mazePanel.requestFocusInWindow();
+
+        mazePanel.startGame();
+
     }
 }

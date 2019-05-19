@@ -1,8 +1,9 @@
 package GUI.Play;
 
-import GUI.Utils.GuiHelper;
 import GUI.MazeGame.MazePanel;
 import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Utils.GuiHelper;
+import GUI.Utils.SpringUtilities;
 import GUI.WindowCard;
 import Helpers.CallbackFns;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -11,12 +12,17 @@ import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
+import static Logger.LoggerManager.logger;
 
 public class PlayCard extends JPanel implements WindowCard {
+
+    private BorderLayout layout;
 
     private JPanel stepPanel;
     private JProgressBar stepsProgress;
@@ -47,8 +53,11 @@ public class PlayCard extends JPanel implements WindowCard {
     }
 
     public void init() {
-        this.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
+//        this.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
 
+        this.layout = new BorderLayout();
+        this.setLayout(layout);
+//        setPreferredSize(getPreferredSize());
     }
 
     public void initComponents() {
@@ -56,9 +65,29 @@ public class PlayCard extends JPanel implements WindowCard {
         CellConstraints cc = new CellConstraints();
 
         createHeader(cc);
+        setProgressBar(cc);
         initStepContainer(cc);
         initNextStepBtn();
-        setProgressBar(cc);
+
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                logger.debug("[PlayCard]", e.getComponent().getSize());
+            }
+        });
+
+        stepPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                logger.debug("[StepPanel]", e.getComponent().getSize());
+            }
+        });
+
+        this.setMinimumSize(new Dimension(100, 100));
+        this.setPreferredSize(new Dimension(100, 100));
+
 
         initSteps();
 
@@ -164,7 +193,6 @@ public class PlayCard extends JPanel implements WindowCard {
         this.selectExitEntranceMinDistanceStep = new SelectExitEntranceMinDistanceStep(this.builder);
 
         initMazeStep(this.selectExitEntranceMinDistanceStep);
-
     }
 
     private <T extends JPanel & IPlayConfigStep> void addCard(T step) {
@@ -177,13 +205,25 @@ public class PlayCard extends JPanel implements WindowCard {
 
     private void showCard(PlayStep playStep) {
         this.cardLayout.show(this.stepPanel, playStep.getValue());
-        this.setPreferredSize(getPreferredSize());
+
+        Component currentCard = GuiHelper.findCurrentComponent(this.stepPanel);
+        if(currentCard != null) {
+            Dimension cardSize = currentCard.getMinimumSize();
+            this.stepPanel.setMinimumSize(cardSize);
+//            this.stepPanel.setPreferredSize(null);
+        }
+
+        this.setPreferredSize(null);
     }
 
     private void initNextStepBtn() {
         nextButton = new JButton();
         nextButton.setText("Next");
-        this.add(nextButton, new CellConstraints(1, 5, 1, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 40, 0, 40)));
+
+//        this.add(nextButton, new CellConstraints(1, 5, 1, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 40, 0, 40)));
+        this.add(nextButton, BorderLayout.PAGE_END);
+
+//        layout.putConstraint(SpringLayout.WEST, nextButton, 15, SpringLayout.EAST, this);
     }
 
     private void initStepContainer(CellConstraints cc) {
@@ -191,17 +231,24 @@ public class PlayCard extends JPanel implements WindowCard {
 
         cardLayout = new CardLayout(0, 0);
         stepPanel.setLayout(cardLayout);
-        this.add(stepPanel, cc.xy(1, 3));
+
+//        this.add(stepPanel, cc.xy(1, 3));
+        this.add(stepPanel, BorderLayout.CENTER);
+//        layout.putConstraint(SpringLayout.WEST, stepPanel, 5, SpringLayout.EAST, this);
     }
 
     private void createHeader(CellConstraints cc) {
-        final JLabel label1 = new JLabel();
-        Font label1Font = GuiHelper.getFont("Source Code Pro", Font.BOLD, 18, label1.getFont());
+        final JLabel cardLabel = new JLabel();
+        Font label1Font = GuiHelper.getFont("Source Code Pro", Font.BOLD, 18, cardLabel.getFont());
         if (label1Font != null) {
-            label1.setFont(label1Font);
+            cardLabel.setFont(label1Font);
         }
-        label1.setText("Play");
-        this.add(label1, cc.xy(1, 1, CellConstraints.CENTER, CellConstraints.DEFAULT));
+        cardLabel.setText("Play");
+
+//        this.add(cardLabel, cc.xy(1, 1, CellConstraints.CENTER, CellConstraints.DEFAULT));
+
+//        this.add(cardLabel, BorderLayout.PAGE_START);
+//        layout.putConstraint(SpringLayout.WEST, cardLabel, 5, SpringLayout.EAST, this);
     }
 
     private void setProgressBar(CellConstraints cc) {
@@ -209,7 +256,11 @@ public class PlayCard extends JPanel implements WindowCard {
         stepsProgress.setString("0%");
         stepsProgress.setStringPainted(true);
         stepsProgress.setValue(0);
-        this.add(stepsProgress, cc.xy(1, 2));
+
+//        this.add(stepsProgress, cc.xy(1, 2));
+
+        this.add(stepsProgress, BorderLayout.PAGE_START);
+//        layout.putConstraint(SpringLayout.WEST, stepsProgress, 5, SpringLayout.EAST, this);
     }
 
     private void setProgressData(int progressData) {

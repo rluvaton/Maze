@@ -1,47 +1,56 @@
 package GUI.Play;
 
 import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Utils.GuiHelper;
 import GUI.Utils.SpringUtilities;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
-import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
+import static Logger.LoggerManager.logger;
 
 public class SelectShapeStep extends JPanel implements IPlayConfigStep {
 
-    private SpringLayout layout;
+    private GridLayout layout;
     private JComboBox<String> selectMazeShapeComboBox;
     private JSpinner heightValue;
     private JSpinner widthValue;
 
     public SelectShapeStep() {
+
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                super.componentResized(e);
+                logger.debug("[SelectShapeStep]", e.getComponent().getSize());
+            }
+        });
     }
 
     public void init() {
-        this.layout = new SpringLayout();
+        this.layout = new GridLayout(3, 2, 6, 6);
         this.setLayout(layout);
-        setPreferredSize(getPreferredSize());
+
+        this.setMinimumSize(new Dimension(100, 10));
+        this.setPreferredSize(new Dimension(100, 10));
+        this.setMaximumSize(new Dimension(100, 10));
 
     }
 
     public void initComponents() {
-
         initSelectMazeShape();
 
         initWidth();
         initHeight();
-
-        SpringUtilities.makeCompactGrid(
-                this,
-                3, 2,    //rows, cols
-                6, 6, //initX, initY
-                6, 6);   //xPad, yPa
     }
 
     private void initWidth() {
-        widthValue = new JSpinner();
+        widthValue = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly());
 
         final JLabel label = new JLabel();
         label.setText("Width");
@@ -50,7 +59,7 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     }
 
     private void initHeight() {
-        heightValue = new JSpinner();
+        heightValue = new JSpinner(GuiHelper.createSpinnerModelForPositiveNumberOnly());
 
         final JLabel label = new JLabel();
         label.setText("Height");
@@ -77,9 +86,6 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     private void addInputAndLabelPair(JComponent input, JLabel label) {
         this.add(label);
         this.add(input);
-
-        layout.putConstraint(SpringLayout.WEST, input, 5, SpringLayout.EAST, label);
-        layout.putConstraint(SpringLayout.NORTH, input, 5, SpringLayout.NORTH, this);
     }
 
     @Override
