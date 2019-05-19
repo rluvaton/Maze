@@ -32,18 +32,4 @@ public class GuiHelper {
             return null;
         }
     }
-
-    public static abstract class OnlyKeyPressed implements KeyListener {
-        @Override
-        public void keyTyped(KeyEvent e) {
-
-        }
-
-        public abstract void keyPressed(KeyEvent e);
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-
-        }
-    }
 }
