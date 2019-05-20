@@ -1,17 +1,13 @@
 package GUI;
 
 import GUI.MazeGame.MazePanel;
-import GUI.Play.PlayCard;
+import GUI.Play.CustomGame.PlayCard;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
-import static Logger.LoggerManager.logger;
 
 public class Window {
     private JPanel containerPanel;

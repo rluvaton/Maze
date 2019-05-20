@@ -1,7 +1,7 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
 import GUI.Color;
-import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import Helpers.CallbackFns;
 import Helpers.Coordinate;
 import Maze.MazeGenerator.MazeGenerator;

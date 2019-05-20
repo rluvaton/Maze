@@ -1,8 +1,7 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
-import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
-import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -26,7 +25,6 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
 
     public void init() {
         this.setLayout(new FormLayout("fill:p:noGrow,left:59dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:52px:grow,left:4dlu:noGrow,left:5dlu:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-//        stepPanel.add(selectMazeShape, "Card1");
     }
 
     public void initComponents() {
@@ -36,6 +34,7 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
         initMinDistance(cc);
         initEntrancesCount(cc);
 
+        this.setPreferredSize(null);
     }
 
     private void initEntrancesCount(CellConstraints cc) {

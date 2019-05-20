@@ -1,4 +1,4 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
 public enum PlayStep {
 

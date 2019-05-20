@@ -1,6 +1,6 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
-import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;

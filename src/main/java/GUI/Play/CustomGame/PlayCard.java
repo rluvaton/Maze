@@ -1,9 +1,8 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
 import GUI.MazeGame.MazePanel;
-import GUI.Play.Exceptions.NotFinishedStepException;
+import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
-import GUI.Utils.SpringUtilities;
 import GUI.WindowCard;
 import Helpers.CallbackFns;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -15,10 +14,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-
-import static Logger.LoggerManager.logger;
 
 public class PlayCard extends JPanel implements WindowCard {
 
@@ -53,11 +48,8 @@ public class PlayCard extends JPanel implements WindowCard {
     }
 
     public void init() {
-//        this.setLayout(new FormLayout("fill:296px:grow", "center:38px:noGrow,top:11dlu:noGrow,center:106px:noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
-
         this.layout = new BorderLayout();
         this.setLayout(layout);
-//        setPreferredSize(getPreferredSize());
     }
 
     public void initComponents() {
@@ -194,7 +186,7 @@ public class PlayCard extends JPanel implements WindowCard {
         if(currentCard != null) {
             Dimension cardSize = currentCard.getMinimumSize();
             this.stepPanel.setMinimumSize(cardSize);
-//            this.stepPanel.setPreferredSize(null);
+            this.stepPanel.setPreferredSize(null);
         }
 
         this.setPreferredSize(null);
