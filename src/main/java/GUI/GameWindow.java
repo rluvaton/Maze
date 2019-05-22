@@ -3,6 +3,7 @@ package GUI;
 import GUI.MazeGame.MazePanel;
 import Game.GameStep;
 import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -216,24 +217,19 @@ public class GameWindow {
     private MazePanel start(GameStep step) {
         assert step != null;
 
-        Maze maze;
+        MazeGame.Builder builder = step.build()
+                .addManyPlayers(getGamePlayer());
+
+        MazeGame game;
 
         try {
-            maze = step.build();
-        } catch (MazeBuilderException e) {
+            game = builder.build();
+        } catch (BuilderException e) {
             e.printStackTrace();
             return null;
         }
 
-
-        List<BasePlayer> players = getGamePlayer();
-
-        ComputerPlayer player = step.getPlayer();
-        if (player != null) {
-            players.add(player);
-        }
-
-        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
+        MazePanel mazePanel = new MazePanel(game);
         mazePanel.setFocusable(true);
         mazePanel.requestFocusInWindow();
 

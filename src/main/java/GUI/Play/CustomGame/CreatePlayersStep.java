@@ -2,8 +2,10 @@ package GUI.Play.CustomGame;
 
 import GUI.Color;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
+import Game.MazeGame;
 import Helpers.CallbackFns;
 import Helpers.Coordinate;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.MazeGenerator.MazeGenerator;
 import com.github.javafaker.Faker;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -16,7 +18,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -36,9 +37,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
     private ActionsKeys actionsKeys = new ActionsKeys();
 
-    java.util.List<BasePlayer> playerList = new LinkedList<>();
-
-    private List<Color> selectedColors = new ArrayList<>();
+    private java.util.List<BasePlayer> playerList = new LinkedList<>();
 
     @Override
     public void init() {
@@ -63,6 +62,22 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
         initListeners();
     }
 
+    @Override
+    public void reset() {
+        nameIn.setText("");
+
+        colorComboBox.setModel(new DefaultComboBoxModel<>(Color.values()));
+
+        this.upIn.setText("");
+        this.downIn.setText("");
+        this.rightIn.setText("");
+        this.leftIn.setText("");
+
+        actionsKeys = new ActionsKeys();
+
+        this.playerList.clear();
+    }
+
     private void initListeners() {
         initDirectionKeysInput();
 
@@ -75,10 +90,10 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     private void onNewPlayerAdded() {
-        this.resetInputs();
+        this.resetInputsAfterPlayerBeenAdded();
     }
 
-    private void resetInputs() {
+    private void resetInputsAfterPlayerBeenAdded() {
         nameIn.setText("");
 
         colorComboBox.removeItem(colorComboBox.getSelectedItem());
@@ -235,19 +250,6 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public void onNextStep() {
-        if(!isPlayerWithCurrentInputsExistAlready()) {
-            this.playerList.add(this.createNewPlayer());
-        }
-    }
-
-    private boolean isPlayerWithCurrentInputsExistAlready() {
-        return this.playerList.stream().anyMatch(player ->
-                player.equals(this.createNewPlayer())
-        );
-    }
-
-    @Override
     public boolean canContinue() {
         return !this.playerList.isEmpty() || (this.actionsKeys.areAllDirectionsKeysSet());
     }
@@ -258,14 +260,28 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException {
+    public MazeGame.Builder appendData(MazeGame.Builder builder) throws NotFinishedStepException {
         if (!canContinue()) {
             throw new NotFinishedStepException(this);
         }
-        return builder;
+
+        ObjectAssertion.requireNonNull(builder, "Builder can't be null");
+
+        if(isPlayerWithCurrentInputsValid() && !isPlayerWithCurrentInputsExistAlready()) {
+            playerList.add(this.createNewPlayer());
+        }
+
+        return builder.setPlayers(playerList);
     }
 
-    public List<BasePlayer> getPlayerList() {
-        return playerList;
+    private boolean isPlayerWithCurrentInputsValid() {
+        return this.actionsKeys.areAllDirectionsKeysSet();
     }
+
+    private boolean isPlayerWithCurrentInputsExistAlready() {
+        HumanPlayer humanPlayer = this.createNewPlayer();
+
+        return this.playerList.stream().anyMatch(player -> player.equals(humanPlayer));
+    }
+
 }

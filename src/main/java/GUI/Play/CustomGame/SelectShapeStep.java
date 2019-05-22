@@ -2,6 +2,7 @@ package GUI.Play.CustomGame;
 
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
+import Game.MazeGame;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
@@ -84,22 +85,34 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException {
+    public MazeGame.Builder appendData(MazeGame.Builder builder) throws NotFinishedStepException {
         if (!canContinue()) {
             throw new NotFinishedStepException(this);
         }
 
-        if (builder == null) {
-            builder = new MazeGenerator.Builder()
-                    .setSolverAdapter(new BFSSolverAdapter());
-        }
+        MazeGenerator.Builder mazeGeneratorBuilder = new MazeGenerator.Builder()
+                .setSolverAdapter(new BFSSolverAdapter());
 
         if (this.selectMazeShapeComboBox.getSelectedItem() == "Rectangular") {
-            builder.setMazeBuilder(new RectangleMazeBuilder());
+            mazeGeneratorBuilder.setMazeBuilder(new RectangleMazeBuilder());
         }
 
-        return builder
+        mazeGeneratorBuilder
                 .setHeight((Integer) this.heightValue.getValue())
                 .setWidth((Integer) this.widthValue.getValue());
+
+        if (builder == null) {
+            builder = new MazeGame.Builder();
+        }
+
+        return builder.setMazeGeneratorBuilder(mazeGeneratorBuilder);
+    }
+
+    @Override
+    public void reset() {
+        selectMazeShapeComboBox.setSelectedIndex(0);
+
+        heightValue.setValue(0);
+        widthValue.setValue(0);
     }
 }

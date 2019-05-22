@@ -4,6 +4,8 @@ import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
 import GUI.WindowCard;
+import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.CallbackFns;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Maze;
@@ -36,8 +38,7 @@ public class PlayCard extends JPanel implements WindowCard {
     private int stepIndex = 0;
     private IPlayConfigStep[] steps = new IPlayConfigStep[4];
 
-    MazeGenerator.Builder builder = new MazeGenerator.Builder()
-            .setSolverAdapter(new BFSSolverAdapter());
+    MazeGame.Builder builder = new MazeGame.Builder();
 
     private CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn;
 
@@ -56,14 +57,13 @@ public class PlayCard extends JPanel implements WindowCard {
 
         CellConstraints cc = new CellConstraints();
 
-        createHeader(cc);
+//        createHeader(cc);
         setProgressBar(cc);
         initStepContainer(cc);
         initNextStepBtn();
 
         this.setMinimumSize(new Dimension(100, 100));
         this.setPreferredSize(new Dimension(100, 100));
-
 
         initSteps();
 
@@ -92,7 +92,7 @@ public class PlayCard extends JPanel implements WindowCard {
 
             stepIndex++;
 
-            currentStep.onNextStep();
+            currentStep.onNextStep(builder);
 
             if (this.stepIndex >= this.steps.length) {
                 this.onFinish();
@@ -111,18 +111,34 @@ public class PlayCard extends JPanel implements WindowCard {
 
     private void onFinish() {
 
-        Maze maze;
+        MazeGame game;
 
         try {
-            maze = this.builder.build();
-        } catch (MazeBuilderException e) {
+            game = this.builder.build();
+        } catch (BuilderException e) {
             e.printStackTrace();
             return;
         }
 
-        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, this.createPlayersStep.playerList, false));
+        MazePanel mazePanel = new MazePanel(game);
 
         this.onBuildFn.run(mazePanel);
+
+        resetGameConfiguration();
+    }
+
+    private void resetGameConfiguration() {
+        stepIndex = 0;
+
+        for (IPlayConfigStep step : steps) {
+            step.reset();
+        }
+
+        builder = new MazeGame.Builder();
+
+        selectExitEntranceMinDistanceStep.setBuilder(builder);
+
+        updateSteps();
     }
 
     private void initSteps() {
@@ -196,10 +212,7 @@ public class PlayCard extends JPanel implements WindowCard {
         nextButton = new JButton();
         nextButton.setText("Next");
 
-//        this.add(nextButton, new CellConstraints(1, 5, 1, 1, CellConstraints.FILL, CellConstraints.DEFAULT, new Insets(0, 40, 0, 40)));
         this.add(nextButton, BorderLayout.PAGE_END);
-
-//        layout.putConstraint(SpringLayout.WEST, nextButton, 15, SpringLayout.EAST, this);
     }
 
     private void initStepContainer(CellConstraints cc) {
@@ -208,9 +221,7 @@ public class PlayCard extends JPanel implements WindowCard {
         cardLayout = new CardLayout(0, 0);
         stepPanel.setLayout(cardLayout);
 
-//        this.add(stepPanel, cc.xy(1, 3));
         this.add(stepPanel, BorderLayout.CENTER);
-//        layout.putConstraint(SpringLayout.WEST, stepPanel, 5, SpringLayout.EAST, this);
     }
 
     private void createHeader(CellConstraints cc) {
@@ -220,11 +231,6 @@ public class PlayCard extends JPanel implements WindowCard {
             cardLabel.setFont(label1Font);
         }
         cardLabel.setText("Play");
-
-//        this.add(cardLabel, cc.xy(1, 1, CellConstraints.CENTER, CellConstraints.DEFAULT));
-
-//        this.add(cardLabel, BorderLayout.PAGE_START);
-//        layout.putConstraint(SpringLayout.WEST, cardLabel, 5, SpringLayout.EAST, this);
     }
 
     private void setProgressBar(CellConstraints cc) {
@@ -233,10 +239,7 @@ public class PlayCard extends JPanel implements WindowCard {
         stepsProgress.setStringPainted(true);
         stepsProgress.setValue(0);
 
-//        this.add(stepsProgress, cc.xy(1, 2));
-
         this.add(stepsProgress, BorderLayout.PAGE_START);
-//        layout.putConstraint(SpringLayout.WEST, stepsProgress, 5, SpringLayout.EAST, this);
     }
 
     private void setProgressData(int progressData) {

@@ -1,6 +1,6 @@
 package Helpers;
 
-public class Coordinate {
+public class Coordinate implements SuccessCloneable<Coordinate> {
     private int row;
     private int column;
 
@@ -34,6 +34,7 @@ public class Coordinate {
                 (coordinate1 != null && coordinate1.equals(coordinate2));
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public Coordinate clone() {
         return new Coordinate(this.row, this.column);

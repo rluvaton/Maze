@@ -1,8 +1,9 @@
 package Maze.MazeGenerator;
 
 import Helpers.RandomHelper;
+import Helpers.SuccessCloneable;
 
-public class IntegerConfiguration {
+public class IntegerConfiguration implements SuccessCloneable<IntegerConfiguration> {
     private int defaultValue;
     private int from;
     private int to;
@@ -21,5 +22,11 @@ public class IntegerConfiguration {
 
     public int getValue() {
         return randomize ? RandomHelper.getRandomNumber(from, to) : defaultValue;
+    }
+
+    @SuppressWarnings({"MethodDoesntCallSuperMethod"})
+    @Override
+    public IntegerConfiguration clone() {
+        return randomize ? new IntegerConfiguration(from, to) : new IntegerConfiguration(defaultValue);
     }
 }

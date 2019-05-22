@@ -2,11 +2,12 @@ package GUI.Play.CustomGame;
 
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
+import Game.MazeGame;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.MazeGenerator.GenerateCandyConfig;
 import Maze.MazeGenerator.IntegerConfiguration;
-import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -36,6 +37,17 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
         initExpiredCandiesCheckBox(cc);
         initOnlyGoodCandiesCheckBox(cc);
         initTotalCandies(cc);
+    }
+
+    @Override
+    public void reset() {
+        this.totalCandies.setValue(0);
+
+        candyPointsCheckBox.setSelected(false);
+        onlyGoodCandiesCheckBox.setSelected(false);
+        expiredCandiesCheckBox.setSelected(false);
+        timeCandyCheckBox.setSelected(false);
+        locationCandyCheckBox.setSelected(false);
     }
 
     private void initTotalCandies(CellConstraints cc) {
@@ -92,14 +104,13 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException {
+    public MazeGame.Builder appendData(MazeGame.Builder builder) throws NotFinishedStepException {
         if (!canContinue()) {
             throw new NotFinishedStepException(this);
         }
 
-        if (builder == null) {
-            throw new NotFinishedStepException("builder is null", this);
-        }
+        ObjectAssertion.requireNonNull(builder, "builder can't be null");
+        ObjectAssertion.requireNonNull(builder.getMazeGeneratorBuilder(), "mazeGeneratorBuilder can't be null");
 
         LinkedList<CandyPowerType> candyTypes = new LinkedList<>();
 
@@ -115,16 +126,16 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
             candyTypes.add(CandyPowerType.Time);
         }
 
+        builder
+                .getMazeGeneratorBuilder()
+                .setTotalCandies(getTotalCandiesValue())
+                .setCandyConfig(new GenerateCandyConfig()
+                        .setTypes(candyTypes.toArray(new CandyPowerType[0]))
+                        .setStrengthPower(getStrengthPower())
+                        .setTimeToLive(getTimeToLive()));
 
-        GenerateCandyConfig candyConfig = new GenerateCandyConfig()
-                .setTypes(candyTypes.toArray(new CandyPowerType[0]));
+        return builder;
 
-        candyConfig.setStrengthPower(getStrengthPower());
-        candyConfig.setTimeToLive(getTimeToLive());
-        builder.setTotalCandies(getTotalCandiesValue());
-
-        return builder
-                .setCandyConfig(candyConfig);
     }
 
     private IntegerConfiguration getStrengthPower() {

@@ -2,6 +2,8 @@ package GUI.Play.CustomGame;
 
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import GUI.Utils.GuiHelper;
+import Game.MazeGame;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.MazeGenerator.MazeGenerator;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -12,14 +14,12 @@ import java.awt.*;
 public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayConfigStep {
 
     private JSpinner exitsCountValue;
-    private JProgressBar stepsProgress;
     private JSpinner minDistanceValue;
-    private JButton nextButton;
     private JSpinner entrancesCountValue;
 
-    MazeGenerator.Builder builder;
+    MazeGame.Builder builder;
 
-    public SelectExitEntranceMinDistanceStep(MazeGenerator.Builder builder) {
+    public SelectExitEntranceMinDistanceStep(MazeGame.Builder builder) {
         this.builder = builder;
     }
 
@@ -66,14 +66,25 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
 
     @Override
     public boolean canContinue() {
-        int mazeArea = this.builder.getWidth() * this.builder.getHeight();
-        return this.validateMinDistance() &&
-                (((int) this.entrancesCountValue.getValue()) + (int) this.exitsCountValue.getValue()) < mazeArea;
+        if (builder == null) {
+            return false;
+        }
+        MazeGenerator.Builder mazeGeneratorBuilder = builder.getMazeGeneratorBuilder();
+
+        if (mazeGeneratorBuilder == null) {
+            return false;
+        }
+
+        int width = mazeGeneratorBuilder.getWidth();
+        int height = mazeGeneratorBuilder.getHeight();
+
+        return this.validateMinDistance(width, height) &&
+                (((int) this.entrancesCountValue.getValue()) + (int) this.exitsCountValue.getValue()) < width * height;
     }
 
-    private boolean validateMinDistance() {
+    private boolean validateMinDistance(int width, int height) {
         int minDistance = (int) this.minDistanceValue.getValue();
-        return minDistance <= 0 || minDistance < (this.builder.getHeight() * this.builder.getWidth());
+        return minDistance <= 0 || minDistance < (height * width);
     }
 
     @Override
@@ -82,19 +93,31 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
     }
 
     @Override
-    public MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException {
+    public MazeGame.Builder appendData(MazeGame.Builder builder) throws NotFinishedStepException {
         if (!canContinue()) {
             throw new NotFinishedStepException(this);
         }
 
-        if (builder == null) {
-            throw new NotFinishedStepException("builder is null", this);
-        }
+        ObjectAssertion.requireNonNull(builder, "builder can't be null");
+        ObjectAssertion.requireNonNull(builder.getMazeGeneratorBuilder(), "mazeGeneratorBuilder can't be null");
 
-        return builder
+        builder
+                .getMazeGeneratorBuilder()
                 .setMinDistance((Integer) this.minDistanceValue.getValue())
                 .setNumOfEntrance((Integer) this.entrancesCountValue.getValue())
                 .setNumOfExits((Integer) this.exitsCountValue.getValue());
 
+        return builder;
+    }
+
+    @Override
+    public void reset() {
+        exitsCountValue.setValue(0);
+        minDistanceValue.setValue(0);
+        entrancesCountValue.setValue(0);
+    }
+
+    public void setBuilder(MazeGame.Builder builder) {
+        this.builder = builder;
     }
 }

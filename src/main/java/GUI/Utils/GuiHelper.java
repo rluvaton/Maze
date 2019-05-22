@@ -25,14 +25,23 @@ public class GuiHelper {
         return new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
     }
 
+    /**
+     * Create Spinner Model that his values are 1 <= x <= <code>Short.MAX_VALUE</code>
+     */
     public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly() {
         return createSpinnerModelForPositiveNumberOnly(false, Short.MAX_VALUE);
     }
 
+    /**
+     * Create Spinner Model that his values are (0 or 1 [depends on the value of <code>includeZero</code>]) <= x <= <code>Short.MAX_VALUE</code>
+     */
     public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly(boolean includeZero) {
         return createSpinnerModelForPositiveNumberOnly(includeZero, Short.MAX_VALUE);
     }
 
+    /**
+     * Create Spinner Model that his values are (0 or 1 [depends on the value of <code>includeZero</code>]) <= x <= <code>maxValue</code>
+     */
     public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly(boolean includeZero, long maxValue) {
         int minValue = includeZero ? 0 : 1;
         return new SpinnerNumberModel(minValue, minValue, Math.toIntExact(maxValue), (int)Integer.valueOf(1));

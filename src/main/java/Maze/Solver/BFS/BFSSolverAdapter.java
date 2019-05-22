@@ -2,6 +2,8 @@ package Maze.Solver.BFS;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.SuccessCloneable;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Helpers.Utils;
 import Maze.Cell;
 import Maze.Maze;
@@ -13,8 +15,7 @@ import java.util.stream.Collectors;
 
 public class BFSSolverAdapter extends SolverAdapter {
 
-    private Coordinate endingCoordination = null;
-    private HashMap<Integer, HashMap<Integer, SearchResult>> endResults = null;
+    private DistancesResults endResults = new DistancesResults();
 
     /**
      * Solve Maze
@@ -41,89 +42,113 @@ public class BFSSolverAdapter extends SolverAdapter {
     }
 
     private Direction[] solveMaze(Cell[][] mazeData, Coordinate start, Coordinate end, Cell endingCell) {
+        ObjectAssertion.requireNonNull(endResults, "End results should never be null");
 
-        if(endingCell == null) {
+        if (endingCell == null) {
             throw new IllegalArgumentException("Ending cell can't be null " + end.toString());
         }
 
         // Checking if start isn't equal to ending coordination to save redundant distance calculation
-        if (this.endResults == null || (!end.equals(endingCoordination) && !start.equals(endingCoordination))) {
-            this.endingCoordination = end;
-            this.endResults = this.getAllDistancesAndPathFromEverywhereToEnd(mazeData, endingCell);
+        if (!this.endResults.hasDistanceForLocation(end) && !this.endResults.hasDistanceForLocation(start)) {
+            this.endResults.reinitialize(end);
+            this.getDistanceResultToEnd(mazeData, endingCell);
         }
 
-        // This is for
-        if(endingCoordination.equals(start)) {
+        if (this.endResults.hasDistanceForLocation(start)) {
             Coordinate swapHelper = end;
             end = start;
             start = swapHelper;
         }
 
-        SearchResult result = this.endResults.get(start.getRow()).get(start.getColumn());
+        SearchResult result = this.endResults.getSearchResultForCoordinates(start);
 
         return result.path.toArray(new Direction[0]);
     }
 
-    private HashMap<Integer, HashMap<Integer, SearchResult>> getAllDistancesAndPathFromEverywhereToEnd(Cell[][] mazeData, Cell end) {
+    private void getDistanceResultToEnd(Cell[][] mazeData, Cell end) {
+        ObjectAssertion.requireNonNull(mazeData, "`mazeData` can't be null");
+        ObjectAssertion.requireNonNull(end, "`end` can't be null");
+
         LinkedList<Cell> queue = new LinkedList<>();
         queue.add(end);
 
-        HashMap<Integer, HashMap<Integer, SearchResult>> distances = new HashMap<>();
+        initializeAllDirectionResultsForMaze(mazeData);
 
         Set<Map.Entry<Direction, Cell>> neighbors;
 
-        for (Cell[] row : mazeData) {
-            for (Cell cell : row) {
-                Coordinate cellLocation = cell.getLocation();
-                HashMap<Integer, SearchResult> columnsResults = distances.computeIfAbsent(cellLocation.getRow(), k -> new HashMap<>());
-
-                columnsResults.put(cellLocation.getColumn(), new SearchResult());
-            }
-        }
-
-        Coordinate cellLocation = end.getLocation();
-        distances.get(cellLocation.getRow()).get(cellLocation.getColumn()).setDistance(1);
+        Coordinate currentCellLocation = end.getLocation();
+        endResults.getSearchResultForCoordinates(currentCellLocation).setDistance(1);
 
         SearchResult currentNodeSearchResult;
-        SearchResult neighborNodeSearchResult;
-        Cell neighborCell;
-        Direction neighborDirection;
 
         while (!queue.isEmpty()) {
             Cell currentCell = queue.poll();
-            cellLocation = currentCell.getLocation();
+            currentCellLocation = currentCell.getLocation();
 
-            currentNodeSearchResult = distances.get(cellLocation.getRow()).get(cellLocation.getColumn());
-            neighbors = currentCell.getNeighbors().entrySet().stream()
-                    .map(directionNeighborCellEntry -> {
-                        Cell.NeighborCell neighborCellEntryValue = directionNeighborCellEntry.getValue();
-                        return new AbstractMap.SimpleEntry<Direction, Cell>(directionNeighborCellEntry.getKey(),
-                                (neighborCellEntryValue != null && neighborCellEntryValue.getCell() != null)
-                                        ? neighborCellEntryValue.getCell() : null
-                        );
-                    })
-                    .filter(directionCellEntry -> directionCellEntry.getValue() != null).collect(Collectors.toSet());
+            currentNodeSearchResult = endResults.getSearchResultForCoordinates(currentCellLocation);
 
-            for (Map.Entry<Direction, Cell> neighbor : neighbors) {
-                neighborCell = neighbor.getValue();
-                neighborDirection = neighbor.getKey();
-                Coordinate neighborLocation = neighborCell.getLocation();
+            neighbors = getNonNullCellNeighbors(currentCell);
 
-                neighborNodeSearchResult = distances.get(neighborLocation.getRow()).get(neighborLocation.getColumn());
-
-                if (neighborNodeSearchResult.getDistance() == -1) {
-                    neighborNodeSearchResult.setDistance(currentNodeSearchResult.getDistance() + 1);
-                    neighborNodeSearchResult.path = new LinkedList<>(currentNodeSearchResult.path);
-                    neighborNodeSearchResult.path.add(Direction.getOppositeDirection(neighborDirection));
-
-                    queue.add(neighborCell);
-                }
-            }
+            updateNeighborsSearchResults(queue, neighbors, currentNodeSearchResult);
         }
 
-        distances.forEach(((row, colResults) -> colResults.forEach((col, searchResult) -> searchResult.path = (LinkedList<Direction>) (Utils.Instance.reverseList(searchResult.path)))));
+        endResults.reversePaths();
+    }
 
-        return distances;
+    private void updateNeighborsSearchResults(LinkedList<Cell> queue, Set<Map.Entry<Direction, Cell>> neighbors, SearchResult currentNodeSearchResult) {
+        Cell neighborCell;
+        Direction neighborDirection;
+        SearchResult neighborNodeSearchResult;
+
+        for (Map.Entry<Direction, Cell> neighbor : neighbors) {
+            neighborCell = neighbor.getValue();
+            neighborDirection = neighbor.getKey();
+            Coordinate neighborLocation = neighborCell.getLocation();
+
+            neighborNodeSearchResult = endResults.getSearchResultForCoordinates(neighborLocation);
+
+            if(updateNeighborNodeSearchResult(currentNodeSearchResult, neighborNodeSearchResult, neighborDirection)) {
+                queue.add(neighborCell);
+            }
+        }
+    }
+
+    private boolean updateNeighborNodeSearchResult(SearchResult currentNodeSearchResult, SearchResult neighborNodeSearchResult, Direction neighborDirection) {
+        if (neighborNodeSearchResult.getDistance() != -1) {
+            return false;
+        }
+
+        neighborNodeSearchResult.setDistance(currentNodeSearchResult.getDistance() + 1);
+        neighborNodeSearchResult.path = new LinkedList<>(currentNodeSearchResult.path);
+        neighborNodeSearchResult.path.add(Direction.getOppositeDirection(neighborDirection));
+        return true;
+    }
+
+    private Set<Map.Entry<Direction, Cell>> getNonNullCellNeighbors(Cell currentCell) {
+        ObjectAssertion.requireNonNull(currentCell, "`currentCell` can't be null");
+
+        return currentCell.getNeighbors().entrySet().stream()
+                .map(directionNeighborCellEntry -> {
+                    Cell.NeighborCell neighborCellEntryValue = directionNeighborCellEntry.getValue();
+
+                    Cell cell = null;
+                    if (neighborCellEntryValue != null) {
+                        cell = neighborCellEntryValue.getCell();
+                    }
+
+                    return new AbstractMap.SimpleEntry<>(directionNeighborCellEntry.getKey(), cell);
+                })
+                .filter(directionCellEntry -> directionCellEntry.getValue() != null).collect(Collectors.toSet());
+    }
+
+    private void initializeAllDirectionResultsForMaze(Cell[][] mazeData) {
+        ObjectAssertion.requireNonNull(mazeData, "`mazeData` can't be null");
+
+        for (Cell[] row : mazeData) {
+            for (Cell cell : row) {
+                endResults.addDistanceRecord(cell.getLocation(), new SearchResult());
+            }
+        }
     }
 
     /**
@@ -164,7 +189,16 @@ public class BFSSolverAdapter extends SolverAdapter {
         ) ? null : cells[cellLocation.getRow()][cellLocation.getColumn()];
     }
 
-    public class SearchResult {
+    @Override
+    public SolverAdapter clone() {
+        BFSSolverAdapter cloned = new BFSSolverAdapter();
+
+        cloned.endResults = Utils.clone(endResults);
+
+        return cloned;
+    }
+
+    public class SearchResult implements SuccessCloneable<SearchResult> {
         private int distance;
         private LinkedList<Direction> path;
 
@@ -192,6 +226,16 @@ public class BFSSolverAdapter extends SolverAdapter {
 
         public void setPath(LinkedList<Direction> path) {
             this.path = path;
+        }
+
+        public void reverseList() {
+            path = (LinkedList<Direction>) (Utils.Instance.reverseList(path));
+        }
+
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
+        @Override
+        public SearchResult clone() {
+            return new SearchResult(distance, (LinkedList<Direction>) path.clone());
         }
     }
 }

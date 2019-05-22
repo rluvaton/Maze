@@ -73,6 +73,7 @@ public class GameModeSelectionPanel extends JPanel {
 
     private void modeSelected(GameModes mode) {
         ObjectAssertion.requireNonNull(mode, "Mode can't be null");
+
         onSelectedMode.run(mode);
     }
 }

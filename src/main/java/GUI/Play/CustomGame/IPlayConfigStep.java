@@ -1,6 +1,7 @@
 package GUI.Play.CustomGame;
 
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
+import Game.MazeGame;
 import Maze.MazeGenerator.MazeGenerator;
 
 public interface IPlayConfigStep {
@@ -9,12 +10,14 @@ public interface IPlayConfigStep {
 
     void initComponents();
 
+    void reset();
+
     boolean canContinue();
 
-    default void onNextStep() {
+    default void onNextStep(MazeGame.Builder builder) {
     }
 
     PlayStep getPlayStep();
 
-    MazeGenerator.Builder appendData(MazeGenerator.Builder builder) throws NotFinishedStepException;
+    MazeGame.Builder appendData(MazeGame.Builder builder) throws NotFinishedStepException;
 }

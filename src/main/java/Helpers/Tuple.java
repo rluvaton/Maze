@@ -6,7 +6,7 @@ package Helpers;
  * @param <X> The first type
  * @param <Y> the second type
  */
-public class Tuple<X, Y> {
+public class Tuple<X, Y> implements SuccessCloneable<Tuple<X, Y>> {
     /**
      * First value
      */
@@ -28,6 +28,7 @@ public class Tuple<X, Y> {
      * @return cloned tuple
      * @see #clone(Tuple) For static method
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public Tuple<X, Y> clone() {
         return Tuple.clone(this);

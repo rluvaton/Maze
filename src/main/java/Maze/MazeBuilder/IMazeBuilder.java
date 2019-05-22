@@ -2,6 +2,7 @@ package Maze.MazeBuilder;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.SuccessCloneable;
 import Maze.Candy.Candy;
 import Maze.Maze;
 import Maze.Cell;
@@ -9,7 +10,7 @@ import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 
 import java.util.Collection;
 
-public interface IMazeBuilder {
+public interface IMazeBuilder extends SuccessCloneable<IMazeBuilder> {
 
     IMazeBuilder buildMazeSkeleton(int height, int width);
 
@@ -44,6 +45,8 @@ public interface IMazeBuilder {
     Cell getCellAtPosition(Coordinate position);
 
     int getTotalBuiltCells();
+
+    IMazeBuilder clone();
 
     class ELocationBaseData {
         private Coordinate pos;
