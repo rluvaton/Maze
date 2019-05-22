@@ -53,11 +53,12 @@ public class GameModeSelectionPanel extends JPanel {
         btnsContainer.add(stepModeBtn);
     }
 
-    private void initHeaderLabel() {
+    private void  initHeaderLabel() {
         header = new JLabel();
 
         header.setText("Choose Game Creation Mode");
 
+        header.setAlignmentX(CENTER_ALIGNMENT);
         header.setHorizontalAlignment(SwingConstants.CENTER);
         header.setMaximumSize(new Dimension(141, 40));
         header.setMinimumSize(new Dimension(141, 13));
