@@ -57,9 +57,9 @@ public class MazeGame {
      */
     private final Subject onDestroySub = PublishSubject.create();
 
+    private final Subject<BasePlayer> onFinishGame = PublishSubject.create();
 
     private GameState gameState = GameState.NOT_READY;
-
 
     // region Create MazeGame from Step
 
@@ -368,6 +368,8 @@ public class MazeGame {
         if (player instanceof HumanPlayer) {
             movementListenerManager.removeListenerForPlayer((HumanPlayer) player);
         }
+
+        onFinishGame.onNext(player);
     }
 
     /**
@@ -488,7 +490,9 @@ public class MazeGame {
     }
 
     public void onFinishGame() {
+        onFinishGame.onNext(null);
         this.onDestroySub.onNext(true);
+
     }
 
     public void addPlayer(BasePlayer player) {
@@ -585,6 +589,10 @@ public class MazeGame {
         return gameState;
     }
 
+    public Observable getOnFinishGameObs() {
+        return onFinishGame;
+    }
+
     public static class Builder implements SuccessCloneable<Builder>, IBuilder<MazeGame> {
 
         /**
@@ -594,7 +602,7 @@ public class MazeGame {
         private MazeGenerator.Builder mazeGeneratorBuilder;
 
         private Maze maze;
-        private GameStep step;
+        private GameStep.BuiltinStep step;
 
         private List<BasePlayer> players = new LinkedList<>();
         private boolean atEntrances;
@@ -646,11 +654,11 @@ public class MazeGame {
             return this;
         }
 
-        public GameStep getStep() {
+        public GameStep.BuiltinStep getStep() {
             return step;
         }
 
-        public Builder setStep(GameStep step) {
+        public Builder setStep(GameStep.BuiltinStep step) {
             this.step = step;
 
             if (this.step != null) {
@@ -733,10 +741,10 @@ public class MazeGame {
                 } else if (mazeGeneratorBuilder != null) {
                     return new MazeGame(mazeGeneratorBuilder.build(), this.players, this.atEntrances);
                 } else {
-                    return MazeGame.createMazeGameFromStep(step, this.players, this.atEntrances);
+                    return MazeGame.createMazeGameFromStep(step.getStep(), this.players, this.atEntrances);
                 }
             } else {
-                return MazeGame.createMazeGameFromStep(step);
+                return MazeGame.createMazeGameFromStep(step.getStep());
             }
         }
 

@@ -74,6 +74,6 @@ public class StepSelectionCard extends JPanel implements IPlayConfigStep {
 
         ObjectAssertion.requireNonNull(builder, "Builder can't be null");
 
-        return builder.setStep(((GameStep.BuiltinStep) Objects.requireNonNull(stepsComboBox.getSelectedItem())).getStep());
+        return builder.setStep(((GameStep.BuiltinStep) Objects.requireNonNull(stepsComboBox.getSelectedItem())));
     }
 }

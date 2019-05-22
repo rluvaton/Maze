@@ -8,6 +8,7 @@ import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Maze;
+import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import player.BasePlayer;
@@ -325,6 +326,10 @@ public class MazePanel extends JPanel {
     public void onFinishGame() {
         this.onDestroySub.onNext(true);
         game.onFinishGame();
+    }
+
+    public Observable getOnFinishGameObs() {
+        return game.getOnFinishGameObs();
     }
 
     public Dimension getMazeDimension() {

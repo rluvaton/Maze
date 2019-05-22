@@ -6,11 +6,16 @@ import GUI.Play.GameModeSelectionPanel;
 import GUI.Play.StepsGame.StepGameCreatorCard;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
+import Game.GameStep;
+import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+
+import static Logger.LoggerManager.logger;
 
 public class Window {
     private JPanel containerPanel;
@@ -194,7 +199,7 @@ public class Window {
     }
 
     private void onSelectedStepGameMode() {
-        StepGameCreatorCard stepGameCreatorCard = new StepGameCreatorCard(this::onFinishMazeCreation);
+        StepGameCreatorCard stepGameCreatorCard = new StepGameCreatorCard(this::onFinishMazeBuilding);
         stepGameCreatorCard.init();
 
         addCard(stepGameCreatorCard, CardName.STEPS_GAME_CREATOR);
@@ -288,5 +293,45 @@ public class Window {
 
     private void setEnabledBack(boolean enabled) {
         this.backMenu.setEnabled(enabled);
+    }
+
+    private void onFinishMazeBuilding(MazeGame.Builder mazeGameBuilder) {
+        MazeGame game;
+
+        try {
+            game = mazeGameBuilder.clone().build();
+        } catch (BuilderException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        MazePanel mazePanel = new MazePanel(game);
+
+        onFinishMazeCreation(mazePanel);
+
+        mazePanel.getOnFinishGameObs()
+                .subscribe(player -> {
+                    switch (mazeGameBuilder.getStep().getName()) {
+                        case VERY_EASY:
+                            moveToNextStep(mazeGameBuilder, GameStep.EASY);
+                            break;
+                        case EASY:
+                            moveToNextStep(mazeGameBuilder, GameStep.MEDIUM);
+                            break;
+                        case MEDIUM:
+                            moveToNextStep(mazeGameBuilder, GameStep.HARD);
+                            break;
+                        case HARD:
+                            moveToNextStep(mazeGameBuilder, GameStep.VERY_HARD);
+                            break;
+                        case VERY_HARD:
+                            logger.verbose("All Steps finished!!");
+                            break;
+                    }
+                });
+    }
+
+    private void moveToNextStep(MazeGame.Builder mazeGameBuilder, GameStep.BuiltinStep easy) {
+        this.onFinishMazeBuilding(mazeGameBuilder.clone().setStep(easy));
     }
 }

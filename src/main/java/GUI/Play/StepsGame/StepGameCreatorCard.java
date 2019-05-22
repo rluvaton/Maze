@@ -37,9 +37,9 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
 
     MazeGame.Builder builder = new MazeGame.Builder();
 
-    private CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn;
+    private CallbackFns.ArgsVoidCallbackFunction<MazeGame.Builder> onBuildFn;
 
-    public StepGameCreatorCard(CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn) {
+    public StepGameCreatorCard(CallbackFns.ArgsVoidCallbackFunction<MazeGame.Builder> onBuildFn) {
         ObjectAssertion.requireNonNull(onBuildFn, "`onBuildFn` can't be null");
         this.onBuildFn = onBuildFn;
     }
@@ -107,18 +107,7 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
 
     private void onFinish() {
 
-        MazeGame game;
-
-        try {
-            game = this.builder.build();
-        } catch (BuilderException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        MazePanel mazePanel = new MazePanel(game);
-
-        this.onBuildFn.run(mazePanel);
+        this.onBuildFn.run(this.builder);
 
         resetGameConfiguration();
     }

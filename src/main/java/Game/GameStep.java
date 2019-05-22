@@ -12,11 +12,11 @@ import player.ComputerPlayer.ComputerPlayer;
 
 public class GameStep {
 
-    public final static BuiltinStep VERY_EASY = new BuiltinStep(getVeryEasyGameStep(), "Very Easy");
-    public final static BuiltinStep EASY = new BuiltinStep(getEasyGameStep(), "Easy");
-    public final static BuiltinStep MEDIUM = new BuiltinStep(getMediumGameStep(), "Medium");
-    public final static BuiltinStep HARD = new BuiltinStep(getHardGameStep(), "Hard");
-    public final static BuiltinStep VERY_HARD = new BuiltinStep(getVeryHardGameStep(), "Very Hard");
+    public final static BuiltinStep VERY_EASY = new BuiltinStep(getVeryEasyGameStep(), GameStepLevel.VERY_EASY);
+    public final static BuiltinStep EASY = new BuiltinStep(getEasyGameStep(), GameStepLevel.EASY);
+    public final static BuiltinStep MEDIUM = new BuiltinStep(getMediumGameStep(), GameStepLevel.MEDIUM);
+    public final static BuiltinStep HARD = new BuiltinStep(getHardGameStep(), GameStepLevel.HARD);
+    public final static BuiltinStep VERY_HARD = new BuiltinStep(getVeryHardGameStep(), GameStepLevel.VERY_HARD);
 
     public static BuiltinStep[] STEPS = new BuiltinStep[]{VERY_EASY, EASY, MEDIUM, HARD, VERY_HARD};
 
@@ -240,9 +240,9 @@ public class GameStep {
 
     public static class BuiltinStep {
         private GameStep step;
-        private String name;
+        private GameStepLevel name;
 
-        public BuiltinStep(GameStep step, String name) {
+        public BuiltinStep(GameStep step, GameStepLevel name) {
             ObjectAssertion.requireNonNull(step, "Step can't be null");
             ObjectAssertion.requireNonNull(name, "Step name can't be null");
 
@@ -254,13 +254,13 @@ public class GameStep {
             return step;
         }
 
-        public String getName() {
+        public GameStepLevel getName() {
             return name;
         }
 
         @Override
         public String toString() {
-            return name;
+            return name.toString();
         }
     }
 }
