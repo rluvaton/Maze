@@ -3,7 +3,9 @@ package GUI;
 public enum CardName {
     WELCOME("WelcomeCard"),
     STATS("StatsCard"),
-    GENERATOR("GeneratorCard"),
+    GAME_CREATOR("GameCreatorCard"),
+    CUSTOM_GAME_CREATOR("CustomGameCard"),
+    STEPS_GAME_CREATOR("StepsGameCreator"),
     PLAY("PlayCard"),
     GAME("Game");
 

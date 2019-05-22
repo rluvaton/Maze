@@ -2,12 +2,14 @@ package GUI;
 
 import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.PlayCard;
+import GUI.Play.GameModeSelectionPanel;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 public class Window {
     private JPanel containerPanel;
@@ -20,7 +22,8 @@ public class Window {
 
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
-    private PlayCard playCard;
+    private GameModeSelectionPanel gameConfigurationCard;
+    private PlayCard customGameCreatorCard;
 
     // endregion
 
@@ -73,16 +76,12 @@ public class Window {
 
         createAndAttachWelcomeCard();
         createAndAttachStatsCard();
-        createAndAttachPlayCard();
+//        createAndAttachPlayCard();
+        createAndAttachGameConfiguratorCard();
 
         cl = (CardLayout) (this.cardsContainer.getLayout());
 
         showCard(CardName.WELCOME);
-
-    }
-
-    private void a() {
-
 
     }
 
@@ -118,19 +117,26 @@ public class Window {
 
         backBtn.setText("Back");
 
-        backBtn.addActionListener(e -> {
-
-            if (this.currentCardName == CardName.PLAY && this.playCard.back()) {
-                return;
-            }
-
-            this.showCard(CardName.WELCOME);
-
-            this.currentCardName = CardName.WELCOME;
-            setEnabledBack(false);
-        });
+        backBtn.addActionListener(this::onBackBtnClicked);
 
         return backBtn;
+    }
+
+    private void onBackBtnClicked(ActionEvent e) {
+        if (this.currentCardName == CardName.CUSTOM_GAME_CREATOR) {
+            if (!this.customGameCreatorCard.back()) {
+                this.showCard(CardName.GAME_CREATOR);
+
+                this.currentCardName = CardName.GAME_CREATOR;
+            }
+
+            return;
+        }
+
+        this.showCard(CardName.WELCOME);
+
+        this.currentCardName = CardName.WELCOME;
+        setEnabledBack(false);
     }
 
     private void createAndAttachWelcomeCard() {
@@ -143,21 +149,50 @@ public class Window {
 
 
     private void createAndAttachPlayCard() {
-        playCard = new PlayCard(this::onFinishMazeCreation);
-        playCard.init();
+        customGameCreatorCard = new PlayCard(this::onFinishMazeCreation);
+        customGameCreatorCard.init();
 
-        addCard(playCard, CardName.PLAY);
-        playCard.initComponents();
+        addCard(customGameCreatorCard, CardName.PLAY);
+        customGameCreatorCard.initComponents();
+    }
+
+    private void createAndAttachGameConfiguratorCard() {
+
+        gameConfigurationCard = new GameModeSelectionPanel(gameModes -> {
+            ObjectAssertion.requireNonNull(gameModes, "Game Mode can't be null");
+
+            switch (gameModes) {
+                case STEPS:
+
+                    break;
+                case CUSTOM:
+                    onSelectedCustomGameMode();
+                    break;
+            }
+        });
+
+        addCard(gameConfigurationCard, CardName.GAME_CREATOR);
+        gameConfigurationCard.initUIComponents();
+    }
+
+    private void onSelectedCustomGameMode() {
+        customGameCreatorCard = new PlayCard(this::onFinishMazeCreation);
+        customGameCreatorCard.init();
+
+        addCard(customGameCreatorCard, CardName.CUSTOM_GAME_CREATOR);
+        customGameCreatorCard.initComponents();
+
+        showCard(CardName.CUSTOM_GAME_CREATOR);
     }
 
     private void generatedClicked() {
         System.out.println("Not Supported Yet");
-        showCard(CardName.GENERATOR);
+        showCard(CardName.CUSTOM_GAME_CREATOR);
     }
 
     private void playClicked() {
         System.out.println("Not Supported Yet");
-        showCard(CardName.PLAY);
+        showCard(CardName.GAME_CREATOR);
     }
 
     private void statsClicked() {
@@ -203,13 +238,9 @@ public class Window {
         setEnabledBack(false);
 
         Dimension mazePanelSize = mazePanel.getPreferredSize();
-        mazePanel.setMinimumSize(mazePanelSize);
-        mazePanel.setPreferredSize(mazePanelSize);
-        mazePanel.setSize(mazePanelSize);
+        setCardContainerAllSizes(mazePanelSize, mazePanel);
 
-        this.cardsContainer.setMinimumSize(mazePanelSize);
-        this.cardsContainer.setPreferredSize(mazePanelSize);
-        this.cardsContainer.setSize(mazePanelSize);
+        setCardContainerAllSizes(mazePanelSize, this.cardsContainer);
 
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
@@ -221,6 +252,12 @@ public class Window {
         mazePanel.requestFocusInWindow();
 
         mazePanel.startGame();
+    }
+
+    private void setCardContainerAllSizes(Dimension size, JPanel panel) {
+        panel.setMinimumSize(size);
+        panel.setPreferredSize(size);
+        panel.setSize(size);
     }
 
     private void setEnabledBack(boolean enabled) {
