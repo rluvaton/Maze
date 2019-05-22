@@ -2,22 +2,19 @@ package GUI.Play.CustomGame;
 
 import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
+import GUI.Play.Shared.CreatePlayersStep;
 import GUI.Utils.GuiHelper;
 import GUI.WindowCard;
 import Game.MazeGame;
 import Helpers.Builder.BuilderException;
 import Helpers.CallbackFns;
 import Helpers.ThrowableAssertions.ObjectAssertion;
-import Maze.Maze;
-import Maze.MazeBuilder.Exceptions.MazeBuilderException;
-import Maze.MazeGenerator.MazeGenerator;
-import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class PlayCard extends JPanel implements WindowCard {
+public class CustomGameCreatorCard extends JPanel implements WindowCard {
 
     private BorderLayout layout;
 
@@ -42,8 +39,7 @@ public class PlayCard extends JPanel implements WindowCard {
 
     private CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn;
 
-
-    public PlayCard(CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn) {
+    public CustomGameCreatorCard(CallbackFns.ArgsVoidCallbackFunction<MazePanel> onBuildFn) {
         ObjectAssertion.requireNonNull(onBuildFn, "`onBuildFn` can't be null");
         this.onBuildFn = onBuildFn;
     }

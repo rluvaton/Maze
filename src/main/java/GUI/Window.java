@@ -1,7 +1,7 @@
 package GUI;
 
 import GUI.MazeGame.MazePanel;
-import GUI.Play.CustomGame.PlayCard;
+import GUI.Play.CustomGame.CustomGameCreatorCard;
 import GUI.Play.GameModeSelectionPanel;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
@@ -23,7 +23,7 @@ public class Window {
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
     private GameModeSelectionPanel gameConfigurationCard;
-    private PlayCard customGameCreatorCard;
+    private CustomGameCreatorCard customGameCreatorCard;
 
     // endregion
 
@@ -149,7 +149,7 @@ public class Window {
 
 
     private void createAndAttachPlayCard() {
-        customGameCreatorCard = new PlayCard(this::onFinishMazeCreation);
+        customGameCreatorCard = new CustomGameCreatorCard(this::onFinishMazeCreation);
         customGameCreatorCard.init();
 
         addCard(customGameCreatorCard, CardName.PLAY);
@@ -176,7 +176,7 @@ public class Window {
     }
 
     private void onSelectedCustomGameMode() {
-        customGameCreatorCard = new PlayCard(this::onFinishMazeCreation);
+        customGameCreatorCard = new CustomGameCreatorCard(this::onFinishMazeCreation);
         customGameCreatorCard.init();
 
         addCard(customGameCreatorCard, CardName.CUSTOM_GAME_CREATOR);
