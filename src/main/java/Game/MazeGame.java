@@ -75,10 +75,12 @@ public class MazeGame {
         ObjectAssertion.requireNonNull(step, "Step can't be null");
         ObjectAssertion.requireNonNull(players, "Players can't be null");
 
-
         Builder builder = step.build();
 
-        builder.addManyPlayers(players, players.isEmpty() ? builder.atEntrances : atEntrances);
+        if(!players.isEmpty()) {
+            builder.addManyPlayers(players, atEntrances);
+        }
+
         return builder.build();
     }
 
@@ -112,7 +114,7 @@ public class MazeGame {
         this.maze = maze;
 
         // Clone the players
-        this.players = new ArrayList<>(players);
+        this.players = players.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
         this.movementListenerManager = movementListenerManager;
 

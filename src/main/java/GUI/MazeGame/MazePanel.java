@@ -24,7 +24,7 @@ import java.util.List;
 
 import static Logger.LoggerManager.logger;
 
-public class MazePanel extends JPanel implements WindowCard {
+public class MazePanel extends JPanel {
 
     private static final int DEFAULT_CELL_EDGE = 25;
 

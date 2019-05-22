@@ -3,6 +3,7 @@ package GUI;
 import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.CustomGameCreatorCard;
 import GUI.Play.GameModeSelectionPanel;
+import GUI.Play.StepsGame.StepGameCreatorCard;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -23,6 +24,7 @@ public class Window {
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
     private GameModeSelectionPanel gameConfigurationCard;
+    private StepGameCreatorCard stepGameCreatorCard;
     private CustomGameCreatorCard customGameCreatorCard;
 
     // endregion
@@ -72,11 +74,9 @@ public class Window {
 
     private void createUIComponents() {
         initContainerPanel();
-//        initCardContainer();
 
         createAndAttachWelcomeCard();
         createAndAttachStatsCard();
-//        createAndAttachPlayCard();
         createAndAttachGameConfiguratorCard();
 
         cl = (CardLayout) (this.cardsContainer.getLayout());
@@ -123,11 +123,19 @@ public class Window {
     }
 
     private void onBackBtnClicked(ActionEvent e) {
-        if (this.currentCardName == CardName.CUSTOM_GAME_CREATOR) {
-            if (!this.customGameCreatorCard.back()) {
-                this.showCard(CardName.GAME_CREATOR);
+        JPanel currentCard = this.getCurrentCard();
 
-                this.currentCardName = CardName.GAME_CREATOR;
+        if (currentCard instanceof WindowCard) {
+            try {
+                if (!((WindowCard) currentCard).back()) {
+                    this.showCard(CardName.GAME_CREATOR);
+                    this.currentCardName = CardName.GAME_CREATOR;
+                }
+            } catch (Exception ex) {
+                this.showCard(CardName.WELCOME);
+
+                this.currentCardName = CardName.WELCOME;
+                setEnabledBack(false);
             }
 
             return;
@@ -137,6 +145,16 @@ public class Window {
 
         this.currentCardName = CardName.WELCOME;
         setEnabledBack(false);
+    }
+
+    private JPanel getCurrentCard() {
+        for (Component comp : this.cardsContainer.getComponents()) {
+            if (comp.isVisible()) {
+                return  (JPanel) comp;
+            }
+        }
+
+        return null;
     }
 
     private void createAndAttachWelcomeCard() {
@@ -163,7 +181,7 @@ public class Window {
 
             switch (gameModes) {
                 case STEPS:
-
+                    onSelectedStepGameMode();
                     break;
                 case CUSTOM:
                     onSelectedCustomGameMode();
@@ -173,6 +191,16 @@ public class Window {
 
         addCard(gameConfigurationCard, CardName.GAME_CREATOR);
         gameConfigurationCard.initUIComponents();
+    }
+
+    private void onSelectedStepGameMode() {
+        StepGameCreatorCard stepGameCreatorCard = new StepGameCreatorCard(this::onFinishMazeCreation);
+        stepGameCreatorCard.init();
+
+        addCard(stepGameCreatorCard, CardName.STEPS_GAME_CREATOR);
+        stepGameCreatorCard.initComponents();
+
+        showCard(CardName.STEPS_GAME_CREATOR);
     }
 
     private void onSelectedCustomGameMode() {
@@ -231,17 +259,15 @@ public class Window {
     private void onFinishMazeCreation(MazePanel mazePanel) {
 
         addCard(mazePanel, CardName.GAME);
-
-
         showCard(CardName.GAME);
 
         setEnabledBack(false);
 
         Dimension mazePanelSize = mazePanel.getPreferredSize();
         setCardContainerAllSizes(mazePanelSize, mazePanel);
-
         setCardContainerAllSizes(mazePanelSize, this.cardsContainer);
 
+        // Hack for sizing the container panel at better size
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
         this.frame.pack();

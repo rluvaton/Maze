@@ -43,7 +43,7 @@ public class GameWindow {
         main(getStepFromArgs(args));
     }
 
-    private static GameStep getStepFromArgs(String[] args) {
+    private static GameStep.BuiltinStep getStepFromArgs(String[] args) {
 
         if(args.length == 0 || (args.length == 1 && isInDebugMode(args))) {
             return null;
@@ -57,7 +57,7 @@ public class GameWindow {
             stepName = args[1];
         }
 
-        GameStep step = null;
+        GameStep.BuiltinStep step = null;
 
         switch (stepName) {
             case "very-easy":
@@ -105,10 +105,10 @@ public class GameWindow {
         this.wrapper.setPreferredSize(wrapperSize);
     }
 
-    public static void main(GameStep step) {
+    public static void main(GameStep.BuiltinStep step) {
         JFrame frame = new JFrame("GameWindow");
 
-        GameWindow.step = step;
+        GameWindow.step = step.getStep();
         GameWindow gameWindow = new GameWindow();
         gameWindow.init();
 

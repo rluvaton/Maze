@@ -1,6 +1,7 @@
 package Game;
 
 import Helpers.Coordinate;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Candy.CandyPowerType;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.GenerateCandyConfig;
@@ -10,11 +11,14 @@ import Maze.Solver.BFS.BFSSolverAdapter;
 import player.ComputerPlayer.ComputerPlayer;
 
 public class GameStep {
-    public final static GameStep VERY_EASY = getVeryEasyGameStep();
-    public final static GameStep EASY = getEasyGameStep();
-    public final static GameStep MEDIUM = getMediumGameStep();
-    public final static GameStep HARD = getHardGameStep();
-    public final static GameStep VERY_HARD = getVeryHardGameStep();
+
+    public final static BuiltinStep VERY_EASY = new BuiltinStep(getVeryEasyGameStep(), "Very Easy");
+    public final static BuiltinStep EASY = new BuiltinStep(getEasyGameStep(), "Easy");
+    public final static BuiltinStep MEDIUM = new BuiltinStep(getMediumGameStep(), "Medium");
+    public final static BuiltinStep HARD = new BuiltinStep(getHardGameStep(), "Hard");
+    public final static BuiltinStep VERY_HARD = new BuiltinStep(getVeryHardGameStep(), "Very Hard");
+
+    public static BuiltinStep[] STEPS = new BuiltinStep[]{VERY_EASY, EASY, MEDIUM, HARD, VERY_HARD};
 
     private IntegerConfiguration minDistance;
 
@@ -174,7 +178,7 @@ public class GameStep {
      */
     private GameStep setEdge(IntegerConfiguration edge) {
         return this.setHeight(edge)
-                .setHeight(edge);
+                .setWidth(edge);
     }
 
     public boolean isWithComputerPlayer() {
@@ -232,5 +236,31 @@ public class GameStep {
         }
 
         return new ComputerPlayer(new Coordinate(0, 0), this.computerPlayerSpeed.getValue());
+    }
+
+    public static class BuiltinStep {
+        private GameStep step;
+        private String name;
+
+        public BuiltinStep(GameStep step, String name) {
+            ObjectAssertion.requireNonNull(step, "Step can't be null");
+            ObjectAssertion.requireNonNull(name, "Step name can't be null");
+
+            this.step = step;
+            this.name = name;
+        }
+
+        public GameStep getStep() {
+            return step;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }
