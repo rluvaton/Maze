@@ -10,6 +10,8 @@ import Game.GameStep;
 import Game.MazeGame;
 import Helpers.Builder.BuilderException;
 import Helpers.ThrowableAssertions.ObjectAssertion;
+import player.BasePlayer;
+import player.ComputerPlayer.ComputerPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -75,6 +77,10 @@ public class Window {
     private static void setFrameIcon(JFrame frame) {
         ImageIcon img = new ImageIcon("C:\\Users\\rluva\\Programming\\FrontEnd\\Desktop\\Java\\Maze\\src\\main\\resources\\icons\\maze-game-icon-white.png");
         frame.setIconImage(img.getImage());
+    }
+
+    private void onGameUnexpectedlyFinished(Throwable throwable) {
+        logger.error(throwable);
     }
 
     private void createUIComponents() {
@@ -146,7 +152,7 @@ public class Window {
             return;
         }
 
-        if(currentCard instanceof MazePanel) {
+        if (currentCard instanceof MazePanel) {
             ((MazePanel) currentCard).onFinishGame();
         }
 
@@ -159,7 +165,7 @@ public class Window {
     private JPanel getCurrentCard() {
         for (Component comp : this.cardsContainer.getComponents()) {
             if (comp.isVisible()) {
-                return  (JPanel) comp;
+                return (JPanel) comp;
             }
         }
 
@@ -313,30 +319,43 @@ public class Window {
 
         onFinishMazeCreation(mazePanel);
 
-        mazePanel.getOnFinishGameObs()
-                .subscribe(player -> {
-                    if(player == null) {
-                        return;
-                    }
+        mazePanel.getOnFinishGameObs().subscribe(
+                player -> onGameFinished(mazeGameBuilder, player),
+                this::onGameUnexpectedlyFinished
+        );
+    }
 
-                    switch (mazeGameBuilder.getStep().getName()) {
-                        case VERY_EASY:
-                            moveToNextStep(mazeGameBuilder, GameStep.EASY);
-                            break;
-                        case EASY:
-                            moveToNextStep(mazeGameBuilder, GameStep.MEDIUM);
-                            break;
-                        case MEDIUM:
-                            moveToNextStep(mazeGameBuilder, GameStep.HARD);
-                            break;
-                        case HARD:
-                            moveToNextStep(mazeGameBuilder, GameStep.VERY_HARD);
-                            break;
-                        case VERY_HARD:
-                            logger.verbose("All Steps finished!!");
-                            break;
-                    }
-                });
+    private void onGameFinished(MazeGame.Builder mazeGameBuilder, BasePlayer player) {
+        if (isPlayerNotFinishedTheGame(player)) {
+            rerunTheSameStep(mazeGameBuilder);
+            return;
+        }
+
+        switch (mazeGameBuilder.getStep().getName()) {
+            case VERY_EASY:
+                moveToNextStep(mazeGameBuilder, GameStep.EASY);
+                break;
+            case EASY:
+                moveToNextStep(mazeGameBuilder, GameStep.MEDIUM);
+                break;
+            case MEDIUM:
+                moveToNextStep(mazeGameBuilder, GameStep.HARD);
+                break;
+            case HARD:
+                moveToNextStep(mazeGameBuilder, GameStep.VERY_HARD);
+                break;
+            case VERY_HARD:
+                logger.verbose("All Steps finished!!");
+                break;
+        }
+    }
+
+    private void rerunTheSameStep(MazeGame.Builder mazeGameBuilder) {
+        this.onFinishMazeBuilding(mazeGameBuilder.clone());
+    }
+
+    private boolean isPlayerNotFinishedTheGame(BasePlayer player) {
+        return player instanceof ComputerPlayer;
     }
 
     private void moveToNextStep(MazeGame.Builder mazeGameBuilder, GameStep.BuiltinStep easy) {

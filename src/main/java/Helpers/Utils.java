@@ -3,6 +3,7 @@ package Helpers;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.ELocation;
 import Maze.MazeBuilder.IMazeBuilder;
+import player.BasePlayer;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -13,6 +14,10 @@ public class Utils {
      * TODO - Instead of creating this a singleton make all functions static
      */
     public static final Utils Instance = new Utils();
+
+    public static <T> Optional<T> getOptional(T value) {
+        return Optional.ofNullable(value);
+    }
 
     public final Coordinate moveCoordinatesToDirection(Coordinate pos, Direction dir) {
         assert pos != null && dir != null;

@@ -1,6 +1,7 @@
 package Game;
 
 import GUI.MazeGame.ControlledTimer;
+import Game.exceptions.UnExpectedGameInterruptException;
 import Helpers.Builder.BuilderException;
 import Helpers.Builder.IBuilder;
 import Helpers.*;
@@ -127,7 +128,8 @@ public class MazeGame {
     }
 
     {
-        onFinishGame.subscribe(this::gameFinished);
+        onFinishGame
+                .subscribe(this::gameFinished, throwable -> this.gameFinished(null));
     }
 
     private void setAllPlayersLocationAtEntrances() {
@@ -498,8 +500,7 @@ public class MazeGame {
     }
 
     public void onFinishGame() {
-        onFinishGame.onNext(null);
-
+        onFinishGame.onError(new UnExpectedGameInterruptException());
     }
 
     public void addPlayer(BasePlayer player) {
@@ -576,6 +577,24 @@ public class MazeGame {
                 this.gameState == GameState.NOT_READY;
     }
 
+    private void gameFinished(BasePlayer player) {
+        onDestroySub.onNext(true);
+
+        startPlayersCallbacks.clear();
+
+        this.players.forEach(basePlayer -> {
+            if (player == basePlayer) {
+                return;
+            }
+
+            basePlayer.onPlayerFinished();
+
+            if (basePlayer instanceof HumanPlayer) {
+                movementListenerManager.removeListenerForPlayer((HumanPlayer) basePlayer);
+            }
+        });
+    }
+
     public Maze getMaze() {
         return maze;
     }
@@ -596,25 +615,11 @@ public class MazeGame {
         return gameState;
     }
 
-    public Observable getOnFinishGameObs() {
+    public Observable<BasePlayer> getOnFinishGameObs() {
         return onFinishGame;
     }
 
-    private void gameFinished(BasePlayer v) {
-        onDestroySub.onNext(true);
-
-        this.players.forEach(basePlayer -> {
-            if(v == basePlayer) {
-                return;
-            }
-
-            basePlayer.onPlayerFinished();
-
-            if(basePlayer instanceof HumanPlayer) {
-                movementListenerManager.removeListenerForPlayer((HumanPlayer) basePlayer);
-            }
-        });
-    }
+    // region Builder
 
     public static class Builder implements SuccessCloneable<Builder>, IBuilder<MazeGame> {
 
@@ -786,4 +791,7 @@ public class MazeGame {
                     .setStep(step);
         }
     }
+
+    // endregion
+
 }

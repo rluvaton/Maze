@@ -3,6 +3,7 @@ package player.ComputerPlayer;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.Utils;
+import Logger.LoggerManager;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Cell;
@@ -325,6 +326,29 @@ public class ComputerPlayer extends BasePlayer {
     private Coordinate findClosestExit(Maze maze) {
         // TODO - Find the closest exit from the current location
         return null;
+    }
+
+    @Override
+    public void onPlayerFinished() {
+        super.onPlayerFinished();
+        LoggerManager.logger.info("[Computer Player][onPlayerFinished]");
+
+        this.returnToPathStack.removeAllElements();
+        if (this.runnablePlayer != null) {
+            LoggerManager.logger.info("[Computer Player][Finish][Stopping Thread]");
+
+            synchronized (runnablePlayer) {
+                runnablePlayer.stop();
+            }
+
+            this.runnablePlayer = null;
+        }
+
+        if(this.playerThread != null) {
+            this.playerThread = null;
+        }
+
+        isCurrentlyPlaying = false;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package GUI.MazeGame;
 
-import GUI.WindowCard;
 import Game.GameState;
 import Game.MazeGame;
 import Game.MovementListenerManager;
@@ -98,6 +97,11 @@ public class MazePanel extends JPanel {
         loadArrowIcons();
 
         this.setFocusable(true);
+
+        game.getOnFinishGameObs().subscribe(
+                basePlayer -> onDestroySub.onNext(true),
+                throwable -> onDestroySub.onNext(true)
+        );
     }
 
     private void loadArrowIcons() {
@@ -328,7 +332,7 @@ public class MazePanel extends JPanel {
         game.onFinishGame();
     }
 
-    public Observable getOnFinishGameObs() {
+    public Observable<BasePlayer> getOnFinishGameObs() {
         return game.getOnFinishGameObs();
     }
 
