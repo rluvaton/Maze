@@ -103,12 +103,11 @@ public class GameStep {
     }
 
     private static GameStep getVeryHardGameStep() {
+
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(-200, 200))
-                // TODO - DEVELOPMENT ONLY - REMOVE THIS
-                .setTypes(new CandyPowerType[]{CandyPowerType.Location})
-                // TODO - DEVELOPMENT ONLY - RESTORE THIS
-                .setTimeToLive(GenerateCandyConfig.NO_TIME);
+                .setTypes(CandyPowerType.values())
+                .setTimeToLive(new IntegerConfiguration(10000, 35000));
 
         return new GameStep()
 
@@ -119,11 +118,9 @@ public class GameStep {
                 .setExitsCount(new IntegerConfiguration(1))
 
                 .setWithComputerPlayer(true)
-                // TODO - DEVELOPMENT ONLY - RESTORE THIS
-                .setComputerPlayerSpeed(new IntegerConfiguration(200))
+                .setComputerPlayerSpeed(new IntegerConfiguration(200, 500))
 
-                // TODO - DEVELOPMENT ONLY - UPDATE THIS TO BE 15-30
-                .setTotalCandies(new IntegerConfiguration(40))
+                .setTotalCandies(new IntegerConfiguration(10, 15))
                 .setCandyConfig(candyConfig);
     }
 
