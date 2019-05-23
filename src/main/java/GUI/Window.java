@@ -146,6 +146,10 @@ public class Window {
             return;
         }
 
+        if(currentCard instanceof MazePanel) {
+            ((MazePanel) currentCard).onFinishGame();
+        }
+
         this.showCard(CardName.WELCOME);
 
         this.currentCardName = CardName.WELCOME;
@@ -311,6 +315,10 @@ public class Window {
 
         mazePanel.getOnFinishGameObs()
                 .subscribe(player -> {
+                    if(player == null) {
+                        return;
+                    }
+
                     switch (mazeGameBuilder.getStep().getName()) {
                         case VERY_EASY:
                             moveToNextStep(mazeGameBuilder, GameStep.EASY);

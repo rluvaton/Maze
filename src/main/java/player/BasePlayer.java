@@ -4,6 +4,7 @@ import GUI.Color;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.RandomHelper;
+import Helpers.SuccessCloneable;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
@@ -21,7 +22,7 @@ import static Helpers.Utils.Instance;
  * Base Player
  * Abstract class for player
  */
-public abstract class BasePlayer {
+public abstract class BasePlayer implements SuccessCloneable<BasePlayer> {
     // region Variables
 
     /**
@@ -220,10 +221,7 @@ public abstract class BasePlayer {
                 color == player.color;
     }
 
-    @Override
-    public int hashCode() {
-        return 0;
-    }
+    public abstract BasePlayer clone();
 
     // region Getter & Setter
 

@@ -2,6 +2,7 @@ package player.ComputerPlayer;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.Utils;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Cell;
@@ -324,5 +325,10 @@ public class ComputerPlayer extends BasePlayer {
     private Coordinate findClosestExit(Maze maze) {
         // TODO - Find the closest exit from the current location
         return null;
+    }
+
+    @Override
+    public BasePlayer clone() {
+        return new ComputerPlayer(Utils.clone(getLocation()), defaultDelayMovementInMs);
     }
 }

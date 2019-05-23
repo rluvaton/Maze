@@ -1,9 +1,9 @@
 package Game;
 
 import GUI.MazeGame.ControlledTimer;
-import Helpers.*;
 import Helpers.Builder.BuilderException;
 import Helpers.Builder.IBuilder;
+import Helpers.*;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Logger.LoggerManager;
 import Maze.Candy.CandyRecord;
@@ -23,7 +23,6 @@ import player.exceptions.PlayerNotRunning;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static Logger.LoggerManager.logger;
 
@@ -77,7 +76,7 @@ public class MazeGame {
 
         Builder builder = step.build();
 
-        if(!players.isEmpty()) {
+        if (!players.isEmpty()) {
             builder.addManyPlayers(players, atEntrances);
         }
 
@@ -114,13 +113,21 @@ public class MazeGame {
         this.maze = maze;
 
         // Clone the players
-        this.players = players.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        this.players = clonePlayers(players);
 
         this.movementListenerManager = movementListenerManager;
 
         if (!arePlayersAtPosition) {
             setAllPlayersLocationAtEntrances();
         }
+    }
+
+    private static List<BasePlayer> clonePlayers(List<BasePlayer> players) {
+        return players.stream().filter(Objects::nonNull).map(Utils::clone).collect(Collectors.toList());
+    }
+
+    {
+        onFinishGame.subscribe(this::gameFinished);
     }
 
     private void setAllPlayersLocationAtEntrances() {
@@ -366,6 +373,7 @@ public class MazeGame {
         player.onPlayerFinished();
 
         if (player instanceof HumanPlayer) {
+
             movementListenerManager.removeListenerForPlayer((HumanPlayer) player);
         }
 
@@ -491,7 +499,6 @@ public class MazeGame {
 
     public void onFinishGame() {
         onFinishGame.onNext(null);
-        this.onDestroySub.onNext(true);
 
     }
 
@@ -591,6 +598,22 @@ public class MazeGame {
 
     public Observable getOnFinishGameObs() {
         return onFinishGame;
+    }
+
+    private void gameFinished(BasePlayer v) {
+        onDestroySub.onNext(true);
+
+        this.players.forEach(basePlayer -> {
+            if(v == basePlayer) {
+                return;
+            }
+
+            basePlayer.onPlayerFinished();
+
+            if(basePlayer instanceof HumanPlayer) {
+                movementListenerManager.removeListenerForPlayer((HumanPlayer) basePlayer);
+            }
+        });
     }
 
     public static class Builder implements SuccessCloneable<Builder>, IBuilder<MazeGame> {
@@ -720,7 +743,7 @@ public class MazeGame {
         }
 
         public Builder setPlayers(List<BasePlayer> players, boolean atEntrances) {
-            this.players = players;
+            this.players = players == null ? null : new ArrayList<>(players);
             this.atEntrances = atEntrances;
             return this;
         }
@@ -756,9 +779,9 @@ public class MazeGame {
         @Override
         public Builder clone() {
             return new MazeGame.Builder()
-                    .setPlayers(players, atEntrances)
+                    .setPlayers(new ArrayList<>(players), atEntrances)
                     .setMazeGenerator(mazeGenerator)
-                    .setMazeGeneratorBuilder(mazeGeneratorBuilder)
+                    .setMazeGeneratorBuilder(Utils.clone(mazeGeneratorBuilder))
                     .setMaze(maze)
                     .setStep(step);
         }

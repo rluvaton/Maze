@@ -1,6 +1,8 @@
 package player;
 
 import Helpers.Direction;
+import Helpers.ThrowableAssertions.ObjectAssertion;
+import player.HumanPlayer.ActionType;
 
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
@@ -13,6 +15,7 @@ public class ActionsKeys {
     public static ActionsKeys DEFAULT_AS_WASD = new ActionsKeys(KeyEvent.VK_W, KeyEvent.VK_S, KeyEvent.VK_D, KeyEvent.VK_A, KeyEvent.VK_TAB, KeyEvent.VK_ESCAPE);
 
     private int upKeyCode = NO_KEY;
+
     private int downKeyCode = NO_KEY;
     private int rightKeyCode = NO_KEY;
     private int leftKeyCode = NO_KEY;
@@ -50,6 +53,89 @@ public class ActionsKeys {
         return this.areAllDirectionsKeysSet() &&
                 this.speedKeyCode != ActionsKeys.NO_KEY &&
                 this.exitKeyCode != ActionsKeys.NO_KEY;
+    }
+
+
+    public int getActionKeyCode(ActionType type) {
+        ObjectAssertion.requireNonNull(type, "type can't be null");
+
+        switch (type) {
+            case UP:
+                return upKeyCode;
+            case RIGHT:
+                return rightKeyCode;
+            case DOWN:
+                return downKeyCode;
+            case LEFT:
+                return leftKeyCode;
+            case SPEED:
+                return speedKeyCode;
+            case EXIT:
+                return exitKeyCode;
+        }
+
+        return NO_KEY;
+    }
+
+    public void setActionKeyCode(ActionType type , int keyCode) {
+        ObjectAssertion.requireNonNull(type, "type can't be null");
+
+        switch (type) {
+            case UP:
+                upKeyCode = keyCode;
+                break;
+            case RIGHT:
+                rightKeyCode = keyCode;
+                break;
+            case DOWN:
+                downKeyCode = keyCode;
+                break;
+            case LEFT:
+                leftKeyCode = keyCode;
+                break;
+            case SPEED:
+                speedKeyCode = keyCode;
+                break;
+            case EXIT:
+                exitKeyCode = keyCode;
+                break;
+        }
+    }
+
+    public int getDirectionKeyCode(Direction direction) {
+        ObjectAssertion.requireNonNull(direction, "Direction can't be null");
+
+        switch (direction) {
+            case UP:
+                return upKeyCode;
+            case RIGHT:
+                return rightKeyCode;
+            case DOWN:
+                return downKeyCode;
+            case LEFT:
+                return leftKeyCode;
+        }
+
+        return NO_KEY;
+    }
+
+    public void setDirectionKeyCode(Direction direction , int keyCode) {
+        ObjectAssertion.requireNonNull(direction, "Direction can't be null");
+
+        switch (direction) {
+            case UP:
+                upKeyCode = keyCode;
+                break;
+            case RIGHT:
+                rightKeyCode = keyCode;
+                break;
+            case DOWN:
+                downKeyCode = keyCode;
+                break;
+            case LEFT:
+                leftKeyCode = keyCode;
+                break;
+        }
     }
 
     public int getUpKeyCode() {

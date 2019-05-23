@@ -2,6 +2,7 @@ package Game;
 
 import Helpers.Coordinate;
 import Helpers.ThrowableAssertions.ObjectAssertion;
+import Helpers.Utils;
 import Maze.Candy.CandyPowerType;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.GenerateCandyConfig;
@@ -54,7 +55,7 @@ public class GameStep {
 
                 .setMinDistance(new IntegerConfiguration(0, 3))
                 .setEntrancesCount(new IntegerConfiguration(1))
-                .setExitsCount(new IntegerConfiguration(0, 3))
+                .setExitsCount(new IntegerConfiguration(1, 3))
 
                 .setWithComputerPlayer(false)
                 .setComputerPlayerSpeed(null);
@@ -227,7 +228,7 @@ public class GameStep {
         return new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
                 .generateMaze(this.height.getValue(), this.width.getValue())
                 .createRandomEntrancesAndExists(this.entrancesCount.getValue(), this.exitsCount.getValue(), this.getMinDistance().getValue())
-                .generateRandomCandies(this.candyConfig, totalCandies.getValue());
+                .generateRandomCandies(Utils.clone(this.candyConfig), totalCandies.getValue());
     }
 
     public ComputerPlayer getPlayer() {
