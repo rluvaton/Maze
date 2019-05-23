@@ -1,9 +1,9 @@
 package Game;
 
 import Helpers.Coordinate;
+import Helpers.ThrowableAssertions.ObjectAssertion;
+import Helpers.Utils;
 import Maze.Candy.CandyPowerType;
-import Maze.Maze;
-import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.GenerateCandyConfig;
 import Maze.MazeGenerator.IntegerConfiguration;
@@ -12,11 +12,14 @@ import Maze.Solver.BFS.BFSSolverAdapter;
 import player.ComputerPlayer.ComputerPlayer;
 
 public class GameStep {
-    public final static GameStep VERY_EASY = getVeryEasyGameStep();
-    public final static GameStep EASY = getEasyGameStep();
-    public final static GameStep MEDIUM = getMediumGameStep();
-    public final static GameStep HARD = getHardGameStep();
-    public final static GameStep VERY_HARD = getVeryHardGameStep();
+
+    public final static BuiltinStep VERY_EASY = new BuiltinStep(getVeryEasyGameStep(), GameStepLevel.VERY_EASY);
+    public final static BuiltinStep EASY = new BuiltinStep(getEasyGameStep(), GameStepLevel.EASY);
+    public final static BuiltinStep MEDIUM = new BuiltinStep(getMediumGameStep(), GameStepLevel.MEDIUM);
+    public final static BuiltinStep HARD = new BuiltinStep(getHardGameStep(), GameStepLevel.HARD);
+    public final static BuiltinStep VERY_HARD = new BuiltinStep(getVeryHardGameStep(), GameStepLevel.VERY_HARD);
+
+    public static BuiltinStep[] STEPS = new BuiltinStep[]{VERY_EASY, EASY, MEDIUM, HARD, VERY_HARD};
 
     private IntegerConfiguration minDistance;
 
@@ -33,119 +36,92 @@ public class GameStep {
     private IntegerConfiguration totalCandies = new IntegerConfiguration(0);
 
     private static GameStep getVeryEasyGameStep() {
-        GameStep step = new GameStep();
-        IntegerConfiguration edge = new IntegerConfiguration(4);
+        return new GameStep()
 
-        step.setHeight(edge);
-        step.setWidth(edge);
+                .setEdge(new IntegerConfiguration(4))
 
-        step.setMinDistance(new IntegerConfiguration(0));
+                .setMinDistance(new IntegerConfiguration(0))
+                .setEntrancesCount(new IntegerConfiguration(1))
+                .setExitsCount(new IntegerConfiguration(1))
 
-        step.setEntrancesCount(new IntegerConfiguration(1));
-        step.setExitsCount(new IntegerConfiguration(1));
-
-        step.setWithComputerPlayer(false);
-        step.setComputerPlayerSpeed(null);
-
-        return step;
+                .setWithComputerPlayer(false)
+                .setComputerPlayerSpeed(null);
     }
 
     private static GameStep getEasyGameStep() {
-        GameStep step = new GameStep();
-        IntegerConfiguration edge = new IntegerConfiguration(5, 8);
+        return new GameStep()
 
-        step.setHeight(edge);
-        step.setWidth(edge);
+                .setEdge(new IntegerConfiguration(5, 8))
 
-        step.setMinDistance(new IntegerConfiguration(0, 3));
+                .setMinDistance(new IntegerConfiguration(0, 3))
+                .setEntrancesCount(new IntegerConfiguration(1))
+                .setExitsCount(new IntegerConfiguration(1, 3))
 
-        step.setEntrancesCount(new IntegerConfiguration(1));
-        step.setExitsCount(new IntegerConfiguration(0, 3));
-
-        step.setWithComputerPlayer(false);
-        step.setComputerPlayerSpeed(null);
-
-        return step;
+                .setWithComputerPlayer(false)
+                .setComputerPlayerSpeed(null);
     }
 
     private static GameStep getMediumGameStep() {
-        GameStep step = new GameStep();
-        IntegerConfiguration edge = new IntegerConfiguration(10, 15);
-
-        step.setHeight(edge);
-        step.setWidth(edge);
-
-        step.setMinDistance(new IntegerConfiguration(5, 10));
-
-        step.setEntrancesCount(new IntegerConfiguration(1));
-        step.setExitsCount(new IntegerConfiguration(1));
-
-        step.setWithComputerPlayer(false);
-        step.setComputerPlayerSpeed(null);
-
-        step.setTotalCandies(new IntegerConfiguration(4, 7));
 
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(1, 200))
                 .setTypes(new CandyPowerType[]{CandyPowerType.Points})
-                .setTimeToLive(new IntegerConfiguration(-1));
+                .setTimeToLive(GenerateCandyConfig.NO_TIME);
 
-        step.setCandyConfig(candyConfig);
+        return new GameStep()
+                .setEdge(new IntegerConfiguration(10, 15))
 
-        return step;
+                .setMinDistance(new IntegerConfiguration(5, 10))
+                .setEntrancesCount(new IntegerConfiguration(1))
+                .setExitsCount(new IntegerConfiguration(1))
+
+                .setWithComputerPlayer(false)
+                .setComputerPlayerSpeed(null)
+
+                .setTotalCandies(new IntegerConfiguration(4, 7))
+                .setCandyConfig(candyConfig);
     }
 
     private static GameStep getHardGameStep() {
-        GameStep step = new GameStep();
-        IntegerConfiguration edge = new IntegerConfiguration(15, 20);
-
-        step.setHeight(edge);
-        step.setWidth(edge);
-
-        step.setMinDistance(new IntegerConfiguration(15));
-
-        step.setEntrancesCount(new IntegerConfiguration(1));
-        step.setExitsCount(new IntegerConfiguration(1));
-
-        step.setWithComputerPlayer(true);
-        step.setComputerPlayerSpeed(new IntegerConfiguration(500));
-
-        step.setTotalCandies(new IntegerConfiguration(10, 15));
-
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(-200, 200))
                 .setTypes(new CandyPowerType[]{CandyPowerType.Points, CandyPowerType.Time});
 
-        step.setCandyConfig(candyConfig);
+        return new GameStep()
 
-        return step;
+                .setEdge(new IntegerConfiguration(15, 20))
+
+                .setMinDistance(new IntegerConfiguration(15))
+                .setEntrancesCount(new IntegerConfiguration(1))
+                .setExitsCount(new IntegerConfiguration(1))
+
+                .setWithComputerPlayer(true)
+                .setComputerPlayerSpeed(new IntegerConfiguration(500))
+
+                .setTotalCandies(new IntegerConfiguration(10, 15))
+                .setCandyConfig(candyConfig);
     }
 
     private static GameStep getVeryHardGameStep() {
-        GameStep step = new GameStep();
-        IntegerConfiguration edge = new IntegerConfiguration(25, 30);
-
-        step.setHeight(edge);
-        step.setWidth(edge);
-
-        step.setMinDistance(new IntegerConfiguration(5, 10));
-
-        step.setEntrancesCount(new IntegerConfiguration(1));
-        step.setExitsCount(new IntegerConfiguration(1));
-
-        step.setWithComputerPlayer(true);
-        step.setComputerPlayerSpeed(new IntegerConfiguration(200, 500));
-
-        step.setTotalCandies(new IntegerConfiguration(10, 15));
 
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(-200, 200))
                 .setTypes(CandyPowerType.values())
                 .setTimeToLive(new IntegerConfiguration(10000, 35000));
 
-        step.setCandyConfig(candyConfig);
+        return new GameStep()
 
-        return step;
+                .setEdge(new IntegerConfiguration(25, 30))
+
+                .setMinDistance(new IntegerConfiguration(5, 10))
+                .setEntrancesCount(new IntegerConfiguration(1))
+                .setExitsCount(new IntegerConfiguration(1))
+
+                .setWithComputerPlayer(true)
+                .setComputerPlayerSpeed(new IntegerConfiguration(200, 500))
+
+                .setTotalCandies(new IntegerConfiguration(10, 15))
+                .setCandyConfig(candyConfig);
     }
 
     private GameStep() {
@@ -196,6 +172,14 @@ public class GameStep {
         return this;
     }
 
+    /**
+     * For Rectangle Maze
+     */
+    private GameStep setEdge(IntegerConfiguration edge) {
+        return this.setHeight(edge)
+                .setWidth(edge);
+    }
+
     public boolean isWithComputerPlayer() {
         return withComputerPlayer;
     }
@@ -232,19 +216,50 @@ public class GameStep {
         return this;
     }
 
-    public Maze build() throws MazeBuilderException {
+    public MazeGame.Builder build() {
+        return new MazeGame.Builder()
+                .setMazeGenerator(buildMazeGenerator())
+                .addSinglePlayer(getPlayer());
+    }
+
+    private MazeGenerator buildMazeGenerator() {
         return new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
-                    .generateMaze(this.height.getValue(), this.width.getValue())
-                    .createRandomEntrancesAndExists(this.entrancesCount.getValue(), this.exitsCount.getValue(), this.getMinDistance().getValue())
-                    .generateRandomCandies(this.candyConfig, totalCandies.getValue())
-                    .create();
+                .generateMaze(this.height.getValue(), this.width.getValue())
+                .createRandomEntrancesAndExists(this.entrancesCount.getValue(), this.exitsCount.getValue(), this.getMinDistance().getValue())
+                .generateRandomCandies(Utils.clone(this.candyConfig), totalCandies.getValue());
     }
 
     public ComputerPlayer getPlayer() {
-        if(!isWithComputerPlayer()) {
+        if (!isWithComputerPlayer()) {
             return null;
         }
 
         return new ComputerPlayer(new Coordinate(0, 0), this.computerPlayerSpeed.getValue());
+    }
+
+    public static class BuiltinStep {
+        private GameStep step;
+        private GameStepLevel name;
+
+        public BuiltinStep(GameStep step, GameStepLevel name) {
+            ObjectAssertion.requireNonNull(step, "Step can't be null");
+            ObjectAssertion.requireNonNull(name, "Step name can't be null");
+
+            this.step = step;
+            this.name = name;
+        }
+
+        public GameStep getStep() {
+            return step;
+        }
+
+        public GameStepLevel getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name.toString();
+        }
     }
 }

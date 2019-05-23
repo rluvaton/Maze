@@ -27,8 +27,11 @@ public class ConsoleLogger implements Logger {
         StringBuilder values = new StringBuilder();
 
         for (T t: tItems) {
-            values.append(t);
+            values.append(t).append(" ");
         }
+
+        // Delete the last useless space
+        values.deleteCharAt(values.length() - 1);
 
         print(level, values.toString());
     }

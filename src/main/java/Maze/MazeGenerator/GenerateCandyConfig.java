@@ -1,11 +1,15 @@
 package Maze.MazeGenerator;
 
 import Helpers.Coordinate;
+import Helpers.SuccessCloneable;
+import Helpers.Utils;
 import Maze.Candy.CandyPowerType;
 
 import java.util.concurrent.TimeUnit;
 
-public class GenerateCandyConfig {
+public class GenerateCandyConfig implements SuccessCloneable<GenerateCandyConfig> {
+
+    public static final IntegerConfiguration NO_TIME = new IntegerConfiguration(-1);
 
     public static IntegerConfiguration DEFAULT_TIME_TO_LIVE = new IntegerConfiguration(
             (int) TimeUnit.SECONDS.toMillis(20),
@@ -68,5 +72,16 @@ public class GenerateCandyConfig {
     public GenerateCandyConfig setCellLoc(Coordinate cellLoc) {
         this.cellLoc = cellLoc;
         return this;
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public GenerateCandyConfig clone() {
+        return new GenerateCandyConfig()
+                .setTimeToLive(Utils.clone(timeToLive))
+                .setStrengthPower(Utils.clone(strengthPower))
+                .setOtherCellLocation(Utils.clone(otherCellLocation))
+                .setCellLoc(Utils.clone(cellLoc))
+                .setTypes(types.clone());
     }
 }

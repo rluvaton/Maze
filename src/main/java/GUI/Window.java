@@ -1,15 +1,21 @@
 package GUI;
 
 import GUI.MazeGame.MazePanel;
-import GUI.Play.PlayCard;
+import GUI.Play.CustomGame.CustomGameCreatorCard;
+import GUI.Play.GameModeSelectionPanel;
+import GUI.Play.StepsGame.StepGameCreatorCard;
 import GUI.Stats.UsersStatPanel;
 import GUI.Welcome.WelcomePanel;
+import Game.GameStep;
+import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.ThrowableAssertions.ObjectAssertion;
+import player.BasePlayer;
+import player.ComputerPlayer.ComputerPlayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.ActionEvent;
 
 import static Logger.LoggerManager.logger;
 
@@ -24,7 +30,9 @@ public class Window {
 
     private WelcomePanel welcomeCard;
     private UsersStatPanel statCard;
-    private PlayCard playCard;
+    private GameModeSelectionPanel gameConfigurationCard;
+    private StepGameCreatorCard stepGameCreatorCard;
+    private CustomGameCreatorCard customGameCreatorCard;
 
     // endregion
 
@@ -71,22 +79,20 @@ public class Window {
         frame.setIconImage(img.getImage());
     }
 
+    private void onGameUnexpectedlyFinished(Throwable throwable) {
+        logger.error(throwable);
+    }
+
     private void createUIComponents() {
         initContainerPanel();
-//        initCardContainer();
 
         createAndAttachWelcomeCard();
         createAndAttachStatsCard();
-        createAndAttachPlayCard();
+        createAndAttachGameConfiguratorCard();
 
         cl = (CardLayout) (this.cardsContainer.getLayout());
 
         showCard(CardName.WELCOME);
-
-    }
-
-    private void a() {
-
 
     }
 
@@ -105,37 +111,6 @@ public class Window {
 
         containerPanel.add(menuBar, BorderLayout.PAGE_START);
         containerPanel.add(cardsContainer, BorderLayout.CENTER);
-//        GroupLayout layout = new GroupLayout(containerPanel);
-//        containerPanel.setLayout(layout);
-//        layout.setHorizontalGroup(
-//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                        .addGroup(layout.createSequentialGroup()
-//                                .addContainerGap()
-//                                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                                        .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
-//                                        .addGroup(layout.createSequentialGroup()
-//                                                .addComponent(backBtn)
-//                                                .addGap(0, 0, Short.MAX_VALUE)))
-//                                .addContainerGap())
-//        );
-//        layout.setVerticalGroup(
-//                layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-//                        .addGroup(layout.createSequentialGroup()
-//                                .addContainerGap()
-//                                .addComponent(backBtn)
-//                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-//                                .addComponent(cardsContainer, GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-//                                .addContainerGap())
-//        );
-
-        containerPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[ContainerPanel]     ", e.getComponent().getSize());
-
-            }
-        });
     }
 
     private void initMenuBar() {
@@ -153,19 +128,48 @@ public class Window {
 
         backBtn.setText("Back");
 
-        backBtn.addActionListener(e -> {
-
-            if (this.currentCardName == CardName.PLAY && this.playCard.back()) {
-                return;
-            }
-
-            this.showCard(CardName.WELCOME);
-
-            this.currentCardName = CardName.WELCOME;
-            setEnabledBack(false);
-        });
+        backBtn.addActionListener(this::onBackBtnClicked);
 
         return backBtn;
+    }
+
+    private void onBackBtnClicked(ActionEvent e) {
+        JPanel currentCard = this.getCurrentCard();
+
+        if (currentCard instanceof WindowCard) {
+            try {
+                if (!((WindowCard) currentCard).back()) {
+                    this.showCard(CardName.GAME_CREATOR);
+                    this.currentCardName = CardName.GAME_CREATOR;
+                }
+            } catch (Exception ex) {
+                this.showCard(CardName.WELCOME);
+
+                this.currentCardName = CardName.WELCOME;
+                setEnabledBack(false);
+            }
+
+            return;
+        }
+
+        if (currentCard instanceof MazePanel) {
+            ((MazePanel) currentCard).onFinishGame();
+        }
+
+        this.showCard(CardName.WELCOME);
+
+        this.currentCardName = CardName.WELCOME;
+        setEnabledBack(false);
+    }
+
+    private JPanel getCurrentCard() {
+        for (Component comp : this.cardsContainer.getComponents()) {
+            if (comp.isVisible()) {
+                return (JPanel) comp;
+            }
+        }
+
+        return null;
     }
 
     private void createAndAttachWelcomeCard() {
@@ -178,21 +182,60 @@ public class Window {
 
 
     private void createAndAttachPlayCard() {
-        playCard = new PlayCard(this::onFinishMazeCreation);
-        playCard.init();
+        customGameCreatorCard = new CustomGameCreatorCard(this::onFinishMazeCreation);
+        customGameCreatorCard.init();
 
-        addCard(playCard, CardName.PLAY);
-        playCard.initComponents();
+        addCard(customGameCreatorCard, CardName.PLAY);
+        customGameCreatorCard.initComponents();
+    }
+
+    private void createAndAttachGameConfiguratorCard() {
+
+        gameConfigurationCard = new GameModeSelectionPanel(gameModes -> {
+            ObjectAssertion.requireNonNull(gameModes, "Game Mode can't be null");
+
+            switch (gameModes) {
+                case STEPS:
+                    onSelectedStepGameMode();
+                    break;
+                case CUSTOM:
+                    onSelectedCustomGameMode();
+                    break;
+            }
+        });
+
+        addCard(gameConfigurationCard, CardName.GAME_CREATOR);
+        gameConfigurationCard.initUIComponents();
+    }
+
+    private void onSelectedStepGameMode() {
+        StepGameCreatorCard stepGameCreatorCard = new StepGameCreatorCard(this::onFinishMazeBuilding);
+        stepGameCreatorCard.init();
+
+        addCard(stepGameCreatorCard, CardName.STEPS_GAME_CREATOR);
+        stepGameCreatorCard.initComponents();
+
+        showCard(CardName.STEPS_GAME_CREATOR);
+    }
+
+    private void onSelectedCustomGameMode() {
+        customGameCreatorCard = new CustomGameCreatorCard(this::onFinishMazeCreation);
+        customGameCreatorCard.init();
+
+        addCard(customGameCreatorCard, CardName.CUSTOM_GAME_CREATOR);
+        customGameCreatorCard.initComponents();
+
+        showCard(CardName.CUSTOM_GAME_CREATOR);
     }
 
     private void generatedClicked() {
         System.out.println("Not Supported Yet");
-        showCard(CardName.GENERATOR);
+        showCard(CardName.CUSTOM_GAME_CREATOR);
     }
 
     private void playClicked() {
         System.out.println("Not Supported Yet");
-        showCard(CardName.PLAY);
+        showCard(CardName.GAME_CREATOR);
     }
 
     private void statsClicked() {
@@ -222,10 +265,6 @@ public class Window {
 
         this.cardsContainer.setSize(size);
         this.cardsContainer.setMinimumSize(size);
-
-//        frame.pack();
-//        Dimension frameSize = (Dimension) size.clone();
-//        this.frame.setSize(frameSize);
     }
 
     private void addCard(JPanel panel, CardName cardName) {
@@ -234,46 +273,19 @@ public class Window {
 
     private void onFinishMazeCreation(MazePanel mazePanel) {
 
-        mazePanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                super.componentResized(e);
-                logger.debug("[MazePanel]    ", e.getComponent().getSize());
-            }
-        });
-
         addCard(mazePanel, CardName.GAME);
-
-
         showCard(CardName.GAME);
 
         setEnabledBack(false);
 
         Dimension mazePanelSize = mazePanel.getPreferredSize();
-        mazePanel.setMinimumSize(mazePanelSize);
-        mazePanel.setPreferredSize(mazePanelSize);
-//        mazePanel.setMaximumSize(mazePanelSize);
-        mazePanel.setSize(mazePanelSize);
+        setCardContainerAllSizes(mazePanelSize, mazePanel);
+        setCardContainerAllSizes(mazePanelSize, this.cardsContainer);
 
-        this.cardsContainer.setMinimumSize(mazePanelSize);
-        this.cardsContainer.setPreferredSize(mazePanelSize);
-//        this.cardsContainer.setMaximumSize(mazePanelSize);
-        this.cardsContainer.setSize(mazePanelSize);
-
-//
-//        this.containerPanel.setMinimumSize(this.cardsContainer.getMinimumSize());
-//        this.containerPanel.setPreferredSize(this.cardsContainer.getPreferredSize());
-//        this.containerPanel.setMaximumSize(this.cardsContainer.getMaximumSize());
-//        this.containerPanel.setSize(this.cardsContainer.getSize());
-
+        // Hack for sizing the container panel at better size
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
-//        this.frame.setMinimumSize(this.cardsContainer.getMinimumSize());
-//        this.frame.setPreferredSize(this.cardsContainer.getPreferredSize());
-//        this.frame.setMaximumSize(this.cardsContainer.getMaximumSize());
-//        this.frame.setSize(this.cardsContainer.getMaximumSize());
         this.frame.pack();
-
 
         mazePanel.initGame();
 
@@ -281,10 +293,72 @@ public class Window {
         mazePanel.requestFocusInWindow();
 
         mazePanel.startGame();
+    }
 
+    private void setCardContainerAllSizes(Dimension size, JPanel panel) {
+        panel.setMinimumSize(size);
+        panel.setPreferredSize(size);
+        panel.setSize(size);
     }
 
     private void setEnabledBack(boolean enabled) {
         this.backMenu.setEnabled(enabled);
+    }
+
+    private void onFinishMazeBuilding(MazeGame.Builder mazeGameBuilder) {
+        MazeGame game;
+
+        try {
+            game = mazeGameBuilder.clone().build();
+        } catch (BuilderException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        MazePanel mazePanel = new MazePanel(game);
+
+        onFinishMazeCreation(mazePanel);
+
+        mazePanel.getOnFinishGameObs().subscribe(
+                player -> onGameFinished(mazeGameBuilder, player),
+                this::onGameUnexpectedlyFinished
+        );
+    }
+
+    private void onGameFinished(MazeGame.Builder mazeGameBuilder, BasePlayer player) {
+        if (isPlayerNotFinishedTheGame(player)) {
+            rerunTheSameStep(mazeGameBuilder);
+            return;
+        }
+
+        switch (mazeGameBuilder.getStep().getName()) {
+            case VERY_EASY:
+                moveToNextStep(mazeGameBuilder, GameStep.EASY);
+                break;
+            case EASY:
+                moveToNextStep(mazeGameBuilder, GameStep.MEDIUM);
+                break;
+            case MEDIUM:
+                moveToNextStep(mazeGameBuilder, GameStep.HARD);
+                break;
+            case HARD:
+                moveToNextStep(mazeGameBuilder, GameStep.VERY_HARD);
+                break;
+            case VERY_HARD:
+                logger.verbose("All Steps finished!!");
+                break;
+        }
+    }
+
+    private void rerunTheSameStep(MazeGame.Builder mazeGameBuilder) {
+        this.onFinishMazeBuilding(mazeGameBuilder.clone());
+    }
+
+    private boolean isPlayerNotFinishedTheGame(BasePlayer player) {
+        return player instanceof ComputerPlayer;
+    }
+
+    private void moveToNextStep(MazeGame.Builder mazeGameBuilder, GameStep.BuiltinStep easy) {
+        this.onFinishMazeBuilding(mazeGameBuilder.clone().setStep(easy));
     }
 }

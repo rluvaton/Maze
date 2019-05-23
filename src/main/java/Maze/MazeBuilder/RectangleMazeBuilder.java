@@ -127,4 +127,16 @@ public class RectangleMazeBuilder extends BaseMazeBuilder {
     public int getTotalBuiltCells() {
         return totalBuiltCell;
     }
+
+    @Override
+    public IMazeBuilder clone() {
+        RectangleMazeBuilder mazeBuilder = new RectangleMazeBuilder();
+
+        mazeBuilder.height = height;
+        mazeBuilder.width = width;
+        mazeBuilder.totalBuiltCell = totalBuiltCell;
+        mazeBuilder.mazeData = mazeData == null ? null : mazeData.clone();
+
+        return mazeBuilder;
+    }
 }

@@ -1,9 +1,10 @@
 package Game;
 
 import GUI.MazeGame.ControlledTimer;
-import Helpers.CallbackFns;
-import Helpers.Coordinate;
-import Helpers.Direction;
+import Game.exceptions.UnExpectedGameInterruptException;
+import Helpers.Builder.BuilderException;
+import Helpers.Builder.IBuilder;
+import Helpers.*;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Logger.LoggerManager;
 import Maze.Candy.CandyRecord;
@@ -11,7 +12,7 @@ import Maze.Cell;
 import Maze.ELocation;
 import Maze.ELocationType;
 import Maze.Maze;
-import Maze.MazeBuilder.Exceptions.MazeBuilderException;
+import Maze.MazeGenerator.MazeGenerator;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -21,9 +22,7 @@ import player.HumanPlayer.HumanPlayer;
 import player.MoveStatus;
 import player.exceptions.PlayerNotRunning;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static Logger.LoggerManager.logger;
@@ -58,32 +57,31 @@ public class MazeGame {
      */
     private final Subject onDestroySub = PublishSubject.create();
 
+    private final Subject<BasePlayer> onFinishGame = PublishSubject.create();
 
     private GameState gameState = GameState.NOT_READY;
 
-
     // region Create MazeGame from Step
 
-    public static MazeGame createMazeGameFromStep(GameStep step) throws MazeBuilderException {
-        ComputerPlayer computerPlayer = step.getPlayer();
-        List<BasePlayer> players = new ArrayList<>();
+    public static MazeGame createMazeGameFromStep(GameStep step) throws BuilderException {
+        return MazeGame.createMazeGameFromStep(step, Collections.EMPTY_LIST, false);
+    }
 
-        if(computerPlayer != null) {
-            players.add(computerPlayer);
-        }
-
+    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players) throws BuilderException {
         return MazeGame.createMazeGameFromStep(step, players, false);
     }
 
-    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players) throws MazeBuilderException {
-        return MazeGame.createMazeGameFromStep(step, players, false);
-    }
-
-    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players, boolean atEntrances) throws MazeBuilderException {
+    public static MazeGame createMazeGameFromStep(GameStep step, List<BasePlayer> players, boolean atEntrances) throws BuilderException {
         ObjectAssertion.requireNonNull(step, "Step can't be null");
         ObjectAssertion.requireNonNull(players, "Players can't be null");
 
-        return new MazeGame(step.build(), players, atEntrances);
+        Builder builder = step.build();
+
+        if (!players.isEmpty()) {
+            builder.addManyPlayers(players, atEntrances);
+        }
+
+        return builder.build();
     }
 
     // endregion
@@ -114,12 +112,24 @@ public class MazeGame {
         // The `movementListenerManager` can be null until the game init (can add in start play game)
 
         this.maze = maze;
-        this.players = players;
+
+        // Clone the players
+        this.players = clonePlayers(players);
+
         this.movementListenerManager = movementListenerManager;
 
         if (!arePlayersAtPosition) {
             setAllPlayersLocationAtEntrances();
         }
+    }
+
+    private static List<BasePlayer> clonePlayers(List<BasePlayer> players) {
+        return players.stream().filter(Objects::nonNull).map(Utils::clone).collect(Collectors.toList());
+    }
+
+    {
+        onFinishGame
+                .subscribe(this::gameFinished, throwable -> this.gameFinished(null));
     }
 
     private void setAllPlayersLocationAtEntrances() {
@@ -257,7 +267,7 @@ public class MazeGame {
         ObjectAssertion.requireNonNull(this.maze, "Maze can't be null");
         return this.maze.getCandies()
                 .stream()
-                .filter(candyLoc -> candyLoc.candy.getTimeToLive() > 0)
+                .filter(candyLoc ->  candyLoc.candy.getTimeToLive() > 0)
                 .map(this::createControlledTimerForTimeLimitedCandy)
                 .collect(Collectors.toList());
     }
@@ -365,8 +375,11 @@ public class MazeGame {
         player.onPlayerFinished();
 
         if (player instanceof HumanPlayer) {
+
             movementListenerManager.removeListenerForPlayer((HumanPlayer) player);
         }
+
+        onFinishGame.onNext(player);
     }
 
     /**
@@ -487,7 +500,7 @@ public class MazeGame {
     }
 
     public void onFinishGame() {
-        this.onDestroySub.onNext(true);
+        onFinishGame.onError(new UnExpectedGameInterruptException());
     }
 
     public void addPlayer(BasePlayer player) {
@@ -507,7 +520,7 @@ public class MazeGame {
             setEntranceForLatePlayer(player);
         }
 
-        if(this.isNewPlayerNeedToBeInitialized()) {
+        if (this.isNewPlayerNeedToBeInitialized()) {
             initPlayerCallback = initSinglePlayer(player);
 
             if (initPlayerCallback != null) {
@@ -564,6 +577,24 @@ public class MazeGame {
                 this.gameState == GameState.NOT_READY;
     }
 
+    private void gameFinished(BasePlayer player) {
+        onDestroySub.onNext(true);
+
+        startPlayersCallbacks.clear();
+
+        this.players.forEach(basePlayer -> {
+            if (player == basePlayer) {
+                return;
+            }
+
+            basePlayer.onPlayerFinished();
+
+            if (basePlayer instanceof HumanPlayer) {
+                movementListenerManager.removeListenerForPlayer((HumanPlayer) basePlayer);
+            }
+        });
+    }
+
     public Maze getMaze() {
         return maze;
     }
@@ -583,4 +614,184 @@ public class MazeGame {
     public GameState getGameState() {
         return gameState;
     }
+
+    public Observable<BasePlayer> getOnFinishGameObs() {
+        return onFinishGame;
+    }
+
+    // region Builder
+
+    public static class Builder implements SuccessCloneable<Builder>, IBuilder<MazeGame> {
+
+        /**
+         * 4 types of maze creation
+         */
+        private MazeGenerator mazeGenerator;
+        private MazeGenerator.Builder mazeGeneratorBuilder;
+
+        private Maze maze;
+        private GameStep.BuiltinStep step;
+
+        private List<BasePlayer> players = new LinkedList<>();
+        private boolean atEntrances;
+
+        public MazeGenerator getMazeGenerator() {
+            return mazeGenerator;
+        }
+
+        public Builder setMazeGenerator(MazeGenerator mazeGenerator) {
+            this.mazeGenerator = mazeGenerator;
+
+            if (mazeGenerator != null) {
+                this.mazeGeneratorBuilder = null;
+                this.maze = null;
+                this.step = null;
+            }
+            return this;
+        }
+
+        public MazeGenerator.Builder getMazeGeneratorBuilder() {
+            return mazeGeneratorBuilder;
+        }
+
+        public Builder setMazeGeneratorBuilder(MazeGenerator.Builder mazeGeneratorBuilder) {
+            this.mazeGeneratorBuilder = mazeGeneratorBuilder;
+
+            if (mazeGeneratorBuilder != null) {
+                this.mazeGenerator = null;
+                this.maze = null;
+                this.step = null;
+            }
+
+            return this;
+        }
+
+        public Maze getMaze() {
+            return maze;
+        }
+
+        public Builder setMaze(Maze maze) {
+            this.maze = maze;
+
+            if (this.maze != null) {
+                this.mazeGeneratorBuilder = null;
+                this.mazeGenerator = null;
+                this.step = null;
+            }
+
+            return this;
+        }
+
+        public GameStep.BuiltinStep getStep() {
+            return step;
+        }
+
+        public Builder setStep(GameStep.BuiltinStep step) {
+            this.step = step;
+
+            if (this.step != null) {
+                this.mazeGeneratorBuilder = null;
+                this.mazeGenerator = null;
+                this.maze = null;
+            }
+
+            return this;
+        }
+
+        public List<BasePlayer> getPlayers() {
+            return players;
+        }
+
+        // region Players
+
+        public Builder addSinglePlayer(BasePlayer player) {
+            return addSinglePlayer(player, false);
+        }
+
+        public Builder addSinglePlayer(BasePlayer player, boolean atEntrances) {
+            if (this.players == null) {
+                List<BasePlayer> players = new LinkedList<>();
+                players.add(player);
+                return setPlayers(players, atEntrances);
+            }
+
+            if (this.atEntrances != atEntrances) {
+                this.atEntrances = false;
+            }
+
+            this.players.add(player);
+
+            return this;
+        }
+
+
+        public Builder addManyPlayers(List<BasePlayer> players) {
+            return addManyPlayers(players, false);
+        }
+
+        public Builder addManyPlayers(List<BasePlayer> players, boolean atEntrances) {
+            if (this.players == null) {
+                return this.setPlayers(players);
+            }
+
+            if (this.atEntrances != atEntrances) {
+                this.atEntrances = false;
+            }
+
+            this.players.addAll(players);
+
+            return this;
+        }
+
+        public Builder setPlayers(List<BasePlayer> players) {
+            return setPlayers(players, false);
+        }
+
+        public Builder setPlayers(List<BasePlayer> players, boolean atEntrances) {
+            this.players = players == null ? null : new ArrayList<>(players);
+            this.atEntrances = atEntrances;
+            return this;
+        }
+
+        // endregion
+
+        @Override
+        public MazeGame build() throws BuilderException {
+            if (!this.canBuild()) {
+                throw new BuilderException("Maze Game");
+            }
+
+            if (this.players != null) {
+                if (maze != null) {
+                    return new MazeGame(maze, this.players, this.atEntrances);
+                } else if (mazeGenerator != null) {
+                    return new MazeGame(mazeGenerator.create(), this.players, this.atEntrances);
+                } else if (mazeGeneratorBuilder != null) {
+                    return new MazeGame(mazeGeneratorBuilder.build(), this.players, this.atEntrances);
+                } else {
+                    return MazeGame.createMazeGameFromStep(step.getStep(), this.players, this.atEntrances);
+                }
+            } else {
+                return MazeGame.createMazeGameFromStep(step.getStep());
+            }
+        }
+
+        private boolean canBuild() {
+            return ((maze != null || mazeGenerator != null || mazeGeneratorBuilder != null) && players != null) || step != null;
+        }
+
+        @SuppressWarnings("MethodDoesntCallSuperMethod")
+        @Override
+        public Builder clone() {
+            return new MazeGame.Builder()
+                    .setPlayers(new ArrayList<>(players), atEntrances)
+                    .setMazeGenerator(mazeGenerator)
+                    .setMazeGeneratorBuilder(Utils.clone(mazeGeneratorBuilder))
+                    .setMaze(maze)
+                    .setStep(step);
+        }
+    }
+
+    // endregion
+
 }

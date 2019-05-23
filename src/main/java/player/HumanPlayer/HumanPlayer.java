@@ -5,13 +5,17 @@ import Helpers.CallbackFns.ArgsVoidCallbackFunction;
 import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.ThrowableAssertions.ObjectAssertion;
+import Helpers.Utils;
 import Logger.LoggerManager;
 import player.ActionsKeys;
 import player.BasePlayer;
 import player.exceptions.PlayerNotRunning;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -22,8 +26,8 @@ import java.util.Objects;
  * @implNote Implement {@link KeyListener} for moving with the keyboard
  */
 public class HumanPlayer extends BasePlayer implements KeyListener {
-    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> specialKeys = this.getDefaultSpecialKeyAssignment();
-    private Map<Integer, NoArgsVoidCallbackFunction> specialTypedKeys = this.getDefaultSpecialTypedKeyAssignment();
+    private AbstractMap<Integer, ActionKey> specialKeys = this.getDefaultSpecialKeyAssignment();
+    private AbstractMap<Integer, ActionKey> specialTypedKeys = this.getDefaultSpecialTypedKeyAssignment();
 
 
     private Map<Integer, Direction> directionKeys = this.getDefaultKeyAssignment();
@@ -63,45 +67,45 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     }
 
     private Map<Integer, Direction> createKeyAssignment(ActionsKeys actionsKeys) {
-        assert actionsKeys != null;
+        ObjectAssertion.requireNonNull(actionsKeys, "Actions Keys can't be null");
         return actionsKeys.convertToDirectionsKey();
     }
 
-    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> getDefaultSpecialKeyAssignment() {
+    private AbstractMap<Integer, ActionKey> getDefaultSpecialKeyAssignment() {
         return this.createSpecialKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
     }
 
-    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(ActionsKeys actionsKeys) {
-        assert actionsKeys != null;
+    private AbstractMap<Integer, ActionKey> createSpecialKeyAssignment(ActionsKeys actionsKeys) {
+        ObjectAssertion.requireNonNull(actionsKeys, "Actions Keys can't be null");
         return createSpecialKeyAssignment(
                 actionsKeys.getSpeedKeyCode()
         );
     }
 
-    private Map<Integer, ArgsVoidCallbackFunction<Boolean>> createSpecialKeyAssignment(int speedKeyCode) {
-        Map<Integer, ArgsVoidCallbackFunction<Boolean>> keyAssignment = new HashMap<>();
+    private AbstractMap<Integer, ActionKey> createSpecialKeyAssignment(int speedKeyCode) {
+        AbstractMap<Integer, ActionKey> keyAssignment = new HashMap<>();
 
-        keyAssignment.put(speedKeyCode, this::onSpeedKeyPressed);
+        keyAssignment.put(speedKeyCode, new ActionKey(ActionType.SPEED, this::onSpeedKeyPressed));
 
         return keyAssignment;
     }
 
 
-    private Map<Integer, NoArgsVoidCallbackFunction> getDefaultSpecialTypedKeyAssignment() {
+    private AbstractMap<Integer, ActionKey> getDefaultSpecialTypedKeyAssignment() {
         return this.createSpecialTypedKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
     }
 
-    private Map<Integer, NoArgsVoidCallbackFunction> createSpecialTypedKeyAssignment(ActionsKeys actionsKeys) {
+    private AbstractMap<Integer, ActionKey> createSpecialTypedKeyAssignment(ActionsKeys actionsKeys) {
         assert actionsKeys != null;
         return createSpecialTypedKeyAssignment(
                 actionsKeys.getExitKeyCode()
         );
     }
 
-    private Map<Integer, NoArgsVoidCallbackFunction> createSpecialTypedKeyAssignment(int exitKeyCode) {
-        Map<Integer, NoArgsVoidCallbackFunction> typedKeyAssignment = new HashMap<>();
+    private AbstractMap<Integer, ActionKey> createSpecialTypedKeyAssignment(int exitKeyCode) {
+        AbstractMap<Integer, ActionKey> typedKeyAssignment = new HashMap<>();
 
-        typedKeyAssignment.put(exitKeyCode, this::onExit);
+        typedKeyAssignment.put(exitKeyCode, new ActionKey(ActionType.EXIT, t -> onExit()));
 
         return typedKeyAssignment;
     }
@@ -170,7 +174,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         pressedKeys.remove(keyCode);
 
         if (specialTypedKeys.containsKey(keyCode)) {
-            specialTypedKeys.get(keyCode).run();
+            specialTypedKeys.get(keyCode).run(false);
         }
 
         if (specialKeys.containsKey(keyCode)) {
@@ -236,6 +240,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
         if (this.runnablePlayer != null) {
             LoggerManager.logger.info("[Player Finish][Stopping Thread]");
             this.runnablePlayer.stop();
+            this.runnablePlayer.resume();
 
             this.runnablePlayer = null;
             this.playerThread = null;
@@ -263,5 +268,47 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
                 pressedKeys.equals(humanPlayer.pressedKeys) &&
                 Objects.equals(playerThread, humanPlayer.playerThread) &&
                 Objects.equals(runnablePlayer, humanPlayer.runnablePlayer);
+    }
+
+    @Override
+    public BasePlayer clone() {
+        return new HumanPlayer(Utils.clone(getLocation()), getName(), getColor(), createActionsKey());
+    }
+
+    private ActionsKeys createActionsKey() {
+        ActionsKeys actionsKeys = new ActionsKeys();
+
+        this.directionKeys.forEach((key, direction) -> {
+            actionsKeys.setDirectionKeyCode(direction, key);
+        });
+
+        this.specialKeys.forEach((key, actionKey) -> {
+            actionsKeys.setActionKeyCode(actionKey.type, key);
+        });
+
+        this.specialTypedKeys.forEach((key, actionKey) -> {
+            actionsKeys.setActionKeyCode(actionKey.type, key);
+        });
+
+        return actionsKeys;
+    }
+
+    private class ActionKey {
+        private ActionType type;
+        private ArgsVoidCallbackFunction<Boolean> action;
+
+        public ActionKey(ActionType type, ArgsVoidCallbackFunction<Boolean> action) {
+            this.type = type;
+            this.action = action;
+        }
+
+        public ActionType getType() {
+            return type;
+        }
+
+        void run(boolean value) {
+            action.run(value);
+        }
+
     }
 }

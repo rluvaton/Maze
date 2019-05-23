@@ -3,6 +3,7 @@ package GUI;
 import GUI.MazeGame.MazePanel;
 import Game.GameStep;
 import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -42,7 +43,7 @@ public class GameWindow {
         main(getStepFromArgs(args));
     }
 
-    private static GameStep getStepFromArgs(String[] args) {
+    private static GameStep.BuiltinStep getStepFromArgs(String[] args) {
 
         if(args.length == 0 || (args.length == 1 && isInDebugMode(args))) {
             return null;
@@ -56,7 +57,7 @@ public class GameWindow {
             stepName = args[1];
         }
 
-        GameStep step = null;
+        GameStep.BuiltinStep step = null;
 
         switch (stepName) {
             case "very-easy":
@@ -104,10 +105,10 @@ public class GameWindow {
         this.wrapper.setPreferredSize(wrapperSize);
     }
 
-    public static void main(GameStep step) {
+    public static void main(GameStep.BuiltinStep step) {
         JFrame frame = new JFrame("GameWindow");
 
-        GameWindow.step = step;
+        GameWindow.step = step.getStep();
         GameWindow gameWindow = new GameWindow();
         gameWindow.init();
 
@@ -216,24 +217,19 @@ public class GameWindow {
     private MazePanel start(GameStep step) {
         assert step != null;
 
-        Maze maze;
+        MazeGame.Builder builder = step.build()
+                .addManyPlayers(getGamePlayer());
+
+        MazeGame game;
 
         try {
-            maze = step.build();
-        } catch (MazeBuilderException e) {
+            game = builder.build();
+        } catch (BuilderException e) {
             e.printStackTrace();
             return null;
         }
 
-
-        List<BasePlayer> players = getGamePlayer();
-
-        ComputerPlayer player = step.getPlayer();
-        if (player != null) {
-            players.add(player);
-        }
-
-        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
+        MazePanel mazePanel = new MazePanel(game);
         mazePanel.setFocusable(true);
         mazePanel.requestFocusInWindow();
 

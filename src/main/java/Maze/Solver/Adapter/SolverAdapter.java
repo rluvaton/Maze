@@ -45,4 +45,6 @@ public abstract class SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     public abstract Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception;
+
+    public abstract SolverAdapter clone();
 }

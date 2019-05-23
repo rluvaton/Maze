@@ -1,6 +1,8 @@
-package GUI.Play;
+package GUI.Play.CustomGame;
 
 public enum PlayStep {
+
+    STEP_SELECTION("StepSelection"),
 
     // 1
     SELECT_MAZE_SHAPE("SelectMazeShape&Dimensions"),

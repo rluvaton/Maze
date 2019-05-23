@@ -1,6 +1,5 @@
 package GUI.MazeGame;
 
-import GUI.WindowCard;
 import Game.GameState;
 import Game.MazeGame;
 import Game.MovementListenerManager;
@@ -8,6 +7,7 @@ import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Maze;
+import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import player.BasePlayer;
@@ -24,7 +24,7 @@ import java.util.List;
 
 import static Logger.LoggerManager.logger;
 
-public class MazePanel extends JPanel implements WindowCard {
+public class MazePanel extends JPanel {
 
     private static final int DEFAULT_CELL_EDGE = 25;
 
@@ -97,6 +97,11 @@ public class MazePanel extends JPanel implements WindowCard {
         loadArrowIcons();
 
         this.setFocusable(true);
+
+        game.getOnFinishGameObs().subscribe(
+                basePlayer -> onDestroySub.onNext(true),
+                throwable -> onDestroySub.onNext(true)
+        );
     }
 
     private void loadArrowIcons() {
@@ -325,6 +330,10 @@ public class MazePanel extends JPanel implements WindowCard {
     public void onFinishGame() {
         this.onDestroySub.onNext(true);
         game.onFinishGame();
+    }
+
+    public Observable<BasePlayer> getOnFinishGameObs() {
+        return game.getOnFinishGameObs();
     }
 
     public Dimension getMazeDimension() {

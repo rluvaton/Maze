@@ -1,6 +1,8 @@
 package Maze.Candy;
 
 
+import Helpers.Builder.IBuilder;
+
 /**
  * Candy in cell
  */
@@ -78,7 +80,7 @@ public abstract class Candy {
 
     // region Builder
 
-    public abstract static class Builder {
+    public abstract static class Builder implements IBuilder<Candy> {
 
         protected CandyPowerType type;
         protected int candyStrength = 0;

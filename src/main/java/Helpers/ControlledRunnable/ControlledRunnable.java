@@ -1,17 +1,19 @@
 package Helpers.ControlledRunnable;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class ControlledRunnable implements Runnable {
 
-    private volatile boolean running = true;
-    private volatile boolean paused = false;
+    private volatile AtomicBoolean running = new AtomicBoolean(true);
+    private volatile AtomicBoolean paused = new AtomicBoolean(false);
     private final Object pauseLock = new Object();
 
     protected final void threadActionManagement() throws InterruptedException, RunnableStoppedRunningException {
-        if (!this.running) {
+        if (!this.running.getAcquire()) {
             throw new RunnableStoppedRunningException();
         }
 
-        if (paused) {
+        if (paused.getAcquire()) {
             synchronized (pauseLock) {
                 pauseLock.wait();
                 /*
@@ -25,14 +27,14 @@ public abstract class ControlledRunnable implements Runnable {
             }
 
             // running might have changed since we paused
-            if (!running) {
+            if (!running.getAcquire()) {
                 throw new RunnableStoppedRunningException();
             }
         }
     }
 
     public void stop() {
-        running = false;
+        running.compareAndSet(true, false);
         // you might also want to interrupt() the Thread that is
         // running this Runnable, too, or perhaps call:
         resume();
@@ -41,12 +43,12 @@ public abstract class ControlledRunnable implements Runnable {
 
     public void pause() {
         // you may want to throw an IllegalStateException if !running
-        paused = true;
+        paused.compareAndSet(false, true);
     }
 
     public final void resume() {
         synchronized (pauseLock) {
-            paused = false;
+            paused.compareAndSet(true, false);
             pauseLock.notifyAll(); // Unblocks thread
         }
     }

@@ -139,4 +139,9 @@ public class DFSSolverAdapter extends SolverAdapter {
         ) ? null : cells[cellLocation.getRow()][cellLocation.getColumn()];
 
     }
+
+    @Override
+    public SolverAdapter clone() {
+        return new DFSSolverAdapter();
+    }
 }

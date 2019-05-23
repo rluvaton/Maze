@@ -1,9 +1,7 @@
 package Maze.MazeGenerator;
 
-import Helpers.Coordinate;
-import Helpers.Direction;
-import Helpers.RandomHelper;
-import Helpers.Utils;
+import Helpers.*;
+import Helpers.Builder.IBuilder;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Candy.PortalCandy;
@@ -446,9 +444,7 @@ public class MazeGenerator {
         }
     }
 
-
-
-    public static class Builder {
+    public static class Builder implements IBuilder<Maze>, SuccessCloneable<Builder> {
         private IMazeBuilder mazeBuilder;
         private SolverAdapter solverAdapter;
 
@@ -546,11 +542,26 @@ public class MazeGenerator {
         }
 
         public Maze build() throws MazeBuilderException {
-            return new MazeGenerator(this.mazeBuilder, this.solverAdapter)
+            return new MazeGenerator(this.mazeBuilder.clone(), this.solverAdapter.clone())
                     .generateMaze(this.height, this.width)
                     .createRandomEntrancesAndExists(this.numOfEntrance, this.numOfExits, this.minDistance)
                     .generateRandomCandies(this.candyConfig, this.totalCandies)
                     .create();
+        }
+
+        @SuppressWarnings({"MethodDoesntCallSuperMethod"})
+        @Override
+        public MazeGenerator.Builder clone() {
+            return new MazeGenerator.Builder()
+                    .setMazeBuilder(mazeBuilder.clone())
+                    .setSolverAdapter(solverAdapter.clone())
+                    .setTotalCandies(totalCandies)
+                    .setCandyConfig(candyConfig.clone())
+                    .setNumOfExits(numOfExits)
+                    .setNumOfEntrance(numOfEntrance)
+                    .setMinDistance(minDistance)
+                    .setWidth(width)
+                    .setHeight(height);
         }
     }
 

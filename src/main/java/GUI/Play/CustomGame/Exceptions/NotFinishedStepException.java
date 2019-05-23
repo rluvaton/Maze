@@ -1,6 +1,6 @@
-package GUI.Play.Exceptions;
+package GUI.Play.CustomGame.Exceptions;
 
-import GUI.Play.IPlayConfigStep;
+import GUI.Play.CustomGame.IPlayConfigStep;
 
 public class NotFinishedStepException extends Exception {
 

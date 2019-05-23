@@ -43,4 +43,6 @@ public abstract class BaseMazeBuilder implements IMazeBuilder {
         exits.forEach(this::buildExit);
         return this;
     }
+
+    public abstract IMazeBuilder clone();
 }

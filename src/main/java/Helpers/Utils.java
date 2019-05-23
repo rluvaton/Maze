@@ -1,7 +1,9 @@
 package Helpers;
 
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.ELocation;
 import Maze.MazeBuilder.IMazeBuilder;
+import player.BasePlayer;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -9,8 +11,13 @@ import java.util.stream.Stream;
 public class Utils {
     /**
      * Helpers.Helpers Instance
+     * TODO - Instead of creating this a singleton make all functions static
      */
     public static final Utils Instance = new Utils();
+
+    public static <T> Optional<T> getOptional(T value) {
+        return Optional.ofNullable(value);
+    }
 
     public final Coordinate moveCoordinatesToDirection(Coordinate pos, Direction dir) {
         assert pos != null && dir != null;
@@ -154,9 +161,57 @@ public class Utils {
         return reversed;
     }
 
-    public <K, V> Map<K, V> cloneMap(Map<K, V> source, Map<K, V> cloneTo) {
-        source.forEach(cloneTo::put);
+    public static  <K, V> AbstractMap<K, V> deepCloneMap(AbstractMap<K, V> source, CallbackFns.ArgsCallbackFunction<K> cloneKeyFn, CallbackFns.ArgsCallbackFunction<V> cloneValueFn) {
+        if(source == null) {
+            return null;
+        }
+
+        ObjectAssertion.requireNonNull(cloneKeyFn, "Clone Key Function can't be null");
+        ObjectAssertion.requireNonNull(cloneValueFn, "Clone Value Function can't be null");
+
+        AbstractMap<K, V> cloneTo = new HashMap<>();
+
+        for (Map.Entry<K, V> entry : source.entrySet()) {
+            K key = cloneKeyFn.run(entry.getKey());
+            V value = cloneValueFn.run(entry.getValue());
+
+            cloneTo.put(key, value);
+        }
         return cloneTo;
+    }
+
+    public static <T> T[][] cloneMatrix(T[][] matrixToClone) {
+        if (matrixToClone == null) {
+            return null;
+        }
+
+        T[][] clonedMatrix = matrixToClone.clone();
+
+        for (int i = 0; i < matrixToClone.length; i++) {
+            if (clonedMatrix[i] == null) {
+                continue;
+            }
+
+            clonedMatrix[i] = clonedMatrix[i].clone();
+
+            for (int j = 0; j < clonedMatrix[i].length; j++) {
+                clonedMatrix[i][j] = clone(clonedMatrix[i][j]);
+            }
+        }
+
+        return clonedMatrix;
+    }
+
+    private static <T> T clone(T itemToClone) {
+        if (itemToClone instanceof SuccessCloneable) {
+            return ((SuccessCloneable<T>) itemToClone).clone();
+        }
+
+        return itemToClone;
+    }
+
+    public static <T extends SuccessCloneable<T>> T clone(T cloneable) {
+        return cloneable == null ? null : cloneable.clone();
     }
 }
 

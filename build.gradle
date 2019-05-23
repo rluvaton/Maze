@@ -28,6 +28,7 @@ dependencies {
     // Tests
     compile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testCompile 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testImplementation 'org.hamcrest:hamcrest:2.1'
 }
 
 group = 'com.rluvaton'
