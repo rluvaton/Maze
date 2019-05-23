@@ -267,7 +267,7 @@ public class MazeGame {
         ObjectAssertion.requireNonNull(this.maze, "Maze can't be null");
         return this.maze.getCandies()
                 .stream()
-                .filter(candyLoc -> candyLoc.candy.getTimeToLive() > 0)
+                .filter(candyLoc ->  candyLoc.candy.getTimeToLive() > 0)
                 .map(this::createControlledTimerForTimeLimitedCandy)
                 .collect(Collectors.toList());
     }

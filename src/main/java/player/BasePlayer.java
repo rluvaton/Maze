@@ -196,7 +196,6 @@ public abstract class BasePlayer implements SuccessCloneable<BasePlayer> {
     }
 
     public void onPlayerTeleported() throws PlayerNotRunning {
-
     }
 
     public void onPlayerFinished() {

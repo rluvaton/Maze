@@ -2,33 +2,36 @@ package player.ComputerPlayer;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Helpers.Utils;
-import Logger.LoggerManager;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Cell;
 import Maze.Maze;
 import player.BasePlayer;
+import player.exceptions.PlayerAlreadyHaveRunningThreadException;
 import player.exceptions.PlayerNotRunning;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static Logger.LoggerManager.logger;
 
 public class ComputerPlayer extends BasePlayer {
 
     private Maze maze;
-    private Cell currentCell;
+    private volatile Cell currentCell;
     private Coordinate endingLocation;
 
     private Thread playerThread = null;
     private RunnableComputerPlayer runnablePlayer = null;
     private volatile boolean isCurrentlyPlaying = false;
-    private boolean returnAfterTeleport = false;
+    private AtomicBoolean returnAfterTeleport = new AtomicBoolean(false);
 
     private int defaultDelayMovementInMs = 100;
-    private Stack<Direction> returnToPathStack = new Stack<>();
 
     /**
      * Human Player Constructor
@@ -102,8 +105,15 @@ public class ComputerPlayer extends BasePlayer {
 
         if (this.runnablePlayer != null) {
             this.runnablePlayer.stop();
+            this.runnablePlayer = null;
         }
-        this.runnablePlayer = new RunnableComputerPlayer(this, steps, stepSpeedMs);
+
+        try {
+            this.runnablePlayer = new RunnableComputerPlayer(this, steps, stepSpeedMs);
+        } catch (PlayerAlreadyHaveRunningThreadException e) {
+            handlePlayerAlreadyHaveRunningThreadException(e);
+        }
+
         this.playerThread = createPlayerThread();
         return this.playerThread;
     }
@@ -127,7 +137,7 @@ public class ComputerPlayer extends BasePlayer {
 
     @Override
     public void pause() throws PlayerNotRunning {
-        if(runnablePlayer == null) {
+        if (runnablePlayer == null) {
             throw new PlayerNotRunning();
         }
         this.runnablePlayer.pause();
@@ -135,7 +145,7 @@ public class ComputerPlayer extends BasePlayer {
 
     @Override
     public void resume() throws PlayerNotRunning {
-        if(runnablePlayer == null) {
+        if (runnablePlayer == null) {
             throw new PlayerNotRunning();
         }
         this.runnablePlayer.resume();
@@ -143,12 +153,7 @@ public class ComputerPlayer extends BasePlayer {
 
     @Override
     public void onPlayerTeleported() throws PlayerNotRunning {
-        if (returnAfterTeleport) {
-            return;
-        }
-
-        if(!this.returnToPathStack.empty()) {
-            this.runnablePlayer.move(this.returnToPathStack.pop());
+        if (returnAfterTeleport.getAcquire()) {
             return;
         }
 
@@ -173,22 +178,37 @@ public class ComputerPlayer extends BasePlayer {
             System.out.println("steps length are 0");
         }
 
-        if (!isNewPathBetter(steps)) {
-            System.out.println("continue with the same path");
-
-            try {
-                this.continueWithOldPathAfterTeleportation();
-            } catch (PlayerNotRunning playerNotRunning) {
-                System.out.println("player on the first step teleported - " + this.runnablePlayer.getCurrentStep() + " finding new path");
-                changePlayerPath(steps);
-            }
-        } else {
+        if (isNewPathBetter(steps)) {
             changePlayerPath(steps);
-
+        } else {
+            stayWithSamePathAfterTeleported(steps);
         }
 
-        this.runnablePlayer.resume();
+        if(this.runnablePlayer.isThereStepsToRunUntilFinished()) {
+            this.runnablePlayer.listenToStepsToRunFinished().subscribe((integer, throwable) -> {
+                if (throwable != null) {
+                    logger.error("listenToStepsToRunFinished error", throwable);
+                    throwable.printStackTrace();
+                    return;
+                }
 
+                this.runnablePlayer.resumeAndResetStepsToRun();
+            });
+        } else {
+            this.runnablePlayer.resumeAndResetStepsToRun();
+        }
+    }
+
+    private void stayWithSamePathAfterTeleported(Direction[] steps) {
+        logger.debug("[ComputerPlayer]", "[" + this.getName() + "]", "[On Teleport]", "continue with the same path");
+
+        try {
+            this.continueWithOldPathAfterTeleportation();
+        } catch (PlayerNotRunning playerNotRunning) {
+            logger.error("Player not running exception", playerNotRunning);
+            logger.debug("player on the first step teleported - " + this.runnablePlayer.getCurrentStep() + " finding new path");
+            changePlayerPath(steps);
+        }
     }
 
 
@@ -197,62 +217,69 @@ public class ComputerPlayer extends BasePlayer {
     }
 
     private void continueWithOldPathAfterTeleportation() throws PlayerNotRunning {
-        if (this.currentCell == null) {
-            throw new IllegalStateException("Current Cell can't be null");
-        }
+        ObjectAssertion.requireNonNull(currentCell, "Current Cell can't be null");
 
         // TODO - HANDLE IF IN MIDDLE OF A THIS FUNCTION THE CANDY DISAPPEAR
 
+        // Direction set to right with no true reason it will only affect if it will need to handle nested teleportation
         Direction directionToMove = Direction.RIGHT;
 
         if (isThereNearWall()) {
+            // In prefect maze this will always happen
+            logger.debug("[Computer Player]", "[" + this.getName() + "]", "[Continue with old path]", "Move to wall");
             moveToWall();
             return;
-        } else if(hasNearCellWithoutTeleportCandy()) {
+        } else if (hasNearCellWithoutTeleportCandy()) {
+            logger.debug("[Computer Player]", "[" + this.getName() + "]", "[Continue with old path]", "Move to other cell without teleport candy");
             moveAndReturn(getDirectionOfNearCellWithoutTeleportCandy());
             return;
         } else {
             // TODO - HANDLE NESTED TELEPORTATION
-            System.out.println("No Walls or cells without teleportation candies ");
+            logger.debug("[Computer Player]", "[" + this.getName() + "]", "Continuing with the same path", "No Walls or cells without teleportation candies");
         }
 
         Direction oppositeStep = Direction.getOppositeDirection(directionToMove);
-        this.returnToPathStack.push(oppositeStep);
-        this.runnablePlayer.move(directionToMove);
+        this.runnablePlayer.injectStep(oppositeStep);
 //        this.runnablePlayer.move(oppositeStep);
-
-        // TODO - Check if need to move to the same direction before the teleportation
     }
 
     private void moveToWall() {
         assert this.currentCell != null;
 
-        this.returnAfterTeleport = true;
-        synchronized (this.runnablePlayer) {
-            this.runnablePlayer.resume();
-            this.runnablePlayer.move(getNearWall());
-            this.runnablePlayer.pause();
-        }
-        this.returnAfterTeleport = false;
+        this.returnAfterTeleport.compareAndSet(false, true);
+
+        this.runnablePlayer.injectStep(getNearWall());
+
+        setReturnAfterTeleportWhenStepsToRunFinished();
+
+        // 2 because the it already stopped for other move
+        this.runnablePlayer.resumeForNSteps(2);
+
+    }
+
+    private void setReturnAfterTeleportWhenStepsToRunFinished() {
+        this.runnablePlayer.listenToStepsToRunFinished().subscribe((integer, throwable) -> {
+            if (throwable != null) {
+                logger.error("listenToStepsToRunFinished error", throwable);
+                throwable.printStackTrace();
+                return;
+            }
+
+            this.returnAfterTeleport.compareAndSet(true, false);
+        });
     }
 
     private void moveAndReturn(Direction direction) {
         assert direction != null;
 
-        this.returnAfterTeleport = true;
+        this.returnAfterTeleport.compareAndSet(false, true);
 
-        this.runnablePlayer.resume();
-        this.runnablePlayer.move(direction);
-        this.runnablePlayer.pause();
+        this.runnablePlayer.injectStep(direction);
+        this.runnablePlayer.injectStep(Direction.getOppositeDirection(direction));
 
-        Direction oppositeStep = Direction.getOppositeDirection(direction);
+        setReturnAfterTeleportWhenStepsToRunFinished();
 
-        this.runnablePlayer.resume();
-        this.runnablePlayer.move(oppositeStep);
-        this.runnablePlayer.pause();
-
-        this.returnAfterTeleport = false;
-
+        this.runnablePlayer.resumeForNSteps(3);
     }
 
     private boolean hasNearCellWithoutTeleportCandy() {
@@ -283,7 +310,7 @@ public class ComputerPlayer extends BasePlayer {
     }
 
     private boolean isNeighborDoesntHaveTeleportCandy(Map.Entry<Direction, Cell.NeighborCell> directionNeighborCellEntry) {
-        if(directionNeighborCellEntry == null) {
+        if (directionNeighborCellEntry == null) {
             return false;
         }
 
@@ -308,19 +335,33 @@ public class ComputerPlayer extends BasePlayer {
     }
 
     private boolean isThereNearWall() {
-        assert this.currentCell != null;
+        ObjectAssertion.requireNonNull(currentCell, "Current Cell can't be null");
         return this.currentCell.getNeighbors().containsValue(null);
     }
 
     private void changePlayerPath(Direction[] steps) {
-        this.returnToPathStack.removeAllElements();
 
+        this.playerThread.setName(this.playerThread.getName() + " - prev path");
         this.runnablePlayer.stop();
-        this.runnablePlayer = new RunnableComputerPlayer(this.runnablePlayer, steps);
+        RunnableComputerPlayer prevRunnable = this.runnablePlayer;
+        this.runnablePlayer = null;
+
+        try {
+            this.runnablePlayer = new RunnableComputerPlayer(prevRunnable, steps);
+        } catch (PlayerAlreadyHaveRunningThreadException e) {
+            handlePlayerAlreadyHaveRunningThreadException(e);
+            return;
+        }
 
         this.playerThread = createPlayerThread();
 
         this.playerThread.start();
+    }
+
+    private void handlePlayerAlreadyHaveRunningThreadException(PlayerAlreadyHaveRunningThreadException e) {
+        // This shouldn't happen because we setting the runnable player to null
+        logger.error("[Computer Player][Already Have Running Thread]");
+        e.printStackTrace();
     }
 
     private Coordinate findClosestExit(Maze maze) {
@@ -331,11 +372,10 @@ public class ComputerPlayer extends BasePlayer {
     @Override
     public void onPlayerFinished() {
         super.onPlayerFinished();
-        LoggerManager.logger.info("[Computer Player][onPlayerFinished]");
+        logger.info("[Computer Player][onPlayerFinished]");
 
-        this.returnToPathStack.removeAllElements();
         if (this.runnablePlayer != null) {
-            LoggerManager.logger.info("[Computer Player][Finish][Stopping Thread]");
+            logger.info("[Computer Player][Finish][Stopping Thread]");
 
             synchronized (runnablePlayer) {
                 runnablePlayer.stop();
@@ -344,11 +384,15 @@ public class ComputerPlayer extends BasePlayer {
             this.runnablePlayer = null;
         }
 
-        if(this.playerThread != null) {
+        if (this.playerThread != null) {
             this.playerThread = null;
         }
 
         isCurrentlyPlaying = false;
+    }
+
+    RunnableComputerPlayer getRunnablePlayer() {
+        return this.runnablePlayer;
     }
 
     @Override

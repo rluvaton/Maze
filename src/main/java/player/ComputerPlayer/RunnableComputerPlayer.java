@@ -1,18 +1,23 @@
 package player.ComputerPlayer;
 
 import Helpers.ControlledRunnable.ControlledRunnable;
+import Helpers.ControlledRunnable.RunnableStoppedRunningException;
 import Helpers.DebuggerHelper;
 import Helpers.Direction;
+import io.reactivex.Single;
 import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 import player.exceptions.InvalidDirectionException;
+import player.exceptions.PlayerAlreadyHaveRunningThreadException;
 import player.exceptions.PlayerNotRunning;
-import Helpers.ControlledRunnable.RunnableStoppedRunningException;
 
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static Logger.LoggerManager.logger;
 
@@ -27,31 +32,46 @@ public class RunnableComputerPlayer extends ControlledRunnable {
 
     private Subject onDestroySub = PublishSubject.create();
 
-    public RunnableComputerPlayer(ComputerPlayer player, Direction[] directions, int stepSpeedMs) {
+    private Queue<Direction> injectedSteps = new LinkedList<>();
+
+    private Subject<Integer> stepsToRunFinished = PublishSubject.create();
+
+    /**
+     * -1 as the value meaning that it shouldn't stop
+     */
+    private volatile AtomicInteger stepsToRunBeforePause = new AtomicInteger(-1);
+
+    public RunnableComputerPlayer(ComputerPlayer player, Direction[] directions, int stepSpeedMs) throws PlayerAlreadyHaveRunningThreadException {
         this(player, Arrays.asList(directions), stepSpeedMs);
     }
 
-    public RunnableComputerPlayer(ComputerPlayer player, List<Direction> directions, int stepSpeedMs) {
+    public RunnableComputerPlayer(RunnableComputerPlayer computerPlayer, Direction[] directions) throws PlayerAlreadyHaveRunningThreadException {
+        this(computerPlayer.player, Arrays.asList(directions), computerPlayer.stepSpeedMs);
+    }
+
+    public RunnableComputerPlayer(ComputerPlayer player, List<Direction> directions, int stepSpeedMs) throws PlayerAlreadyHaveRunningThreadException {
         this.player = player;
         this.directions = directions;
         this.stepSpeedMs = stepSpeedMs;
-    }
 
-    public RunnableComputerPlayer(RunnableComputerPlayer computerPlayer, Direction[] directions) {
-        this.player = computerPlayer.player;
-        this.directions = Arrays.asList(directions);
-        this.stepSpeedMs = computerPlayer.stepSpeedMs;
+        if (player.getRunnablePlayer() == this) {
+            throw new PlayerAlreadyHaveRunningThreadException();
+        }
     }
 
     @Override
     public void run() {
 
-        if(DebuggerHelper.isInDebugMode()) {
+        if (DebuggerHelper.isInDebugMode()) {
             waitToKey();
         }
 
         int size = this.directions.size();
         for (currentStep = 0; currentStep < size; currentStep++) {
+            if (moveTheInjectedStepsIfHaveSome()) {
+                break;
+            }
+
             if (moveInDirection(this.directions.get(currentStep))) {
                 break;
             }
@@ -60,7 +80,22 @@ public class RunnableComputerPlayer extends ControlledRunnable {
         destroy();
     }
 
+    private boolean moveTheInjectedStepsIfHaveSome() {
+        while (!this.injectedSteps.isEmpty()) {
+            if (moveInDirection(this.injectedSteps.poll())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private boolean moveInDirection(Direction direction) {
+        if(stepsToRunBeforePause.getAcquire() == 0) {
+            this.pause();
+            this.stepsToRunFinished.onNext(0);
+        }
+
         try {
             super.threadActionManagement();
         } catch (InterruptedException e) {
@@ -70,14 +105,13 @@ public class RunnableComputerPlayer extends ControlledRunnable {
             return true;
         }
 
-
-        if(DebuggerHelper.isInDebugMode()) {
+        if (DebuggerHelper.isInDebugMode()) {
             pause();
         }
 
         this.immediateMove(direction);
 
-        if(!DebuggerHelper.isInDebugMode()) {
+        if (!DebuggerHelper.isInDebugMode()) {
             delay();
         }
 
@@ -85,10 +119,9 @@ public class RunnableComputerPlayer extends ControlledRunnable {
     }
 
     public synchronized void move(Direction direction) {
-        if(moveInDirection(direction)) {
+        if (moveInDirection(direction)) {
             // should stop moving and exit the loop
         }
-//        this.directions.add(currentStep, direction);
     }
 
     private void immediateMove(Direction direction) {
@@ -101,6 +134,14 @@ public class RunnableComputerPlayer extends ControlledRunnable {
             }
 
             this.lastStep = direction;
+        }
+
+        updateStepsToRunBeforePause();
+    }
+
+    private void updateStepsToRunBeforePause() {
+        if (stepsToRunBeforePause.getAcquire() > -1) {
+            stepsToRunBeforePause.decrementAndGet();
         }
     }
 
@@ -129,7 +170,9 @@ public class RunnableComputerPlayer extends ControlledRunnable {
                             }
                         });
 
-                while (isKeyListenerThreadRunning);
+                while (isKeyListenerThreadRunning) {
+                    ;
+                }
 
                 logger.info("[Computer Player][Debug] Finishing thread " + Thread.currentThread().getName());
 
@@ -170,6 +213,52 @@ public class RunnableComputerPlayer extends ControlledRunnable {
         }
 
         return lastStep;
+    }
+
+    public void resumeUtilQueueFinished() {
+        this.stepsToRunBeforePause.set(this.injectedSteps.size());
+        this.resume();
+    }
+
+    public void resumeForNSteps(int n) {
+        if(n < -1) {
+            n = -1;
+        }
+
+        this.stepsToRunBeforePause.set(n);
+        this.resume();
+    }
+
+    public void resetStepsToRunBeforePause() {
+        this.stepsToRunBeforePause.set(-1);
+    }
+
+    public void resumeAndResetStepsToRun() {
+        this.resetStepsToRunBeforePause();
+        this.resume();
+    }
+
+    public void injectStep(Direction injectedStep) {
+        this.injectedSteps.add(injectedStep);
+    }
+
+    public boolean isThereStepsToRunUntilFinished() {
+        return this.stepsToRunBeforePause.get() != -1;
+    }
+
+    public void removeInjectedSteps() {
+        this.injectedSteps.clear();
+    }
+
+    public Single<Integer> listenToStepsToRunFinished() {
+        return this.stepsToRunFinished.firstOrError();
+    }
+
+    @Override
+    public void stop() {
+        removeInjectedSteps();
+        this.resetStepsToRunBeforePause();
+        super.stop();
     }
 
     private void destroy() {

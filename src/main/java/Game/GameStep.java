@@ -66,7 +66,7 @@ public class GameStep {
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(1, 200))
                 .setTypes(new CandyPowerType[]{CandyPowerType.Points})
-                .setTimeToLive(new IntegerConfiguration(-1));
+                .setTimeToLive(GenerateCandyConfig.NO_TIME);
 
         return new GameStep()
                 .setEdge(new IntegerConfiguration(10, 15))
@@ -103,26 +103,27 @@ public class GameStep {
     }
 
     private static GameStep getVeryHardGameStep() {
-        IntegerConfiguration edge = new IntegerConfiguration(25, 30);
-
         GenerateCandyConfig candyConfig = new GenerateCandyConfig()
                 .setStrengthPower(new IntegerConfiguration(-200, 200))
-                .setTypes(CandyPowerType.values())
-                .setTimeToLive(new IntegerConfiguration(10000, 35000));
+                // TODO - DEVELOPMENT ONLY - REMOVE THIS
+                .setTypes(new CandyPowerType[]{CandyPowerType.Location})
+                // TODO - DEVELOPMENT ONLY - RESTORE THIS
+                .setTimeToLive(GenerateCandyConfig.NO_TIME);
 
         return new GameStep()
 
-                .setHeight(edge)
-                .setWidth(edge)
+                .setEdge(new IntegerConfiguration(25, 30))
 
                 .setMinDistance(new IntegerConfiguration(5, 10))
                 .setEntrancesCount(new IntegerConfiguration(1))
                 .setExitsCount(new IntegerConfiguration(1))
 
                 .setWithComputerPlayer(true)
-                .setComputerPlayerSpeed(new IntegerConfiguration(200, 500))
+                // TODO - DEVELOPMENT ONLY - RESTORE THIS
+                .setComputerPlayerSpeed(new IntegerConfiguration(200))
 
-                .setTotalCandies(new IntegerConfiguration(10, 15))
+                // TODO - DEVELOPMENT ONLY - UPDATE THIS TO BE 15-30
+                .setTotalCandies(new IntegerConfiguration(40))
                 .setCandyConfig(candyConfig);
     }
 

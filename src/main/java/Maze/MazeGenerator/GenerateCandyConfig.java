@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 public class GenerateCandyConfig implements SuccessCloneable<GenerateCandyConfig> {
 
+    public static final IntegerConfiguration NO_TIME = new IntegerConfiguration(-1);
+
     public static IntegerConfiguration DEFAULT_TIME_TO_LIVE = new IntegerConfiguration(
             (int) TimeUnit.SECONDS.toMillis(20),
             (int) TimeUnit.MINUTES.toMillis(5)
