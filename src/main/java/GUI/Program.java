@@ -5,6 +5,7 @@ import GUI.Play.CustomGame.CustomGameCreatorCard;
 import GUI.Play.GameModeSelectionPanel;
 import GUI.Play.StepsGame.StepGameCreatorCard;
 import GUI.Stats.UsersStatPanel;
+import GUI.Utils.GuiHelper;
 import GUI.Welcome.WelcomePanel;
 import Game.GameStep;
 import Game.MazeGame;
@@ -16,10 +17,11 @@ import player.ComputerPlayer.ComputerPlayer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Optional;
 
 import static Logger.LoggerManager.logger;
 
-public class Window {
+public class Program {
     private JPanel containerPanel;
     private JPanel cardsContainer;
 
@@ -40,12 +42,10 @@ public class Window {
 
     private CardName currentCardName = null;
     private CardName prevCardName = null;
-    private Frame frame;
+    private static Frame frame;
 
-    public Window(Frame frame) {
+    public Program() {
         ObjectAssertion.requireNonNull(frame, "Frame can't be null");
-
-        this.frame = frame;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -57,10 +57,11 @@ public class Window {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Maze");
 
-        Window window = new Window(frame);
-        window.createUIComponents();
+        Program.frame = frame;
+        Program program = new Program();
+        program.createUIComponents();
 
-        frame.setContentPane(window.containerPanel);
+        frame.setContentPane(program.containerPanel);
         setFrameIcon(frame);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -68,7 +69,6 @@ public class Window {
 
         // Set frame at the center of the screen
         frame.setLocationRelativeTo(null);
-//        frame.setResizable(false);
 
         frame.setVisible(true);
     }
@@ -77,6 +77,15 @@ public class Window {
     private static void setFrameIcon(JFrame frame) {
         ImageIcon img = new ImageIcon("C:\\Users\\rluva\\Programming\\FrontEnd\\Desktop\\Java\\Maze\\src\\main\\resources\\icons\\maze-game-icon-white.png");
         frame.setIconImage(img.getImage());
+    }
+
+    /**
+     * @see Frame#pack()
+     */
+    public static void pack() {
+        if(frame != null) {
+            frame.pack();
+        }
     }
 
     private void onGameUnexpectedlyFinished(Throwable throwable) {
@@ -134,11 +143,11 @@ public class Window {
     }
 
     private void onBackBtnClicked(ActionEvent e) {
-        JPanel currentCard = this.getCurrentCard();
+        Optional<JPanel> currentCard = this.getCurrentCard();
 
-        if (currentCard instanceof WindowCard) {
+        if (currentCard.isPresent() && currentCard.get() instanceof WindowCard) {
             try {
-                if (!((WindowCard) currentCard).back()) {
+                if (!((WindowCard) currentCard.get()).back()) {
                     this.showCard(CardName.GAME_CREATOR);
                     this.currentCardName = CardName.GAME_CREATOR;
                 }
@@ -152,8 +161,8 @@ public class Window {
             return;
         }
 
-        if (currentCard instanceof MazePanel) {
-            ((MazePanel) currentCard).onFinishGame();
+        if (currentCard.isPresent() && currentCard.get() instanceof MazePanel) {
+            ((MazePanel) currentCard.get()).onFinishGame();
         }
 
         this.showCard(CardName.WELCOME);
@@ -162,14 +171,8 @@ public class Window {
         setEnabledBack(false);
     }
 
-    private JPanel getCurrentCard() {
-        for (Component comp : this.cardsContainer.getComponents()) {
-            if (comp.isVisible()) {
-                return (JPanel) comp;
-            }
-        }
-
-        return null;
+    private Optional<JPanel> getCurrentCard() {
+        return GuiHelper.getCurrentCard(cardsContainer).map(component -> (JPanel)component);
     }
 
     private void createAndAttachWelcomeCard() {
@@ -261,10 +264,13 @@ public class Window {
 
         setEnabledBack(currentCardName != CardName.WELCOME);
 
-        Dimension size = this.cl.preferredLayoutSize(this.cardsContainer);
-
-        this.cardsContainer.setSize(size);
-        this.cardsContainer.setMinimumSize(size);
+//        Dimension size = this.cl.preferredLayoutSize(this.cardsContainer);
+//
+//        this.cardsContainer.setSize(size);
+//        this.cardsContainer.setMinimumSize(size);
+        frame.revalidate();
+        frame.pack();
+        frame.repaint();
     }
 
     private void addCard(JPanel panel, CardName cardName) {
@@ -278,7 +284,7 @@ public class Window {
 
         setEnabledBack(false);
 
-        Dimension mazePanelSize = mazePanel.getPreferredSize();
+        Dimension mazePanelSize = mazePanel.calculateMinimumSizeBasedOnMaze();
         setCardContainerAllSizes(mazePanelSize, mazePanel);
         setCardContainerAllSizes(mazePanelSize, this.cardsContainer);
 
@@ -286,6 +292,7 @@ public class Window {
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
         this.frame.pack();
+
 
         mazePanel.initGame();
 

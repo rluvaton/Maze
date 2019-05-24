@@ -218,7 +218,7 @@ public class MazeGenerator {
 
     private boolean validateELocationHasMinDistance(Maze maze, ELocationBaseData diffELocationType, Coordinate eLocationPos, int minDistance) {
         try {
-            return diffELocationType != null && this.solverAdapter.solveMaze(maze, diffELocationType.getPos(), eLocationPos, false).length >= minDistance;
+            return diffELocationType != null && this.solverAdapter.solveMaze(maze, diffELocationType.getPos(), eLocationPos, false).size() >= minDistance;
         } catch (Exception e) {
             e.printStackTrace();
         }

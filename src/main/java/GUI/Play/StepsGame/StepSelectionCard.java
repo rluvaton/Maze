@@ -46,7 +46,7 @@ public class StepSelectionCard extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public void initComponents() {
+    public void initUIComponents() {
         initHeader();
         initSteps();
     }

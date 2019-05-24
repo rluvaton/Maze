@@ -1,4 +1,4 @@
-package Game;
+package player;
 
 public enum ActionType {
     // region Directions
@@ -8,7 +8,6 @@ public enum ActionType {
     LEFT,
 
     // region Game Action
-    FASTER,
-    STOP,
-    SLOWER
+    SPEED,
+    EXIT,
 }

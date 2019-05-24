@@ -28,20 +28,13 @@ public class BFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+    public List<Direction> solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
         Cell endingCell = maze.getCell(end);
 
         return solveMaze(maze.getMazeData(), start, end, endingCell);
     }
 
-    @Override
-    public Direction[] solveMaze(Cell[][] maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
-        Cell endingCell = maze[end.getRow()][end.getColumn()];
-
-        return solveMaze(maze, start, end, endingCell);
-    }
-
-    private Direction[] solveMaze(Cell[][] mazeData, Coordinate start, Coordinate end, Cell endingCell) {
+    private List<Direction> solveMaze(Cell[][] mazeData, Coordinate start, Coordinate end, Cell endingCell) {
         ObjectAssertion.requireNonNull(endResults, "End results should never be null");
 
         if (endingCell == null) {
@@ -62,7 +55,7 @@ public class BFSSolverAdapter extends SolverAdapter {
 
         SearchResult result = this.endResults.getSearchResultForCoordinates(start);
 
-        return result.path.toArray(new Direction[0]);
+        return result.path;
     }
 
     private void getDistanceResultToEnd(Cell[][] mazeData, Cell end) {
@@ -149,22 +142,6 @@ public class BFSSolverAdapter extends SolverAdapter {
                 endResults.addDistanceRecord(cell.getLocation(), new SearchResult());
             }
         }
-    }
-
-    /**
-     * Solve Maze
-     *
-     * @param maze         Maze to solve
-     * @param start        Starting location to solve from
-     * @param end          Ending Location to solve from
-     * @param withCandies  Solve maze with candies
-     * @param stepCallback Callback for each step that occurred
-     * @return Direction of the path that solved
-     * @throws Exception When the maze can't be solved
-     */
-    @Override
-    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
-        return new Direction[0];
     }
 
     private BFSCell[][] convertMazeCellsToBFSCells(Cell[][] cells) {

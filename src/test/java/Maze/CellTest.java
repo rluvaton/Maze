@@ -13,7 +13,8 @@ class CellTest {
         Coordinate cellPos = new Coordinate(1, 1);
         Cell cell = new Cell(cellPos);
 
-        assertNotEquals(cellPos, cell.location);
+        assertEquals(cellPos, cell.location);
+        assertNotSame(cellPos, cell.location);
     }
 
     @Test
@@ -21,16 +22,12 @@ class CellTest {
         Coordinate cellPos = new Coordinate(1, 1);
         Cell cell = new Cell(cellPos);
 
-        assertNotEquals(cellPos, cell.location);
+        assertEquals(cellPos, cell.location);
+        assertNotSame(cellPos, cell.location);
 
         Coordinate nCellPos = new Coordinate(2, 2);
         Cell nCell = new Cell(nCellPos);
 
-        try {
-            cell.setCellAtDirection(Direction.UP, nCell);
-            assertNull("shouldn't arrive until here", "");
-        } catch (Exception e) {
-            assertNotNull(e);
-        }
+        assertThrows(Exception.class, () -> cell.setCellAtDirection(Direction.UP, nCell));
     }
 }

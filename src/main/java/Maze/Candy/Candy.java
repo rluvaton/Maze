@@ -3,6 +3,8 @@ package Maze.Candy;
 
 import Helpers.Builder.IBuilder;
 
+import java.util.Objects;
+
 /**
  * Candy in cell
  */
@@ -76,6 +78,11 @@ public abstract class Candy {
                 this.timeToLive == ((Candy) candy).timeToLive &&
                 this.type == ((Candy) candy).type &&
                 this.candyStrength == ((Candy) candy).candyStrength;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(candyStrength, type, timeToLive);
     }
 
     // region Builder

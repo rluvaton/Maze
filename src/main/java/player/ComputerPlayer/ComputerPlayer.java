@@ -1,5 +1,6 @@
 package player.ComputerPlayer;
 
+import GUI.Color;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -7,15 +8,13 @@ import Helpers.Utils;
 import Maze.Candy.Candy;
 import Maze.Candy.CandyPowerType;
 import Maze.Cell;
+import Maze.ELocation;
 import Maze.Maze;
 import player.BasePlayer;
 import player.exceptions.PlayerAlreadyHaveRunningThreadException;
 import player.exceptions.PlayerNotRunning;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static Logger.LoggerManager.logger;
@@ -25,13 +24,14 @@ public class ComputerPlayer extends BasePlayer {
     private Maze maze;
     private volatile Cell currentCell;
     private Coordinate endingLocation;
+    private Optional<Direction> lastDirection = Optional.empty();
 
     private Thread playerThread = null;
     private RunnableComputerPlayer runnablePlayer = null;
     private volatile boolean isCurrentlyPlaying = false;
     private AtomicBoolean returnAfterTeleport = new AtomicBoolean(false);
 
-    private int defaultDelayMovementInMs = 100;
+    private int delayMovementInMs = 350;
 
     /**
      * Human Player Constructor
@@ -42,9 +42,23 @@ public class ComputerPlayer extends BasePlayer {
         super(location);
     }
 
-    public ComputerPlayer(Coordinate location, int defaultDelayMovementInMs) {
+    public ComputerPlayer(Coordinate location, int delayMovementInMs) {
         super(location);
-        this.defaultDelayMovementInMs = defaultDelayMovementInMs;
+        this.delayMovementInMs = delayMovementInMs;
+    }
+
+    public ComputerPlayer(Coordinate location, String name, int delayMovementInMs) {
+        super(location, name);
+        this.delayMovementInMs = delayMovementInMs;
+    }
+
+    public ComputerPlayer(Coordinate location, String name, Color color, int delayMovementInMs) {
+        super(location, name, color);
+        this.delayMovementInMs = delayMovementInMs;
+    }
+
+    public ComputerPlayer(Coordinate location, String name, Color color) {
+        super(location, name, color);
     }
 
     {
@@ -69,27 +83,52 @@ public class ComputerPlayer extends BasePlayer {
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
     public Thread createRunningThread(Maze maze, Coordinate endingLocation) {
-        return createRunningThread(maze, endingLocation, defaultDelayMovementInMs);
+        return createRunningThread(maze, endingLocation, null, delayMovementInMs);
     }
+
+    public Thread createRunningThread(Maze maze, Coordinate endingLocation, Direction lastDirection) {
+        return createRunningThread(maze, endingLocation, lastDirection, delayMovementInMs);
+    }
+
+    public Thread createRunningThread(Maze maze, ELocation exit) {
+        ObjectAssertion.requireNonNull(exit, "`exit` can't be null");
+
+        return createRunningThread(maze, exit.getLocation(), exit.getDirection(), delayMovementInMs);
+    }
+
+
+    /**
+     * Start The player and the player choose the closest exit
+     *
+     * @param maze        Current Maze
+     * @param stepSpeedMs How much milliseconds to wait between each move
+     * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
+     */
+    public Thread createRunningThread(Maze maze, int stepSpeedMs) {
+        return this.createRunningThread(maze, this.findClosestExit(maze), null, stepSpeedMs);
+    }
+
 
     /**
      * Start The player
      *
      * @param maze           Current Maze
      * @param endingLocation The location that this player is heading
+     * @param lastDirection  Last Direction to do
      * @param stepSpeedMs    How much milliseconds to wait between each move
      * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
      */
-    public Thread createRunningThread(Maze maze, Coordinate endingLocation, int stepSpeedMs) {
+    public Thread createRunningThread(Maze maze, Coordinate endingLocation, Direction lastDirection, int stepSpeedMs) {
         // TODO - YOU CAN USE LISTENER FOR CANDY COLLECTED OR CANDY DISAPPEARED AND FILTER ONLY TO LOCATION CANDIES
         // TODO - IF CANDY DISAPPEARED THEN RECALCULATE
 
         this.maze = maze;
         this.endingLocation = endingLocation;
+        this.lastDirection = lastDirection == null ? Optional.empty() : Optional.of(lastDirection);
 
         this.currentCell = this.maze.getCell(this.getLocation());
 
-        Direction[] steps;
+        List<Direction> steps;
         try {
             steps = maze.getSolverAdapter().solveMaze(maze, this.getLocation(), endingLocation, true);
         } catch (Exception e) {
@@ -97,7 +136,7 @@ public class ComputerPlayer extends BasePlayer {
             return null;
         }
 
-        if (steps.length == 0) {
+        if (steps.size() == 0) {
             System.out.println("steps length are 0");
         }
 
@@ -107,6 +146,8 @@ public class ComputerPlayer extends BasePlayer {
             this.runnablePlayer.stop();
             this.runnablePlayer = null;
         }
+
+        this.lastDirection.ifPresent(steps::add);
 
         try {
             this.runnablePlayer = new RunnableComputerPlayer(this, steps, stepSpeedMs);
@@ -122,17 +163,6 @@ public class ComputerPlayer extends BasePlayer {
         Thread playerThread = new Thread(runnablePlayer);
         playerThread.setName("Computer " + this.getName() + " Thread");
         return playerThread;
-    }
-
-    /**
-     * Start The player and the player choose the closest exit
-     *
-     * @param maze        Current Maze
-     * @param stepSpeedMs How much milliseconds to wait between each move
-     * @return Returns thread of the computer steps with sleep at the stepSpeedMs variable
-     */
-    public Thread createRunningThread(Maze maze, int stepSpeedMs) {
-        return this.createRunningThread(maze, this.findClosestExit(maze), stepSpeedMs);
     }
 
     @Override
@@ -163,7 +193,7 @@ public class ComputerPlayer extends BasePlayer {
 
         System.out.println("setting new path");
 
-        Direction[] steps;
+        List<Direction> steps;
 
         this.runnablePlayer.pause();
 
@@ -174,9 +204,11 @@ public class ComputerPlayer extends BasePlayer {
             return;
         }
 
-        if (steps.length == 0) {
+        if (steps.size() == 0) {
             System.out.println("steps length are 0");
         }
+
+        lastDirection.ifPresent(steps::add);
 
         if (isNewPathBetter(steps)) {
             changePlayerPath(steps);
@@ -199,7 +231,7 @@ public class ComputerPlayer extends BasePlayer {
         }
     }
 
-    private void stayWithSamePathAfterTeleported(Direction[] steps) {
+    private void stayWithSamePathAfterTeleported(List<Direction> steps) {
         logger.debug("[ComputerPlayer]", "[" + this.getName() + "]", "[On Teleport]", "continue with the same path");
 
         try {
@@ -212,8 +244,8 @@ public class ComputerPlayer extends BasePlayer {
     }
 
 
-    private boolean isNewPathBetter(Direction[] steps) {
-        return steps.length < this.runnablePlayer.getTotalStepsLeft();
+    private boolean isNewPathBetter(List<Direction> steps) {
+        return steps.size() < this.runnablePlayer.getTotalStepsLeft();
     }
 
     private void continueWithOldPathAfterTeleportation() throws PlayerNotRunning {
@@ -339,7 +371,7 @@ public class ComputerPlayer extends BasePlayer {
         return this.currentCell.getNeighbors().containsValue(null);
     }
 
-    private void changePlayerPath(Direction[] steps) {
+    private void changePlayerPath(List<Direction> steps) {
 
         this.playerThread.setName(this.playerThread.getName() + " - prev path");
         this.runnablePlayer.stop();
@@ -395,8 +427,12 @@ public class ComputerPlayer extends BasePlayer {
         return this.runnablePlayer;
     }
 
+    public int getDelayMovementInMs() {
+        return delayMovementInMs;
+    }
+
     @Override
     public BasePlayer clone() {
-        return new ComputerPlayer(Utils.clone(getLocation()), defaultDelayMovementInMs);
+        return new ComputerPlayer(Utils.clone(getLocation()), delayMovementInMs);
     }
 }

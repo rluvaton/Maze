@@ -1,7 +1,10 @@
 package Maze.Candy;
 
 import Helpers.Coordinate;
+import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Cell;
+
+import java.util.Objects;
 
 /**
  * Portal Candy
@@ -65,6 +68,11 @@ public class PortalCandy extends Candy {
         return super.equals(candy) &&
                 candy instanceof PortalCandy &&
                 Coordinate.equals(this.location, ((PortalCandy) candy).location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(location);
     }
 
     // region Builder

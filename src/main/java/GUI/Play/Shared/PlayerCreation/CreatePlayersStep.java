@@ -1,4 +1,4 @@
-package GUI.Play.Shared;
+package GUI.Play.Shared.PlayerCreation;
 
 import GUI.Color;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
@@ -8,7 +8,6 @@ import Game.MazeGame;
 import Helpers.CallbackFns;
 import Helpers.Coordinate;
 import Helpers.ThrowableAssertions.ObjectAssertion;
-import Maze.MazeGenerator.MazeGenerator;
 import com.github.javafaker.Faker;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -21,13 +20,14 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 import static java.awt.event.KeyEvent.getKeyText;
 
+/**
+ * @deprecated Use {@link PlayersCreationPanel} instead
+ */
 public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
-
     private JTextField nameIn;
     private JComboBox<Color> colorComboBox;
     private JTextField upIn;
@@ -47,7 +47,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     @Override
-    public void initComponents() {
+    public void initUIComponents() {
         CellConstraints cc = new CellConstraints();
 
         initName(cc);
@@ -123,13 +123,13 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     }
 
     private void initDirectionKeysInput() {
-        this.downIn.addKeyListener(new KeyActionListener(downKeyCode -> actionsKeys.setDownKeyCode(downKeyCode)));
+        this.downIn.addKeyListener(new KeyActionListener(downKeyCode -> actionsKeys.setDownKey(downKeyCode)));
 
-        this.upIn.addKeyListener(new KeyActionListener(upKeyCode -> actionsKeys.setUpKeyCode(upKeyCode)));
+        this.upIn.addKeyListener(new KeyActionListener(upKeyCode -> actionsKeys.setUpKey(upKeyCode)));
 
-        this.leftIn.addKeyListener(new KeyActionListener(leftKeyCode -> actionsKeys.setLeftKeyCode(leftKeyCode)));
+        this.leftIn.addKeyListener(new KeyActionListener(leftKeyCode -> actionsKeys.setLeftKey(leftKeyCode)));
 
-        this.rightIn.addKeyListener(new KeyActionListener(rightKeyCode -> actionsKeys.setRightKeyCode(rightKeyCode)));
+        this.rightIn.addKeyListener(new KeyActionListener(rightKeyCode -> actionsKeys.setRightKey(rightKeyCode)));
     }
 
     private class KeyActionListener implements KeyListener {
@@ -153,7 +153,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
             JTextField textField = (JTextField) e.getSource();
 
-            if(!Objects.equals(textField.getText(), currentKeyText)) {
+            if (!Objects.equals(textField.getText(), currentKeyText)) {
                 textField.setText(currentKeyText);
             }
         }
@@ -170,7 +170,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
             this.setKeyCode.run(keyCode);
 
             currentKeyText = getKeyText(keyCode);
-            ((JTextField)e.getSource()).setText(currentKeyText);
+            ((JTextField) e.getSource()).setText(currentKeyText);
         }
     }
 
@@ -269,7 +269,7 @@ public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
 
         ObjectAssertion.requireNonNull(builder, "Builder can't be null");
 
-        if(isPlayerWithCurrentInputsValid() && !isPlayerWithCurrentInputsExistAlready()) {
+        if (isPlayerWithCurrentInputsValid() && !isPlayerWithCurrentInputsExistAlready()) {
             playerList.add(this.createNewPlayer());
         }
 
