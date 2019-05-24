@@ -1,5 +1,9 @@
 package GUI;
 
+import GUI.MazeGame.MazePanel;
+import Game.GameStep;
+import Game.MazeGame;
+import Helpers.Builder.BuilderException;
 import Helpers.Coordinate;
 import Helpers.DebuggerHelper;
 import Maze.Maze;
@@ -7,61 +11,117 @@ import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 import Maze.MazeBuilder.RectangleMazeBuilder;
 import Maze.MazeGenerator.MazeGenerator;
 import Maze.Solver.BFS.BFSSolverAdapter;
-import GUI.MazePreviewPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
-import player.ComputerPlayer;
-import player.DirectionKeys;
-import player.HumanPlayer;
+import player.ComputerPlayer.ComputerPlayer;
+import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class GameWindow {
     private JPanel wrapper;
     private JPanel usersMetadataPanel;
     private JPanel mazePanel;
-    private MazePreviewPanel previewPanel;
+    private static MazePanel previewPanel;
+    private static GameStep step;
+    private Dimension wrapperSize;
 
     public GameWindow() {
     }
 
     public static void main(String[] args) {
+
         if (isInDebugMode(args)) {
             turnOnDebugEnv();
         }
+
+        main(getStepFromArgs(args));
+    }
+
+    private static GameStep.BuiltinStep getStepFromArgs(String[] args) {
+
+        if(args.length == 0 || (args.length == 1 && isInDebugMode(args))) {
+            return null;
+        }
+
+        String stepName;
+
+        if(args.length == 1) {
+            stepName = args[0];
+        } else {
+            stepName = args[1];
+        }
+
+        GameStep.BuiltinStep step = null;
+
+        switch (stepName) {
+            case "very-easy":
+                step = GameStep.VERY_EASY;
+                break;
+            case "easy":
+                step = GameStep.EASY;
+                break;
+            case "medium":
+                step = GameStep.MEDIUM;
+                break;
+            case "hard":
+                step = GameStep.HARD;
+                break;
+            case "very-hard":
+                step = GameStep.VERY_HARD;
+                break;
+        }
+
+        return step;
+    }
+
+    public static void main(MazePanel previewPanel) {
         JFrame frame = new JFrame("GameWindow");
 
+        GameWindow.previewPanel = previewPanel;
         GameWindow gameWindow = new GameWindow();
-        gameWindow.createUIComponents();
+        gameWindow.init();
+
+        // Uncommented because in `$$setupUI$$` it's already been called
+//        gameWindow.createUIComponents();
+
         frame.setContentPane(gameWindow.wrapper);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        frame.setFocusable(true);
         setFrameIcon(frame);
 
         frame.pack();
+
         frame.setVisible(true);
     }
 
-    public static void main(String[] args, MazePreviewPanel previewPanel) {
-        if (isInDebugMode(args)) {
-            turnOnDebugEnv();
-        }
+    private void init() {
+        // Set the size here because that way we protect from overriding the the size in $$initUIComponents$$
+        this.wrapper.setPreferredSize(wrapperSize);
+    }
+
+    public static void main(GameStep.BuiltinStep step) {
         JFrame frame = new JFrame("GameWindow");
 
+        GameWindow.step = step.getStep();
         GameWindow gameWindow = new GameWindow();
-        gameWindow.createUIComponents(previewPanel);
+        gameWindow.init();
+
+        // Uncommented because in `$$setupUI$$` it's already been called
+//        gameWindow.createUIComponents();
+
         frame.setContentPane(gameWindow.wrapper);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setFrameIcon(frame);
 
         frame.pack();
+
         frame.setVisible(true);
     }
 
@@ -87,13 +147,16 @@ public class GameWindow {
 
         this.createWrapper();
 
+        if (step != null) {
+            previewPanel = start(step);
+        }
+
         // TODO - clean this
-        int height = 50;
-        int width = 20;
+        Dimension mazeDimension = previewPanel == null ? new Dimension(10, 15) : previewPanel.getMazeDimension();
 
         // TODO - add scroller to the game JPanel
 
-        Dimension previewPanel = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
+        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(mazeDimension);
 
         GridBagConstraints c = new GridBagConstraints();
 
@@ -102,71 +165,15 @@ public class GameWindow {
 
         int minDistance = 0;
 
-        this.previewPanel = start(height, width, minDistance);
+        if (previewPanel == null) {
+            previewPanel = start(mazeDimension.height, mazeDimension.width, minDistance);
+        }
 
 
-        Dimension wrapperSize = (Dimension) previewPanel.clone();
-        int buttonHeight = 20;
-        wrapperSize.setSize(previewPanel.width, previewPanel.height + buttonHeight);
-
-
-        this.wrapper.setPreferredSize(wrapperSize);
-//
-//        c.gridx = 0;
-//        c.gridy = 0;
-//        this.wrapper.add(this.logSizeBtn, c);
-//
-//        c.gridx = 1;
-//        c.gridy = 0;
-//        c.weightx = 20;
-//        this.wrapper.add(this.widthSpinner, c);
-//
-//        c.gridx = 2;
-//        c.gridy = 0;
-//        this.wrapper.add(this.heightSpinner, c);
-
-        c.ipady = previewPanel.height;      // make this component tall
-        c.weightx = previewPanel.width;
-        c.weighty = previewPanel.height;
-        c.gridwidth = previewPanel.width;
-        c.gridx = 0;
-        c.gridy = 1;
-        this.wrapper.add(this.previewPanel, c);
-
-        this.wrapper.updateUI();
-
-        this.previewPanel.initGame();
-    }
-
-    private void createUIComponents(MazePreviewPanel previewPanel) {
-        // TODO: place custom component creation code here
-
-        this.createWrapper();
-
-        // TODO - clean this
-        int height = previewPanel.getMaze().getHeight();
-        int width = previewPanel.getMaze().getWidth();
-
-        // TODO - add scroller to the game JPanel
-
-        Dimension previewPanelDim = this.getWrapperDimensionForMazeDim(new Dimension(width, height));
-
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-
-        int minDistance = 0;
-
-        this.previewPanel = previewPanel;
-
-
-        Dimension wrapperSize = (Dimension) previewPanelDim.clone();
+        wrapperSize = (Dimension) previewPanelDim.clone();
         int buttonHeight = 20;
         wrapperSize.setSize(previewPanelDim.width, previewPanelDim.height + buttonHeight);
 
-
-        this.wrapper.setPreferredSize(wrapperSize);
 //
 //        c.gridx = 0;
 //        c.gridy = 0;
@@ -187,11 +194,12 @@ public class GameWindow {
         c.gridwidth = previewPanelDim.width;
         c.gridx = 0;
         c.gridy = 1;
-        this.wrapper.add(this.previewPanel, c);
+        this.wrapper.add(previewPanel, c);
 
         this.wrapper.updateUI();
 
-        this.previewPanel.initGame();
+        previewPanel.initGame();
+        previewPanel.startGame();
     }
 
 
@@ -206,12 +214,35 @@ public class GameWindow {
 
     }
 
-    private MazePreviewPanel start(int height, int width, int minDistance) {
+    private MazePanel start(GameStep step) {
+        assert step != null;
+
+        MazeGame.Builder builder = step.build()
+                .addManyPlayers(getGamePlayer());
+
+        MazeGame game;
+
+        try {
+            game = builder.build();
+        } catch (BuilderException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        MazePanel mazePanel = new MazePanel(game);
+        mazePanel.setFocusable(true);
+        mazePanel.requestFocusInWindow();
+
+        return mazePanel;
+    }
+
+    private MazePanel start(int height, int width, int minDistance) {
         Maze maze;
 
         try {
             maze = new MazeGenerator(new RectangleMazeBuilder(), new BFSSolverAdapter())
-                    .generateMaze(height, width, minDistance, 2, 2)
+                    .generateMaze(height, width)
+                    .createRandomEntrancesAndExists(2, 2, minDistance)
                     .generateRandomCandies((int) getTotalCandiesCountForMaze(height, width), true)
                     .create();
         } catch (MazeBuilderException e) {
@@ -219,22 +250,24 @@ public class GameWindow {
             return null;
         }
 
-        BasePlayer[] players = getGamePlayer();
+        java.util.List<BasePlayer> players = getGamePlayer();
 
-        MazePreviewPanel mazePreviewPanel = new MazePreviewPanel(maze, players, false);
-        mazePreviewPanel.setFocusable(true);
-        mazePreviewPanel.requestFocusInWindow();
+        MazePanel mazePanel = new MazePanel(new Game.MazeGame(maze, players, false));
+        mazePanel.setFocusable(true);
+        mazePanel.requestFocusInWindow();
 
-        return mazePreviewPanel;
+        return mazePanel;
 
     }
 
-    private BasePlayer[] getGamePlayer() {
-        return new BasePlayer[]{
-                new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"),
-                new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", DirectionKeys.DEFAULT_AS_WASD),
-                new ComputerPlayer(new Coordinate(0, 0))
-        };
+    private java.util.List<BasePlayer> getGamePlayer() {
+        java.util.List<BasePlayer> players = new ArrayList<BasePlayer>();
+
+        players.add(new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"));
+//        players.add(new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", ActionsKeys.DEFAULT_AS_WASD));
+//        players.add(new ComputerPlayer(new Coordinate(0, 0));
+
+        return players;
     }
 
     {

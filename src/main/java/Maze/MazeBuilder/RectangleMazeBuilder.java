@@ -102,11 +102,11 @@ public class RectangleMazeBuilder extends BaseMazeBuilder {
         return this;
     }
 
-    private void buildELocation(Coordinate pos, Direction direction, ELocationType exit) {
+    private void buildELocation(Coordinate pos, Direction direction, ELocationType type) {
         assert pos != null && direction != null;
         Cell cell = this.getCellAtPosition(pos);
-        ELocation entrance = new ELocation(pos, direction, exit);
-        cell.setELocationAsNeighbor(entrance);
+        ELocation eLocation = new ELocation(pos, direction, type);
+        cell.setELocationAsNeighbor(eLocation);
     }
 
     @Override
@@ -126,5 +126,17 @@ public class RectangleMazeBuilder extends BaseMazeBuilder {
     @Override
     public int getTotalBuiltCells() {
         return totalBuiltCell;
+    }
+
+    @Override
+    public IMazeBuilder clone() {
+        RectangleMazeBuilder mazeBuilder = new RectangleMazeBuilder();
+
+        mazeBuilder.height = height;
+        mazeBuilder.width = width;
+        mazeBuilder.totalBuiltCell = totalBuiltCell;
+        mazeBuilder.mazeData = mazeData == null ? null : mazeData.clone();
+
+        return mazeBuilder;
     }
 }

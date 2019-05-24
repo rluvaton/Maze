@@ -28,10 +28,10 @@ public class Cell extends Node<Coordinate> {
      */
     protected Coordinate location;
 
-    private Map<Direction, NeighborCell> neighbors = Cell.createEmptyNeighborsMap();
+    private AbstractMap<Direction, NeighborCell> neighbors = Cell.createEmptyNeighborsMap();
 
-    private static Map<Direction, NeighborCell> createEmptyNeighborsMap() {
-        Map<Direction, NeighborCell> neighbors = new HashMap<>();
+    private static AbstractMap<Direction, NeighborCell> createEmptyNeighborsMap() {
+        AbstractMap<Direction, NeighborCell> neighbors = new HashMap<>();
 
         neighbors.put(Direction.UP, null);
         neighbors.put(Direction.RIGHT, null);
@@ -51,7 +51,7 @@ public class Cell extends Node<Coordinate> {
         // TODO - WHEN CELL PROPERTIES UPDATED DON'T FORGET TO UPDATE THIS TOO
 
         this.location = this.id;
-        this.neighbors = Instance.cloneMap(cell.neighbors, new HashMap<>());
+        this.neighbors = (cell.neighbors);
         this.candies = cell.candies;
     }
 
@@ -154,12 +154,19 @@ public class Cell extends Node<Coordinate> {
 
     // endregion
 
+
+    public boolean hasNeighborELocation() {
+        return this.neighbors.values().stream().anyMatch(neighborCell -> neighborCell != null && neighborCell.eLocation != null);
+    }
+
     public void setELocationAsNeighbor(ELocation elocation) {
 
         NeighborCell neighborCell = this.neighbors.get(elocation.getDirection());
+
         if(neighborCell == null) {
             neighborCell = new NeighborCell(null, elocation);
         }
+
         this.neighbors.put(elocation.getDirection(), neighborCell);
     }
 

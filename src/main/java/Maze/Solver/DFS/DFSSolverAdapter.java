@@ -11,9 +11,11 @@ import Maze.Solver.Adapter.SolverAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 import java.util.function.Function;
 
+@Deprecated
 public class DFSSolverAdapter extends SolverAdapter {
 
     /**
@@ -27,7 +29,7 @@ public class DFSSolverAdapter extends SolverAdapter {
      * @throws Exception When the maze can't be solved
      */
     @Override
-    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+    public List<Direction> solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
         Stack<Coordinate> path = new Stack<>();
         ArrayList<Direction> steps = new ArrayList<>();
 
@@ -85,38 +87,7 @@ public class DFSSolverAdapter extends SolverAdapter {
             }
         }
 
-        // TODO - CHECK IF THE STEPS ARRAY IS REALLY THE PATH STEPS WITHOUT USELESS STEPS
-        return (iterations >= maxTries) ? null : steps.toArray(new Direction[0]);
-    }
-    /**
-     * Solve Maze
-     *
-     * @param maze        Maze to solve
-     * @param start       Starting location to solve from
-     * @param end         Ending Location to solve from
-     * @param withCandies Solve maze with candies
-     * @return Steps (Direction) of the path that solved the maze
-     * @throws Exception When the maze can't be solved
-     */
-    @Override
-    public Direction[] solveMaze(Cell[][] maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
-        throw new UnsupportedOperationException("solveMaze with cell matrix");
-    }
-
-    /**
-     * Solve Maze
-     *
-     * @param maze         Maze to solve
-     * @param start        Starting location to solve from
-     * @param end          Ending Location to solve from
-     * @param withCandies  Solve maze with candies
-     * @param stepCallback Callback for each step that occurred
-     * @return Direction of the path that solved
-     * @throws Exception When the maze can't be solved
-     */
-    @Override
-    public Direction[] solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies, Function<Direction, Void> stepCallback) throws Exception {
-        return new Direction[0];
+        return (iterations >= maxTries) ? null : steps;
     }
 
     private DFSCell[][] convertMazeCellsToBFSCells(Cell[][] cells) {
@@ -138,5 +109,10 @@ public class DFSSolverAdapter extends SolverAdapter {
                 cellLocation.getColumn() > cells[cellLocation.getRow()].length
         ) ? null : cells[cellLocation.getRow()][cellLocation.getColumn()];
 
+    }
+
+    @Override
+    public SolverAdapter clone() {
+        return new DFSSolverAdapter();
     }
 }

@@ -2,14 +2,16 @@ package Maze.MazeBuilder;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
+import Helpers.SuccessCloneable;
 import Maze.Candy.Candy;
 import Maze.Maze;
 import Maze.Cell;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 
 import java.util.Collection;
+import java.util.Objects;
 
-public interface IMazeBuilder {
+public interface IMazeBuilder extends SuccessCloneable<IMazeBuilder> {
 
     IMazeBuilder buildMazeSkeleton(int height, int width);
 
@@ -45,6 +47,8 @@ public interface IMazeBuilder {
 
     int getTotalBuiltCells();
 
+    IMazeBuilder clone();
+
     class ELocationBaseData {
         private Coordinate pos;
         private Direction direction;
@@ -67,6 +71,11 @@ public interface IMazeBuilder {
             return obj instanceof ELocationBaseData
                     && this.direction == ((ELocationBaseData) obj).direction
                     && this.pos.equals(((ELocationBaseData) obj).pos);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(pos, direction);
         }
     }
 }

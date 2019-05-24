@@ -1,6 +1,8 @@
 package Helpers;
 
-public class Coordinate {
+import java.util.Objects;
+
+public class Coordinate implements SuccessCloneable<Coordinate> {
     private int row;
     private int column;
 
@@ -25,8 +27,22 @@ public class Coordinate {
         this.column = column;
     }
 
-    public boolean equals(Coordinate coordinate) {
-        return coordinate != null && this.row == coordinate.row && this.column == coordinate.column;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Coordinate that = (Coordinate) o;
+        return row == that.row &&
+                column == that.column;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(row, column);
     }
 
     public static boolean equals(Coordinate coordinate1, Coordinate coordinate2) {
@@ -34,6 +50,9 @@ public class Coordinate {
                 (coordinate1 != null && coordinate1.equals(coordinate2));
     }
 
+
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public Coordinate clone() {
         return new Coordinate(this.row, this.column);

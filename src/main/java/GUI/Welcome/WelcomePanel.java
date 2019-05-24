@@ -1,14 +1,15 @@
 package GUI.Welcome;
 
-import GUI.GuiHelper;
-import Helpers.NoArgsVoidCallbackFunction;
+import GUI.Utils.GuiHelper;
+import GUI.WindowCard;
+import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class WelcomePanel extends JPanel {
+public class WelcomePanel extends JPanel implements WindowCard {
     public static String DEFAULT_CARD_NAME = "WelcomeCard";
 
     private JLabel title;
@@ -21,15 +22,14 @@ public class WelcomePanel extends JPanel {
     private NoArgsVoidCallbackFunction playClicked = () -> {};
     private NoArgsVoidCallbackFunction statsClicked = () -> {};
 
-    public WelcomePanel() {
-    }
-
     public WelcomePanel(NoArgsVoidCallbackFunction generatedClicked,
                          NoArgsVoidCallbackFunction playClicked,
                          NoArgsVoidCallbackFunction statsClicked) {
         this.generatedClicked = generatedClicked;
         this.playClicked = playClicked;
         this.statsClicked = statsClicked;
+
+//        this.setPreferredSize(new Dimension(300, 300));
     }
 
     public void init() {
@@ -145,4 +145,8 @@ public class WelcomePanel extends JPanel {
         this.add(madeBy, cc.xy(3, 3));
     }
 
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(471, 98);
+    }
 }

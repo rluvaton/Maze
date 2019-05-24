@@ -14,14 +14,24 @@ repositories {
     }
 }
 
+
 dependencies {
+    
+    // For GUI
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.6.0'
+    
+    // For Handling events
     compile 'io.reactivex.rxjava2:rxjava:2.2.4'
+
+    implementation 'com.github.javafaker:javafaker:0.18'
+    
+    // Tests
     compile 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testCompile 'org.junit.jupiter:junit-jupiter:5.4.2'
+    testImplementation 'org.hamcrest:hamcrest:2.1'
 }
 
-group = 'rluvaton'
+group = 'com.rluvaton'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '1.11'
 
@@ -30,5 +40,12 @@ publishing {
         maven(MavenPublication) {
             from(components.java)
         }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }

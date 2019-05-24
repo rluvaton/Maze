@@ -1,5 +1,7 @@
 package Statistics;
 
+import Helpers.Builder.IBuilder;
+
 public class User {
     private String name;
 
@@ -47,7 +49,7 @@ public class User {
         return this.name;
     }
 
-    public static class Builder {
+    public static class Builder implements IBuilder<User> {
         private String name;
         private int totalGames = 0;
         private int totalTimeLimitedGames = 0;

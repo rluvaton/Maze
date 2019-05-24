@@ -8,15 +8,19 @@ public enum MoveStatus {
     /**
      * Move isn't valid
      */
-    NotValidMove,
+    INVALID_MOVE,
 
     /**
      * Move valid
      */
-    Valid,
+    VALID,
 
     /**
      * Moved to finish location
      */
-    Finished
+    FINISHED;
+
+    public static MoveStatus getValidationMoveFromBoolean(boolean isValidMove) {
+        return isValidMove ? MoveStatus.VALID : MoveStatus.INVALID_MOVE;
+    }
 }

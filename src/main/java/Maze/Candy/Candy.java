@@ -1,6 +1,10 @@
 package Maze.Candy;
 
 
+import Helpers.Builder.IBuilder;
+
+import java.util.Objects;
+
 /**
  * Candy in cell
  */
@@ -76,11 +80,15 @@ public abstract class Candy {
                 this.candyStrength == ((Candy) candy).candyStrength;
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(candyStrength, type, timeToLive);
+    }
+
     // region Builder
 
-    public abstract static class Builder {
+    public abstract static class Builder implements IBuilder<Candy> {
 
-        /// instance fields
         protected CandyPowerType type;
         protected int candyStrength = 0;
         protected int timeToLive = -1;
