@@ -128,8 +128,7 @@ public class MazeGame {
     }
 
     {
-        onFinishGame
-                .subscribe(this::gameFinished, throwable -> this.gameFinished(null));
+        onFinishGame.subscribe(this::gameFinished, throwable -> {});
     }
 
     private void setAllPlayersLocationAtEntrances() {
@@ -277,9 +276,7 @@ public class MazeGame {
             this.maze.getCell(candyRecord.coordinate).removeCandy(candyRecord.candy);
         });
 
-        onDestroySub.subscribe((b) -> {
-            candyTimer.cancel();
-        });
+        onDestroySub.subscribe((b) -> candyTimer.cancel());
 
         return candyTimer;
     }
@@ -342,7 +339,8 @@ public class MazeGame {
     }
 
     private CallbackFns.NoArgsVoidCallbackFunction startComputerPlayer(ComputerPlayer player) {
-        Thread playerThread = player.createRunningThread(this.maze, getExitForComputerPlayer(player));
+        ELocation exitForComputerPlayer = getExitForComputerPlayer(player);
+        Thread playerThread = player.createRunningThread(this.maze, exitForComputerPlayer.getLocation(), exitForComputerPlayer.getDirection());
 
         if (playerThread == null) {
             System.out.println("Player " + player.getName() + " can't start running");
@@ -362,8 +360,8 @@ public class MazeGame {
         return playerThread::start;
     }
 
-    private Coordinate getExitForComputerPlayer(ComputerPlayer player) {
-        return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get().getLocation();
+    private ELocation getExitForComputerPlayer(ComputerPlayer player) {
+        return this.maze.getExits().stream().filter(eLocation -> !eLocation.getLocation().equals(player.getLocation())).findFirst().get();
     }
 
     /**
@@ -500,6 +498,7 @@ public class MazeGame {
     }
 
     public void onFinishGame() {
+        this.gameFinished(null);
         onFinishGame.onError(new UnExpectedGameInterruptException());
     }
 

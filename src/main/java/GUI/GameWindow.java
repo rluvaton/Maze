@@ -101,7 +101,7 @@ public class GameWindow {
     }
 
     private void init() {
-        // Set the size here because that way we protect from overriding the the size in $$initComponents$$
+        // Set the size here because that way we protect from overriding the the size in $$initUIComponents$$
         this.wrapper.setPreferredSize(wrapperSize);
     }
 

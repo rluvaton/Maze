@@ -25,7 +25,7 @@ public class SelectShapeStep extends JPanel implements IPlayConfigStep {
         this.setLayout(layout);
     }
 
-    public void initComponents() {
+    public void initUIComponents() {
         initSelectMazeShape();
 
         initWidth();

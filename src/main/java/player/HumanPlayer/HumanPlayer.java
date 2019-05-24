@@ -2,7 +2,6 @@ package player.HumanPlayer;
 
 import GUI.Color;
 import Helpers.CallbackFns.ArgsVoidCallbackFunction;
-import Helpers.CallbackFns.NoArgsVoidCallbackFunction;
 import Helpers.Coordinate;
 import Helpers.Direction;
 import Helpers.ThrowableAssertions.ObjectAssertion;
@@ -12,7 +11,6 @@ import player.ActionsKeys;
 import player.BasePlayer;
 import player.exceptions.PlayerNotRunning;
 
-import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.AbstractMap;
@@ -26,8 +24,13 @@ import java.util.Objects;
  * @implNote Implement {@link KeyListener} for moving with the keyboard
  */
 public class HumanPlayer extends BasePlayer implements KeyListener {
-    private AbstractMap<Integer, ActionKey> specialKeys = this.getDefaultSpecialKeyAssignment();
-    private AbstractMap<Integer, ActionKey> specialTypedKeys = this.getDefaultSpecialTypedKeyAssignment();
+
+    private static final int DEFAULT_STEP_SPEED = 300;
+    private static final int DEFAULT_ENHANCED_STEP_SPEED = 100;
+
+    private ActionsKeys actionsKeys = ActionsKeys.DEFAULT_AS_ARROWS;
+    private AbstractMap<Integer, ActionKey> specialKeys;
+    private AbstractMap<Integer, ActionKey> specialTypedKeys;
 
 
     private Map<Integer, Direction> directionKeys = this.getDefaultKeyAssignment();
@@ -35,35 +38,59 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
     private Thread playerThread = null;
     private RunnableHumanPlayer runnablePlayer = null;
-    private int defaultStepSpeed = 200;
-    private int defaultEnhancedStepSpeed = 100;
+
+
+    private int stepSpeed = DEFAULT_STEP_SPEED;
+    private int enhancedStepSpeed = DEFAULT_ENHANCED_STEP_SPEED;
 
     private boolean currentlyOnPause = false;
 
     public HumanPlayer(Coordinate startingLocation) {
         super(startingLocation);
+
+        createAllKeyAssignmentFromActionsKeys(actionsKeys);
     }
+
 
     public HumanPlayer(Coordinate startingLocation, String name) {
         super(startingLocation, name);
+
+        createAllKeyAssignmentFromActionsKeys(actionsKeys);
     }
 
-    public HumanPlayer(Coordinate startingLocation, String name, ActionsKeys directionActions) {
+    public HumanPlayer(Coordinate startingLocation, String name, ActionsKeys actionsKeys) {
         super(startingLocation, name);
 
-        assert directionActions != null;
-        this.directionKeys = createKeyAssignment(directionActions);
-        this.specialKeys = createSpecialKeyAssignment(directionActions);
+        createAllKeyAssignmentFromActionsKeys(actionsKeys);
     }
 
-    public HumanPlayer(Coordinate startingLocation, String name, Color color, ActionsKeys directionActions) {
+    public HumanPlayer(Coordinate startingLocation, String name, Color color, ActionsKeys actionsKeys) {
+        this(startingLocation, name, color, DEFAULT_STEP_SPEED, actionsKeys);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name, Color color, int stepSpeed, ActionsKeys actionsKeys) {
+        this(startingLocation, name, color, stepSpeed, DEFAULT_ENHANCED_STEP_SPEED, actionsKeys);
+    }
+
+    public HumanPlayer(Coordinate startingLocation, String name, Color color, int stepSpeed, int enhancedStepSpeed, ActionsKeys actionsKeys) {
         super(startingLocation, name, color);
-        this.directionKeys = createKeyAssignment(directionActions);
-        this.specialKeys = createSpecialKeyAssignment(directionActions);
+
+        this.stepSpeed = stepSpeed;
+        this.enhancedStepSpeed = enhancedStepSpeed;
+
+        createAllKeyAssignmentFromActionsKeys(actionsKeys);
+    }
+
+    private void createAllKeyAssignmentFromActionsKeys(ActionsKeys actionsKeys) {
+        this.actionsKeys = actionsKeys;
+
+        this.directionKeys = createKeyAssignment(actionsKeys);
+        this.specialKeys = createSpecialKeyAssignment(actionsKeys);
+        specialTypedKeys = createSpecialTypedKeyAssignment(actionsKeys);
     }
 
     private Map<Integer, Direction> getDefaultKeyAssignment() {
-        return this.createKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+        return this.createKeyAssignment(this.actionsKeys);
     }
 
     private Map<Integer, Direction> createKeyAssignment(ActionsKeys actionsKeys) {
@@ -72,13 +99,13 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     }
 
     private AbstractMap<Integer, ActionKey> getDefaultSpecialKeyAssignment() {
-        return this.createSpecialKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+        return this.createSpecialKeyAssignment(this.actionsKeys);
     }
 
     private AbstractMap<Integer, ActionKey> createSpecialKeyAssignment(ActionsKeys actionsKeys) {
         ObjectAssertion.requireNonNull(actionsKeys, "Actions Keys can't be null");
         return createSpecialKeyAssignment(
-                actionsKeys.getSpeedKeyCode()
+                actionsKeys.getSpeedKey().getKey()
         );
     }
 
@@ -92,13 +119,13 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
 
     private AbstractMap<Integer, ActionKey> getDefaultSpecialTypedKeyAssignment() {
-        return this.createSpecialTypedKeyAssignment(ActionsKeys.DEFAULT_AS_ARROWS);
+        return this.createSpecialTypedKeyAssignment(this.actionsKeys);
     }
 
     private AbstractMap<Integer, ActionKey> createSpecialTypedKeyAssignment(ActionsKeys actionsKeys) {
         assert actionsKeys != null;
         return createSpecialTypedKeyAssignment(
-                actionsKeys.getExitKeyCode()
+                actionsKeys.getExitKey().getKey()
         );
     }
 
@@ -115,10 +142,8 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
             return;
         }
 
-        assert runnablePlayer != null;
-
         runnablePlayer.pause();
-        int stepSpeedMs = isPressed ? this.defaultEnhancedStepSpeed : this.defaultStepSpeed;
+        int stepSpeedMs = isPressed ? this.enhancedStepSpeed : this.stepSpeed;
         runnablePlayer.setStepSpeedMs(stepSpeedMs);
         runnablePlayer.resume();
     }
@@ -133,7 +158,7 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
     }
 
     public Thread create() {
-        this.runnablePlayer = new RunnableHumanPlayer(this, defaultStepSpeed);
+        this.runnablePlayer = new RunnableHumanPlayer(this, stepSpeed);
         this.playerThread = createPlayerThread();
         return this.playerThread;
     }
@@ -259,8 +284,8 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
             return false;
         }
         HumanPlayer humanPlayer = (HumanPlayer) o;
-        return defaultStepSpeed == humanPlayer.defaultStepSpeed &&
-                defaultEnhancedStepSpeed == humanPlayer.defaultEnhancedStepSpeed &&
+        return stepSpeed == humanPlayer.stepSpeed &&
+                enhancedStepSpeed == humanPlayer.enhancedStepSpeed &&
                 currentlyOnPause == humanPlayer.currentlyOnPause &&
                 specialKeys.equals(humanPlayer.specialKeys) &&
                 specialTypedKeys.equals(humanPlayer.specialTypedKeys) &&
@@ -272,25 +297,15 @@ public class HumanPlayer extends BasePlayer implements KeyListener {
 
     @Override
     public BasePlayer clone() {
-        return new HumanPlayer(Utils.clone(getLocation()), getName(), getColor(), createActionsKey());
+        return new HumanPlayer(Utils.clone(getLocation()), getName(), getColor(), this.stepSpeed, this.enhancedStepSpeed, this.actionsKeys.clone());
     }
 
-    private ActionsKeys createActionsKey() {
-        ActionsKeys actionsKeys = new ActionsKeys();
+    public int getStepSpeed() {
+        return stepSpeed;
+    }
 
-        this.directionKeys.forEach((key, direction) -> {
-            actionsKeys.setDirectionKeyCode(direction, key);
-        });
-
-        this.specialKeys.forEach((key, actionKey) -> {
-            actionsKeys.setActionKeyCode(actionKey.type, key);
-        });
-
-        this.specialTypedKeys.forEach((key, actionKey) -> {
-            actionsKeys.setActionKeyCode(actionKey.type, key);
-        });
-
-        return actionsKeys;
+    public ActionsKeys getActionsKeys() {
+        return actionsKeys.clone();
     }
 
     private class ActionKey {

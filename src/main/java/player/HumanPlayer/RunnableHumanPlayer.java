@@ -16,7 +16,7 @@ public class RunnableHumanPlayer extends ControlledRunnable {
     private static int DEFAULT_STEP_SPEED_MS = 200;
 
     public RunnableHumanPlayer(HumanPlayer player) {
-        this(player, DEFAULT_STEP_SPEED_MS);
+        this(player, player.getStepSpeed());
     }
 
     public RunnableHumanPlayer(HumanPlayer player, long stepSpeedMs) {

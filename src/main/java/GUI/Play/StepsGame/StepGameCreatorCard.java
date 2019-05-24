@@ -1,20 +1,19 @@
 package GUI.Play.StepsGame;
 
-import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.*;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
-import GUI.Play.Shared.CreatePlayersStep;
+import GUI.Play.Shared.PlayerCreation.PlayersCreationPanel;
+import GUI.Program;
 import GUI.Utils.GuiHelper;
 import GUI.WindowCard;
-import Game.GameStep;
 import Game.MazeGame;
-import Helpers.Builder.BuilderException;
 import Helpers.CallbackFns;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Optional;
 
 public class StepGameCreatorCard extends JPanel implements WindowCard {
 
@@ -28,7 +27,7 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
     // region Steps
 
     private StepSelectionCard stepSelectionCard;
-    private CreatePlayersStep createPlayersStep;
+    private PlayersCreationPanel playersCreationStep;
 
     // endregion
 
@@ -58,8 +57,10 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
         initStepContainer(cc);
         initNextStepBtn();
 
-        this.setMinimumSize(new Dimension(100, 100));
-        this.setPreferredSize(new Dimension(100, 100));
+//        this.setMinimumSize(new Dimension(100, 100));
+//        this.setPreferredSize(new Dimension(100, 100));
+
+        Program.pack();
 
         initSteps();
 
@@ -126,7 +127,7 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
 
     private void initSteps() {
         initStepSelectionStep();
-        initCreatePlayerStep();
+        initPlayersCreationStep();
 
         this.initStepsArr();
     }
@@ -136,14 +137,14 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
         initMazeStep(stepSelectionCard);
     }
 
-    private void initCreatePlayerStep() {
-        createPlayersStep = new CreatePlayersStep();
-        initMazeStep(createPlayersStep);
+    private void initPlayersCreationStep() {
+        playersCreationStep = new PlayersCreationPanel();
+        initMazeStep(playersCreationStep);
     }
 
     private void initStepsArr() {
         this.steps[0] = this.stepSelectionCard;
-        this.steps[1] = this.createPlayersStep;
+        this.steps[1] = this.playersCreationStep;
 
         // TODO - ADD all the steps
     }
@@ -152,7 +153,7 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
         step.init();
 
         this.addCard(step);
-        step.initComponents();
+        step.initUIComponents();
     }
 
     private <T extends JPanel & IPlayConfigStep> void addCard(T step) {
@@ -166,14 +167,26 @@ public class StepGameCreatorCard extends JPanel implements WindowCard {
     private void showCard(PlayStep playStep) {
         this.cardLayout.show(this.stepPanel, playStep.getValue());
 
-        Component currentCard = GuiHelper.findCurrentComponent(this.stepPanel);
-        if(currentCard != null) {
-            Dimension cardSize = currentCard.getMinimumSize();
-            this.stepPanel.setMinimumSize(cardSize);
-            this.stepPanel.setPreferredSize(null);
-        }
+        Optional<Component> currentCard = GuiHelper.getCurrentCard(this.stepPanel);
+        currentCard.ifPresent(this::resizeToFitCard);
+    }
 
-        this.setPreferredSize(null);
+    private void resizeToFitCard(Component currentCard) {
+//        Dimension cardSize = currentCard.getMinimumSize();
+//        this.stepPanel.setMinimumSize(cardSize);
+//        this.stepPanel.setPreferredSize(null);
+//
+//        Dimension size = cardLayout.preferredLayoutSize(this.stepPanel);
+//
+//        currentCard.setPreferredSize(size);
+//
+//        this.stepPanel.setPreferredSize(size);
+//        this.stepPanel.setMinimumSize(size);
+//
+//        // Hack for sizing the container panel at better size
+//        this.setPreferredSize(this.getPreferredSize());
+
+        Program.pack();
     }
 
     private void initNextStepBtn() {

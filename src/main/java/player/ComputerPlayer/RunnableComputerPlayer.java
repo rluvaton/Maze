@@ -41,12 +41,16 @@ public class RunnableComputerPlayer extends ControlledRunnable {
      */
     private volatile AtomicInteger stepsToRunBeforePause = new AtomicInteger(-1);
 
-    public RunnableComputerPlayer(ComputerPlayer player, Direction[] directions, int stepSpeedMs) throws PlayerAlreadyHaveRunningThreadException {
-        this(player, Arrays.asList(directions), stepSpeedMs);
+    public RunnableComputerPlayer(RunnableComputerPlayer computerPlayer, Direction[] directions) throws PlayerAlreadyHaveRunningThreadException {
+        this(computerPlayer, Arrays.asList(directions));
     }
 
-    public RunnableComputerPlayer(RunnableComputerPlayer computerPlayer, Direction[] directions) throws PlayerAlreadyHaveRunningThreadException {
-        this(computerPlayer.player, Arrays.asList(directions), computerPlayer.stepSpeedMs);
+    public RunnableComputerPlayer(RunnableComputerPlayer computerPlayer, List<Direction> directions) throws PlayerAlreadyHaveRunningThreadException {
+        this(computerPlayer.player, directions, computerPlayer.stepSpeedMs);
+    }
+
+    public RunnableComputerPlayer(ComputerPlayer player, Direction[] directions, int stepSpeedMs) throws PlayerAlreadyHaveRunningThreadException {
+        this(player, Arrays.asList(directions), stepSpeedMs);
     }
 
     public RunnableComputerPlayer(ComputerPlayer player, List<Direction> directions, int stepSpeedMs) throws PlayerAlreadyHaveRunningThreadException {

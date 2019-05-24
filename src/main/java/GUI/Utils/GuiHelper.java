@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Optional;
 
 public class GuiHelper {
 
@@ -47,13 +48,13 @@ public class GuiHelper {
         return new SpinnerNumberModel(minValue, minValue, Math.toIntExact(maxValue), (int)Integer.valueOf(1));
     }
 
-    public static Component findCurrentComponent(Container parent) {
+    public static Optional<Component> getCurrentCard(Container parent) {
         for (Component comp : parent.getComponents()) {
             if (comp.isVisible()) {
-                return comp;
+                return Optional.of(comp);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public static Dimension getScreenSize() {

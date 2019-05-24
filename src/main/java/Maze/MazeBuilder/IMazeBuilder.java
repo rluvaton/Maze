@@ -9,6 +9,7 @@ import Maze.Cell;
 import Maze.MazeBuilder.Exceptions.MazeBuilderException;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public interface IMazeBuilder extends SuccessCloneable<IMazeBuilder> {
 
@@ -70,6 +71,11 @@ public interface IMazeBuilder extends SuccessCloneable<IMazeBuilder> {
             return obj instanceof ELocationBaseData
                     && this.direction == ((ELocationBaseData) obj).direction
                     && this.pos.equals(((ELocationBaseData) obj).pos);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(pos, direction);
         }
     }
 }

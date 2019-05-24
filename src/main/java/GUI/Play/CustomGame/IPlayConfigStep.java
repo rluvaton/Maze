@@ -8,7 +8,7 @@ public interface IPlayConfigStep {
 
     void init();
 
-    void initComponents();
+    void initUIComponents();
 
     void reset();
 

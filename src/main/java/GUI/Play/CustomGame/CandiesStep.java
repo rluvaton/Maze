@@ -28,7 +28,7 @@ public class CandiesStep extends JPanel implements IPlayConfigStep {
         this.setLayout(new FormLayout("left:4dlu:noGrow,fill:max(d;4px):noGrow,fill:max(d;4px):noGrow,left:61dlu:noGrow,fill:57px:noGrow,left:4dlu:noGrow,fill:110px:noGrow,left:4dlu:noGrow,left:10dlu:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:13dlu:noGrow,center:max(d;4px):noGrow"));
     }
 
-    public void initComponents() {
+    public void initUIComponents() {
         CellConstraints cc = new CellConstraints();
 
         initCandyPointsCheckBox();

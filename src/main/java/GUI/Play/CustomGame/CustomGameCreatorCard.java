@@ -2,7 +2,7 @@ package GUI.Play.CustomGame;
 
 import GUI.MazeGame.MazePanel;
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
-import GUI.Play.Shared.CreatePlayersStep;
+import GUI.Play.Shared.PlayerCreation.PlayersCreationPanel;
 import GUI.Utils.GuiHelper;
 import GUI.WindowCard;
 import Game.MazeGame;
@@ -13,6 +13,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Optional;
 
 public class CustomGameCreatorCard extends JPanel implements WindowCard {
 
@@ -28,7 +29,7 @@ public class CustomGameCreatorCard extends JPanel implements WindowCard {
     private SelectShapeStep selectMazeShape;
     private SelectExitEntranceMinDistanceStep selectExitEntranceMinDistanceStep;
     private CandiesStep candiesStep;
-    private CreatePlayersStep createPlayersStep;
+    private PlayersCreationPanel playersCreationPanel;
 
     // endregion
 
@@ -141,14 +142,14 @@ public class CustomGameCreatorCard extends JPanel implements WindowCard {
         initSelectMazeShape();
         initSelectExitEntranceMinDistanceStep();
         initCandiesSelectionStep();
-        this.initCreatePlayerStep();
+        this.initPlayersCreationStep();
 
         this.initStepsArr();
     }
 
-    private void initCreatePlayerStep() {
-        createPlayersStep = new CreatePlayersStep();
-        initMazeStep(createPlayersStep);
+    private void initPlayersCreationStep() {
+        playersCreationPanel = new PlayersCreationPanel();
+        initMazeStep(playersCreationPanel);
     }
 
     private void initCandiesSelectionStep() {
@@ -160,7 +161,7 @@ public class CustomGameCreatorCard extends JPanel implements WindowCard {
         this.steps[0] = this.selectMazeShape;
         this.steps[1] = this.selectExitEntranceMinDistanceStep;
         this.steps[2] = this.candiesStep;
-        this.steps[3] = this.createPlayersStep;
+        this.steps[3] = this.playersCreationPanel;
 
         // TODO - ADD all the steps
     }
@@ -174,7 +175,7 @@ public class CustomGameCreatorCard extends JPanel implements WindowCard {
         step.init();
 
         this.addCard(step);
-        step.initComponents();
+        step.initUIComponents();
     }
 
     private void initSelectExitEntranceMinDistanceStep() {
@@ -194,14 +195,26 @@ public class CustomGameCreatorCard extends JPanel implements WindowCard {
     private void showCard(PlayStep playStep) {
         this.cardLayout.show(this.stepPanel, playStep.getValue());
 
-        Component currentCard = GuiHelper.findCurrentComponent(this.stepPanel);
-        if(currentCard != null) {
-            Dimension cardSize = currentCard.getMinimumSize();
-            this.stepPanel.setMinimumSize(cardSize);
-            this.stepPanel.setPreferredSize(null);
-        }
+        Optional<Component> currentCard = GuiHelper.getCurrentCard(this.stepPanel);
+        currentCard.ifPresent(this::resizeToFitCard);
+    }
 
-        this.setPreferredSize(null);
+    private void resizeToFitCard(Component currentCard) {
+        Dimension cardSize = currentCard.getMinimumSize();
+        this.stepPanel.setMinimumSize(cardSize);
+        this.stepPanel.setPreferredSize(null);
+
+        Dimension size = cardLayout.preferredLayoutSize(this.stepPanel);
+
+        currentCard.setPreferredSize(size);
+
+        this.stepPanel.setPreferredSize(size);
+        this.stepPanel.setMinimumSize(size);
+
+        // Hack for sizing the container panel at better size
+        this.setPreferredSize(this.getPreferredSize());
+
+        // frame.pack();
     }
 
     private void initNextStepBtn() {

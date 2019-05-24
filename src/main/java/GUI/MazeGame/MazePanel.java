@@ -94,6 +94,8 @@ public class MazePanel extends JPanel {
             this.initDebugging();
         }
 
+        this.setMinimumSize(this.calculateMinimumSizeBasedOnMaze());
+
         loadArrowIcons();
 
         this.setFocusable(true);
@@ -101,6 +103,15 @@ public class MazePanel extends JPanel {
         game.getOnFinishGameObs().subscribe(
                 basePlayer -> onDestroySub.onNext(true),
                 throwable -> onDestroySub.onNext(true)
+        );
+    }
+
+    public Dimension calculateMinimumSizeBasedOnMaze() {
+        Dimension mazeDim = getMazeDimension();
+
+        return new Dimension(
+                DEFAULT_CELL_EDGE * mazeDim.width + 2 * startX,
+                DEFAULT_CELL_EDGE * mazeDim.height + 2 * startY
         );
     }
 
@@ -340,13 +351,5 @@ public class MazePanel extends JPanel {
         return new Dimension(this.game.getMazeWidth(), this.game.getMazeHeight());
     }
 
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension mazeDim = getMazeDimension();
 
-        return new Dimension(
-                DEFAULT_CELL_EDGE * mazeDim.width + 2 * startX,
-                DEFAULT_CELL_EDGE * mazeDim.height + 2 * startY
-        );
-    }
 }

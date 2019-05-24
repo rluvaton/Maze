@@ -27,7 +27,7 @@ public class SelectExitEntranceMinDistanceStep extends JPanel implements IPlayCo
         this.setLayout(new FormLayout("fill:p:noGrow,left:59dlu:noGrow,fill:max(d;4px):noGrow,left:4dlu:noGrow,fill:52px:grow,left:4dlu:noGrow,left:5dlu:noGrow", "center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow,top:4dlu:noGrow,center:max(d;4px):noGrow"));
     }
 
-    public void initComponents() {
+    public void initUIComponents() {
         CellConstraints cc = new CellConstraints();
 
         initExitsCount(cc);
