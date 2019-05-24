@@ -28,11 +28,6 @@ class CellTest {
         Coordinate nCellPos = new Coordinate(2, 2);
         Cell nCell = new Cell(nCellPos);
 
-        try {
-            cell.setCellAtDirection(Direction.UP, nCell);
-            assertNull("shouldn't arrive until here", "");
-        } catch (Exception e) {
-            assertNotNull(e);
-        }
+        assertThrows(Exception.class, () -> cell.setCellAtDirection(Direction.UP, nCell));
     }
 }
