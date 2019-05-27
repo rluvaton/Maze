@@ -2,7 +2,6 @@ package GUI.Play.CustomGame;
 
 import GUI.Play.CustomGame.Exceptions.NotFinishedStepException;
 import Game.MazeGame;
-import Maze.MazeGenerator.MazeGenerator;
 
 public interface IPlayConfigStep {
 

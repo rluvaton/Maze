@@ -13,25 +13,25 @@ public class KeyStrokeUtils {
         StringBuilder s = new StringBuilder(50);
         int m = key.getModifiers();
 
-        if ((m & (InputEvent.CTRL_DOWN_MASK | InputEvent.CTRL_MASK)) != 0) {
+        if ((m & (InputEvent.CTRL_DOWN_MASK)) != 0) {
             s.append("Ctrl+");
         }
-        if ((m & (InputEvent.META_DOWN_MASK | InputEvent.META_MASK)) != 0) {
+        if ((m & (InputEvent.META_DOWN_MASK)) != 0) {
             s.append("Meta+");
         }
-        if ((m & (InputEvent.ALT_DOWN_MASK | InputEvent.ALT_MASK)) != 0) {
+        if ((m & (InputEvent.ALT_DOWN_MASK)) != 0) {
             s.append("Alt+");
         }
-        if ((m & (InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK)) != 0) {
+        if ((m & (InputEvent.SHIFT_DOWN_MASK)) != 0) {
             s.append("Shift+");
         }
-        if ((m & (InputEvent.BUTTON1_DOWN_MASK | InputEvent.BUTTON1_MASK)) != 0) {
+        if ((m & (InputEvent.BUTTON1_DOWN_MASK)) != 0) {
             s.append("Button1+");
         }
-        if ((m & (InputEvent.BUTTON2_DOWN_MASK | InputEvent.BUTTON2_MASK)) != 0) {
+        if ((m & (InputEvent.BUTTON2_DOWN_MASK)) != 0) {
             s.append("Button2+");
         }
-        if ((m & (InputEvent.BUTTON3_DOWN_MASK | InputEvent.BUTTON3_MASK)) != 0) {
+        if ((m & (InputEvent.BUTTON3_DOWN_MASK)) != 0) {
             s.append("Button3+");
         }
 

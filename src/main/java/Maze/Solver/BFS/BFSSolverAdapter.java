@@ -10,7 +10,6 @@ import Maze.Maze;
 import Maze.Solver.Adapter.SolverAdapter;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BFSSolverAdapter extends SolverAdapter {
@@ -25,10 +24,9 @@ public class BFSSolverAdapter extends SolverAdapter {
      * @param end         Ending Location to solve from
      * @param withCandies Solve maze with candies
      * @return Direction of the path that solved
-     * @throws Exception When the maze can't be solved
      */
     @Override
-    public List<Direction> solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) throws Exception {
+    public List<Direction> solveMaze(Maze maze, Coordinate start, Coordinate end, boolean withCandies) {
         Cell endingCell = maze.getCell(end);
 
         return solveMaze(maze.getMazeData(), start, end, endingCell);

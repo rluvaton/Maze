@@ -3,7 +3,6 @@ package Helpers;
 import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.ELocation;
 import Maze.MazeBuilder.IMazeBuilder;
-import player.BasePlayer;
 
 import java.util.*;
 import java.util.stream.Stream;

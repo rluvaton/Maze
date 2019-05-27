@@ -2,7 +2,6 @@ package Maze.Solver.DFS;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Maze.Cell;
 
 /**

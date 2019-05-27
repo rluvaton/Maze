@@ -2,7 +2,6 @@ package GUI.MazeGame;
 
 import Helpers.ControlledRunnable.ControlledRunnable;
 import Helpers.ControlledRunnable.RunnableStoppedRunningException;
-import Helpers.ThrowableAssertions.ObjectAssertion;
 
 public class ControlledTimer {
     private Thread timer;

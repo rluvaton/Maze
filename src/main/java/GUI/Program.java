@@ -54,7 +54,7 @@ public class Program {
         }
     }
 
-    public static void main(String[] args) {
+    public static void start() {
         JFrame frame = new JFrame("Maze");
 
         Program.frame = frame;
@@ -291,7 +291,7 @@ public class Program {
         // Hack for sizing the container panel at better size
         this.containerPanel.setPreferredSize(this.containerPanel.getPreferredSize());
 
-        this.frame.pack();
+        frame.pack();
 
 
         mazePanel.initGame();

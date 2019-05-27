@@ -27,6 +27,7 @@ import static java.awt.event.KeyEvent.getKeyText;
 /**
  * @deprecated Use {@link PlayersCreationPanel} instead
  */
+@Deprecated
 public class CreatePlayersStep extends JPanel implements IPlayConfigStep {
     private JTextField nameIn;
     private JComboBox<Color> colorComboBox;

@@ -250,11 +250,11 @@ public abstract class BasePlayer implements SuccessCloneable<BasePlayer> {
         return onPauseSub;
     }
 
-    public static void pauseAllPlayers() throws PlayerNotRunning {
+    public static void pauseAllPlayers() {
         onPauseSub.onNext(true);
     }
 
-    public static void resumeAllPlayers() throws PlayerNotRunning {
+    public static void resumeAllPlayers() {
         onPauseSub.onNext(false);
     }
 

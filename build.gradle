@@ -15,13 +15,15 @@ repositories {
 }
 
 
+
 dependencies {
-    
+
     // For GUI
-    compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.6.0'
-    
+    implementation "com.jgoodies:forms:1.2.1"
+    implementation "com.jgoodies:jgoodies-common:1.8.1"
+
     // For Handling events
-    compile 'io.reactivex.rxjava2:rxjava:2.2.4'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.4'
 
     implementation 'com.github.javafaker:javafaker:0.18'
     
@@ -40,6 +42,15 @@ publishing {
         maven(MavenPublication) {
             from(components.java)
         }
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                // Doesn't include `com.jgoodies.forms` for some reason
+                'Main-Class': 'Main'
+        )
     }
 }
 

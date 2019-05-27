@@ -12,7 +12,6 @@ import player.SingleActionKey;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -139,8 +138,6 @@ public class ExistingPlayerPanel extends JPanel {
                 this.addHumanPlayerToRow(row, (HumanPlayer) player);
             } else if(player instanceof ComputerPlayer) {
                 this.addComputerPlayerToRow(row, (ComputerPlayer) player);
-            } else {
-
             }
 
 

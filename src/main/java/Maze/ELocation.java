@@ -2,7 +2,6 @@ package Maze;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 
 /**
  * Exit or Entrance Location

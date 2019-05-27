@@ -86,7 +86,7 @@ class CoordinateTest {
 
     @Test
     void equals() {
-        equalCheck((coord1, coord2) -> coord1.equals(coord2));
+        equalCheck(Object::equals);
     }
 
     @Test

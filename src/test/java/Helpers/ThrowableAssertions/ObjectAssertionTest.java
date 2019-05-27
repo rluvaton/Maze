@@ -1,6 +1,5 @@
 package Helpers.ThrowableAssertions;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -17,9 +16,7 @@ class ObjectAssertionTest {
     @ParameterizedTest(name = "{index}: ObjectAssertion.requireNonNull({0}, Direction.{1}) = {2}")
     @MethodSource("provideDataForRequireNonNull")
     void requireNonNull(boolean isNull, Object testedObject, String message) {
-        Executable requireNonNullFn = () -> {
-            ObjectAssertion.requireNonNull(testedObject, message);
-        };
+        Executable requireNonNullFn = () -> ObjectAssertion.requireNonNull(testedObject, message);
 
         if (isNull) {
             assertThrows(NullPointerException.class, requireNonNullFn, message);

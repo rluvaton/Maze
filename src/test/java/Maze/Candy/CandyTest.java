@@ -143,7 +143,7 @@ class CandyTest {
 
     @Test
     void equals() {
-        assertTrue(candy.equals(candy));
+        assertEquals(candy, candy);
 
         assertCandyEqual(type, candyStrength, timeToLive, true);
         assertCandyEqual(null, false);
@@ -166,10 +166,10 @@ class CandyTest {
 
         if (equals) {
             assertEquals(candy, otherCandy);
-            assertTrue(candy.equals(otherCandy));
+            assertEquals(candy, otherCandy);
         } else {
             assertNotEquals(candy, otherCandy);
-            assertFalse(candy.equals(otherCandy));
+            assertNotEquals(candy, otherCandy);
         }
     }
 }

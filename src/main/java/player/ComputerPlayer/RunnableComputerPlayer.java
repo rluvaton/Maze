@@ -160,22 +160,19 @@ public class RunnableComputerPlayer extends ControlledRunnable {
             @Override
             public void run() {
 
-                onDestroySub.subscribe(none -> {
-                    isKeyListenerThreadRunning = false;
-                });
+                onDestroySub.subscribe(none -> isKeyListenerThreadRunning = false);
 
                 DebuggerHelper.getInstance().getSingleKeyPressedObs(KeyEvent.VK_SPACE)
                         .takeUntil(onDestroySub)
                         .subscribe(new Consumer<KeyEvent>() {
                             @Override
-                            public synchronized void accept(KeyEvent keyEvent) throws Exception {
+                            public synchronized void accept(KeyEvent keyEvent) {
                                 System.out.println("On " + KeyEvent.getKeyText(keyEvent.getKeyCode()) + " key");
                                 RunnableComputerPlayer.this.resume();
                             }
                         });
 
                 while (isKeyListenerThreadRunning) {
-                    ;
                 }
 
                 logger.info("[Computer Player][Debug] Finishing thread " + Thread.currentThread().getName());

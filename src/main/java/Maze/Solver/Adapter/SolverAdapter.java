@@ -2,12 +2,9 @@ package Maze.Solver.Adapter;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 import Maze.Maze;
-import Maze.Cell;
 
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class SolverAdapter {
 

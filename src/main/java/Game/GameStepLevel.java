@@ -5,5 +5,5 @@ public enum GameStepLevel {
     EASY,
     MEDIUM,
     HARD,
-    VERY_HARD;
+    VERY_HARD
 }

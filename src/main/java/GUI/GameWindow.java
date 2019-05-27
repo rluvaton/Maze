@@ -14,13 +14,11 @@ import Maze.Solver.BFS.BFSSolverAdapter;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import player.BasePlayer;
-import player.ComputerPlayer.ComputerPlayer;
 import player.HumanPlayer.HumanPlayer;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class GameWindow {
@@ -261,7 +259,7 @@ public class GameWindow {
     }
 
     private java.util.List<BasePlayer> getGamePlayer() {
-        java.util.List<BasePlayer> players = new ArrayList<BasePlayer>();
+        java.util.List<BasePlayer> players = new ArrayList<>();
 
         players.add(new HumanPlayer(new Coordinate(0, 0), "ArrowsPlayer"));
 //        players.add(new HumanPlayer(new Coordinate(0, 0), "WASDPlayer", ActionsKeys.DEFAULT_AS_WASD));

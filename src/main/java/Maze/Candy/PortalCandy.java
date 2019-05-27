@@ -1,7 +1,6 @@
 package Maze.Candy;
 
 import Helpers.Coordinate;
-import Helpers.ThrowableAssertions.ObjectAssertion;
 import Maze.Cell;
 
 import java.util.Objects;

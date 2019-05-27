@@ -2,7 +2,6 @@ package player;
 
 import Helpers.Coordinate;
 import Helpers.Direction;
-import Helpers.Tuple;
 
 /**
  * Location Changed Event Class

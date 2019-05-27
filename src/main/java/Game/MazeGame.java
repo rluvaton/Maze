@@ -272,9 +272,7 @@ public class MazeGame {
     }
 
     private ControlledTimer createControlledTimerForTimeLimitedCandy(CandyRecord candyRecord) {
-        ControlledTimer candyTimer = new ControlledTimer(candyRecord.candy.getTimeToLive(), () -> {
-            this.maze.getCell(candyRecord.coordinate).removeCandy(candyRecord.candy);
-        });
+        ControlledTimer candyTimer = new ControlledTimer(candyRecord.candy.getTimeToLive(), () -> this.maze.getCell(candyRecord.coordinate).removeCandy(candyRecord.candy));
 
         onDestroySub.subscribe((b) -> candyTimer.cancel());
 

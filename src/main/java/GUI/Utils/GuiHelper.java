@@ -2,8 +2,6 @@ package GUI.Utils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.Optional;
 
 public class GuiHelper {
@@ -45,6 +43,7 @@ public class GuiHelper {
      */
     public static SpinnerNumberModel createSpinnerModelForPositiveNumberOnly(boolean includeZero, long maxValue) {
         int minValue = includeZero ? 0 : 1;
+        //noinspection UnnecessaryBoxing
         return new SpinnerNumberModel(minValue, minValue, Math.toIntExact(maxValue), (int)Integer.valueOf(1));
     }
 
